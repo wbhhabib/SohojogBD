@@ -1,58 +1,70 @@
-
-
-
-
 export const Role = {
-  DONOR:   'DONOR',
+  DONOR: 'DONOR',
   CREATOR: 'CREATOR',
-  ADMIN:   'ADMIN',
+  ADMIN: 'ADMIN',
 } as const
 export type Role = (typeof Role)[keyof typeof Role]
 
 export const CampaignStatus = {
-  DRAFT:     'DRAFT',
-  ACTIVE:    'ACTIVE',
-  PAUSED:    'PAUSED',
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
   COMPLETED: 'COMPLETED',
   SUSPENDED: 'SUSPENDED',
 } as const
 export type CampaignStatus = (typeof CampaignStatus)[keyof typeof CampaignStatus]
 
 export const DonationStatus = {
-  PENDING:   'PENDING',
+  PENDING: 'PENDING',
   COMPLETED: 'COMPLETED',
-  REFUNDED:  'REFUNDED',
+  REFUNDED: 'REFUNDED',
 } as const
 export type DonationStatus = (typeof DonationStatus)[keyof typeof DonationStatus]
 
 export const PaymentStatus = {
-  PENDING:   'PENDING',
-  VALID:     'VALID',
-  FAILED:    'FAILED',
+  PENDING: 'PENDING',
+  VALID: 'VALID',
+  FAILED: 'FAILED',
   CANCELLED: 'CANCELLED',
-  REFUNDED:  'REFUNDED',
+  REFUNDED: 'REFUNDED',
 } as const
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 export const NotifType = {
-  DONATION:  'DONATION',
+  DONATION: 'DONATION',
   MILESTONE: 'MILESTONE',
-  COMMENT:   'COMMENT',
-  SYSTEM:    'SYSTEM',
+  COMMENT: 'COMMENT',
+  SYSTEM: 'SYSTEM',
 } as const
 export type NotifType = (typeof NotifType)[keyof typeof NotifType]
 
 export const ReportStatus = {
-  PENDING:   'PENDING',
-  REVIEWED:  'REVIEWED',
+  PENDING: 'PENDING',
+  REVIEWED: 'REVIEWED',
   DISMISSED: 'DISMISSED',
 } as const
 export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus]
 
 export const ReportReason = {
   FAKE_CAMPAIGN: 'FAKE_CAMPAIGN',
-  SPAM:          'SPAM',
-  MISLEADING:    'MISLEADING',
+  SPAM: 'SPAM',
+  MISLEADING: 'MISLEADING',
   INAPPROPRIATE: 'INAPPROPRIATE',
 } as const
 export type ReportReason = (typeof ReportReason)[keyof typeof ReportReason]
+
+export const PlantListingStatus = {
+  AVAILABLE: 'AVAILABLE',
+  CLAIMED: 'CLAIMED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type PlantListingStatus = (typeof PlantListingStatus)[keyof typeof PlantListingStatus]
+
+export const PlantClaimStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type PlantClaimStatus = (typeof PlantClaimStatus)[keyof typeof PlantClaimStatus]

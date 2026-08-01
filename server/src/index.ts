@@ -18,16 +18,17 @@ import { errorMiddleware } from '@/middlewares/error.middleware';
 import '@/modules/auth/google.strategy';
 
 
-import authRoutes         from '@/modules/auth/auth.routes';
-import userRoutes         from '@/modules/users/user.routes';
-import campaignRoutes     from '@/modules/campaigns/campaign.routes';
-import donationRoutes     from '@/modules/donations/donation.routes';
-import paymentRoutes      from '@/modules/payments/payment.routes';
-import commentRoutes      from '@/modules/comments/comment.routes';
+import authRoutes from '@/modules/auth/auth.routes';
+import userRoutes from '@/modules/users/user.routes';
+import campaignRoutes from '@/modules/campaigns/campaign.routes';
+import donationRoutes from '@/modules/donations/donation.routes';
+import paymentRoutes from '@/modules/payments/payment.routes';
+import commentRoutes from '@/modules/comments/comment.routes';
 import notificationRoutes from '@/modules/notifications/notification.routes';
-import analyticsRoutes    from '@/modules/analytics/analytics.routes';
-import reportRoutes    from '@/modules/report/report.routes';
-import settingsRoutes       from '@/modules/settings/settings.routes';
+import analyticsRoutes from '@/modules/analytics/analytics.routes';
+import reportRoutes from '@/modules/report/report.routes';
+import settingsRoutes from '@/modules/settings/settings.routes';
+import plantRoutes from '@/modules/plants/plant.routes';
 import { maintenanceMiddleware } from '@/middlewares/maintenance.middleware';
 
 
@@ -91,8 +92,8 @@ app.use(
   express.static(path.join(process.cwd(), env.UPLOAD_DIR))
 );
 
-app.use('/api/v1/reports',   reportRoutes);
-app.use('/api/v1/settings',  settingsRoutes);
+app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 
 app.get('/health', (_req: Request, res: Response) => {
@@ -105,14 +106,15 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 
-app.use('/api/v1/auth',          authLimiter, authRoutes);
-app.use('/api/v1/users',         userRoutes);
-app.use('/api/v1/campaigns',     campaignRoutes);
-app.use('/api/v1/donations',     donationRoutes);
-app.use('/api/v1/payments',      paymentRoutes);
-app.use('/api/v1/comments',      commentRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/campaigns', campaignRoutes);
+app.use('/api/v1/donations', donationRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
-app.use('/api/v1/analytics',     analyticsRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/plants', plantRoutes);
 
 
 app.use((req: Request, res: Response) => {
@@ -154,7 +156,7 @@ const shutdown = async (signal: string): Promise<void> => {
 };
 
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
-process.on('SIGINT',  () => void shutdown('SIGINT'));
+process.on('SIGINT', () => void shutdown('SIGINT'));
 
 process.on('unhandledRejection', (reason: unknown) => {
   console.error('Unhandled Rejection:', reason);

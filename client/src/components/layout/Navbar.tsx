@@ -1,10 +1,9 @@
-
 'use client'
 
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Handshake, Menu, LogOut, LayoutDashboard, User } from 'lucide-react'
+import { Handshake, Menu, LogOut, LayoutDashboard, User, Heart, Sprout } from 'lucide-react'
 import Button from '@/components/ui/button'
 import MobileMenu from './MobileMenu'
 import { useAuth } from '@/lib/AuthContext'
@@ -13,7 +12,7 @@ const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Campaigns', href: '/campaigns' },
   { label: 'BDCare', href: '/contact' },
-  { label: 'PlantEnthusists', href: '/contact' },
+  { label: 'PlantEnthusists', href: '/plants' },
   { label: 'GrowTogether', href: '/contact' },
   { label: 'Aponjon', href: '/contact' },
   { label: 'SelfDevelopment', href: '/contact' },
@@ -127,6 +126,14 @@ export default function Navbar() {
                         >
                           <User size={15} className="text-slate-400" />
                           Profile Settings
+                        </Link>
+                        <Link
+                          href="/plants/my"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Sprout size={15} className="text-slate-400" />
+                          My Plant Listings
                         </Link>
                         {role === 'creator' && (
                           <Link

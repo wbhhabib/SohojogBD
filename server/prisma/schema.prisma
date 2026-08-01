@@ -64,6 +64,8 @@ model User {
   notifications    Notification[]
   payments         Payment[]
   reports    Report[]
+  plantListings    PlantListing[]
+  plantClaims      PlantClaim[]
 }
 
 model Campaign {
@@ -199,5 +201,57 @@ model Report {
 
   @@index([campaignId])
   @@index([reporterId])
+  @@index([status])
+}
+enum PlantListingStatus {
+  AVAILABLE
+  CLAIMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PlantClaimStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model PlantListing {
+  id           String             @id @default(cuid())
+  title        String
+  slug         String             @unique
+  description  String
+  plantType    String
+  quantity     Int                @default(1)
+  images       String[]
+  location     String
+  contactPhone String?
+  status       PlantListingStatus @default(AVAILABLE)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  ownerId      String
+  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  claims       PlantClaim[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([plantType])
+  @@index([slug])
+}
+
+model PlantClaim {
+  id         String            @id @default(cuid())
+  message    String?
+  status     PlantClaimStatus  @default(PENDING)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  claimantId String
+  claimant   User              @relation(fields: [claimantId], references: [id], onDelete: Cascade)
+  listingId  String
+  listing    PlantListing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([claimantId])
   @@index([status])
 }

@@ -77,6 +77,34 @@ export interface Notification {
   link?: string | null
 }
 
+export interface PlantListing {
+  id: string
+  slug: string
+  title: string
+  description: string
+  plantType: string
+  quantity: number
+  images: string[]
+  location: string
+  contactPhone?: string | null
+  status: 'AVAILABLE' | 'CLAIMED' | 'COMPLETED' | 'CANCELLED'
+  ownerId: string
+  owner?: Pick<UserProfile, 'id' | 'name' | 'avatar' | 'email'>
+  createdAt: string
+  updatedAt: string
+  _count?: { claims: number }
+  claims?: PlantClaim[]
+}
+
+export interface PlantClaim {
+  id: string
+  message?: string | null
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
+  createdAt: string
+  claimant?: { id: string; name: string; avatar: string | null; phone?: string | null }
+  listing?: { id: string; title: string; slug: string; images: string[]; status: string; location: string }
+}
+
 export interface PaginationMeta {
   total: number
   page: number
@@ -318,6 +346,53 @@ export const donationApi = {
 
   mockConfirm(donationId: string) {
     return api.post<Donation>(`/donations/${donationId}/mock-confirm`)
+  },
+}
+
+
+
+export const plantApi = {
+  getAll(query = '') {
+    return api.get<PlantListing[]>(`/plants${query ? `?${query}` : ''}`)
+  },
+  getBySlug(slug: string) {
+    return api.get<PlantListing>(`/plants/${slug}`)
+  },
+  getMy(query = '') {
+    return api.get<PlantListing[]>(`/plants/my${query ? `?${query}` : ''}`)
+  },
+  getMyById(id: string) {
+    return api.get<PlantListing>(`/plants/my/${id}`)
+  },
+  create(payload: Record<string, unknown>) {
+    return api.post<PlantListing>('/plants', payload)
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api.patch<PlantListing>(`/plants/${id}`, payload)
+  },
+  delete(id: string) {
+    return api.delete(`/plants/${id}`)
+  },
+  markCompleted(id: string) {
+    return api.post<PlantListing>(`/plants/${id}/complete`)
+  },
+  uploadImages(id: string, formData: FormData) {
+    return request<PlantListing>(`/plants/${id}/images`, {
+      method: 'POST',
+      body: formData,
+    })
+  },
+  requestClaim(listingId: string, payload: { message?: string }) {
+    return api.post<PlantClaim>(`/plants/${listingId}/claims`, payload)
+  },
+  getMyClaims(query = '') {
+    return api.get<PlantClaim[]>(`/plants/claims/my${query ? `?${query}` : ''}`)
+  },
+  respondToClaim(claimId: string, status: 'ACCEPTED' | 'REJECTED') {
+    return api.patch<PlantClaim>(`/plants/claims/${claimId}`, { status })
+  },
+  cancelClaim(claimId: string) {
+    return api.delete(`/plants/claims/${claimId}`)
   },
 }
 

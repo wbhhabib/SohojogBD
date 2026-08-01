@@ -1,4 +1,3 @@
-
 'use client'
 
 import React from 'react'
@@ -16,6 +15,7 @@ interface MobileMenuProps {
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Campaigns', href: '/campaigns' },
+  { label: 'PlantEnthusists', href: '/plants' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ]
