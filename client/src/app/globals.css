@@ -1,0 +1,96 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary:         #059669;
+  --primary-hover:   #047857;
+  --primary-light:   #ecfdf5;
+  --primary-orange:  #fb923c;
+  --accent-amber:    #fbbf24;
+  --accent-emerald:  #10b981;
+  --background:      #f9fafb;
+  --foreground:      #111827;
+  --border:          #d1fae5;
+  --radius:          0.75rem;
+  --gradient-warm:   linear-gradient(135deg, #059669, #34d399);
+  --gradient-sunset: linear-gradient(135deg, #059669, #34d399, #fbbf24);
+  --gradient-hope:   linear-gradient(135deg, #10b981, #34d399);
+}
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb;
+    color: #111827;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3 {
+    font-family: 'Lora', Georgia, serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2;
+    background: var(--gradient-warm);
+    @apply text-white font-semibold rounded-xl px-5 py-2.5 shadow-md;
+    box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2;
+  }
+  .btn-outline {
+    @apply border-2 border-emerald-300 text-emerald-600 hover:bg-emerald-50 rounded-xl px-5 py-2.5 font-semibold transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-emerald-200;
+  }
+  .card-base {
+    @apply bg-white rounded-2xl shadow-sm border border-emerald-100/60;
+  }
+  .card-hover {
+    @apply card-base hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer;
+  }
+  .input-base {
+    @apply w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white;
+    @apply placeholder:text-gray-400;
+    @apply focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400;
+    @apply hover:border-gray-300 transition-all duration-200;
+  }
+  .badge-base {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-warm {
+    @apply badge-base text-white;
+    background: var(--gradient-warm);
+  }
+  .progress-warm {
+    background: linear-gradient(90deg, #059669, #34d399, #fbbf24);
+  }
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold text-gray-900;
+    font-family: 'Lora', Georgia, serif;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@layer utilities {
+  .text-gradient-warm {
+    background: var(--gradient-warm);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-sunset {
+    background: var(--gradient-sunset);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .bg-warm-gradient { background: var(--gradient-warm); }
+  .shadow-warm      { box-shadow: 0 8px 24px -4px rgba(5, 150, 105, 0.25); }
+  .shadow-warm-lg   { box-shadow: 0 12px 40px -6px rgba(5, 150, 105, 0.35); }
+}

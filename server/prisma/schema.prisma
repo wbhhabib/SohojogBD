@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DONOR
+  CREATOR
+  ADMIN
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  SUSPENDED
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  VALID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum NotifType {
+  DONATION
+  MILESTONE
+  COMMENT
+  SYSTEM
+}
+
+model User {
+  id               String         @id @default(cuid())
+  name             String
+  email            String         @unique
+  password         String
+  role             Role           @default(DONOR)
+  avatar           String?
+  phone            String?
+  address          String?
+  isVerified       Boolean        @default(false)
+  isBanned         Boolean        @default(false)
+  verifyToken      String?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  campaigns        Campaign[]
+  donations        Donation[]
+  comments         Comment[]
+  notifications    Notification[]
+  payments         Payment[]
+  reports    Report[]
+}
+
+model Campaign {
+  id              String           @id @default(cuid())
+  title           String
+  slug            String           @unique
+  description     String
+  story           String           @db.Text
+  goalAmount      Int
+  raisedAmount    Int              @default(0)
+  donorCount      Int              @default(0)
+  category        String
+  status          CampaignStatus   @default(DRAFT)
+  images          String[]
+  beneficiaryName String
+  beneficiaryInfo String
+  deadline        DateTime
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  creatorId       String
+  creator         User             @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  donations       Donation[]
+  comments        Comment[]
+  updates         CampaignUpdate[]
+  notifications   Notification[]
+  reports    Report[]
+
+  @@index([creatorId])
+  @@index([status])
+  @@index([category])
+  @@index([slug])
+}
+
+model Donation {
+  id          String         @id @default(cuid())
+  amount      Int
+  message     String?
+  isAnonymous Boolean        @default(false)
+  status      DonationStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  donorId     String
+  donor       User           @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  campaignId  String
+  campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  payment     Payment?
+
+  @@index([donorId])
+  @@index([campaignId])
+  @@index([status])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  tranId          String        @unique
+  valId           String?
+  amount          Int
+  currency        String        @default("BDT")
+  status          PaymentStatus @default(PENDING)
+  gatewayResponse Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  donorId         String
+  donor           User          @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  donationId      String        @unique
+  donation        Donation      @relation(fields: [donationId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+}
+
+model CampaignUpdate {
+  id         String   @id @default(cuid())
+  title      String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         String    @id @default(cuid())
+  type       NotifType
+  title      String
+  message    String
+  isRead     Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum ReportReason {
+  FAKE_CAMPAIGN
+  SPAM
+  MISLEADING
+  INAPPROPRIATE
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  reason     ReportReason
+  status     ReportStatus @default(PENDING)
+  note       String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([reporterId])
+  @@index([status])
+}
