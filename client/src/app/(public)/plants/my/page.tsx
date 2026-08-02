@@ -36,9 +36,12 @@ function ListingRow({ listing, onChange }: { listing: PlantListing; onChange: ()
     }
 
     const respond = async (claimId: string, status: 'ACCEPTED' | 'REJECTED') => {
-        await plantApi.respondToClaim(claimId, status)
-        const res = await plantApi.getMyById(listing.id)
-        if (res.success) setFull(res.data)
+        const res = await plantApi.respondToClaim(claimId, status)
+        if (!res.success) {
+            alert(res.message ?? 'Could not update this request.')
+        }
+        const refreshed = await plantApi.getMyById(listing.id)
+        if (refreshed.success) setFull(refreshed.data)
         onChange()
     }
 
@@ -81,7 +84,10 @@ function ListingRow({ listing, onChange }: { listing: PlantListing; onChange: ()
                         full.claims.map((claim) => (
                             <div key={claim.id} className="flex items-start justify-between gap-3 bg-white rounded-lg border border-gray-200 p-3">
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-gray-800">{claim.claimant?.name}</p>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        {claim.claimant?.name}
+                                        <span className="text-emerald-600 font-semibold"> · wants {claim.quantity}</span>
+                                    </p>
                                     {claim.message && <p className="text-xs text-gray-500 mt-0.5">{claim.message}</p>}
                                     <p className="text-[11px] text-gray-400 mt-1">{timeAgo(claim.createdAt)}</p>
                                 </div>
@@ -105,7 +111,7 @@ function ListingRow({ listing, onChange }: { listing: PlantListing; onChange: ()
                     )}
 
                     <div className="flex items-center gap-2 pt-1">
-                        {listing.status === 'CLAIMED' && (
+                        {listing.status === 'AVAILABLE' && (
                             <Button size="sm" variant="outline" onClick={handleComplete}>
                                 <CheckCircle2 size={13} /> Mark Completed
                             </Button>
@@ -139,7 +145,7 @@ function RequestRow({ claim, onChange }: { claim: PlantClaim; onChange: () => vo
             </div>
             <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 text-sm truncate">{claim.listing?.title}</p>
-                <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin size={11} /> {claim.listing?.location}</p>
+                <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin size={11} /> {claim.listing?.location} · requested {claim.quantity}</p>
                 <p className="text-[11px] text-gray-400 mt-0.5">Requested {timeAgo(claim.createdAt)}</p>
             </div>
             <Badge variant={statusVariant[claim.status]} className="capitalize">{claim.status.toLowerCase()}</Badge>

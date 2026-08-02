@@ -38,6 +38,7 @@ export const updatePlantListingSchema = z.object({
 
 export const createPlantClaimSchema = z.object({
     message: z.string().max(500).optional(),
+    quantity: z.coerce.number().int().min(1).max(1000).default(1),
 })
 
 export const updatePlantClaimSchema = z.object({

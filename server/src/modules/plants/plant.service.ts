@@ -123,6 +123,7 @@ export const getMyListingById = async (id: string, ownerId: string) => {
                 select: {
                     id: true,
                     message: true,
+                    quantity: true,
                     status: true,
                     createdAt: true,
                     claimant: { select: { id: true, name: true, avatar: true, phone: true } },
@@ -237,12 +238,25 @@ export const createClaim = async (
     if (listing.status !== PlantListingStatus.AVAILABLE) {
         throw createHttpError('This listing is no longer available', 400)
     }
+    if (data.quantity > listing.quantity) {
+        throw createHttpError(`Only ${listing.quantity} available — please request a smaller quantity`, 400)
+    }
 
     const existingClaim = await prisma.plantClaim.findFirst({
-        where: { listingId, claimantId, status: PlantClaimStatus.PENDING },
+        where: {
+            listingId,
+            claimantId,
+            status: { in: [PlantClaimStatus.PENDING, PlantClaimStatus.ACCEPTED, PlantClaimStatus.REJECTED] },
+        },
     })
     if (existingClaim) {
-        throw createHttpError('You already have a pending request for this listing', 400)
+        const reason =
+            existingClaim.status === PlantClaimStatus.ACCEPTED
+                ? 'You have already received this plant'
+                : existingClaim.status === PlantClaimStatus.REJECTED
+                    ? 'Your request for this listing was already declined by the owner'
+                    : 'You already have a pending request for this listing'
+        throw createHttpError(reason, 400)
     }
 
     const claim = await prisma.plantClaim.create({
@@ -250,6 +264,7 @@ export const createClaim = async (
             listingId,
             claimantId,
             message: data.message,
+            quantity: data.quantity,
             status: PlantClaimStatus.PENDING,
         },
     })
@@ -281,6 +296,7 @@ export const getMyClaims = async (
             select: {
                 id: true,
                 message: true,
+                quantity: true,
                 status: true,
                 createdAt: true,
                 listing: {
@@ -309,6 +325,12 @@ export const respondToClaim = async (
     if (claim.status !== PlantClaimStatus.PENDING) {
         throw createHttpError('This request has already been handled', 400)
     }
+    if (status === 'ACCEPTED' && claim.quantity > claim.listing.quantity) {
+        throw createHttpError(
+            `Only ${claim.listing.quantity} left — not enough remaining to accept this request`,
+            400
+        )
+    }
 
     const updatedClaim = await prisma.plantClaim.update({
         where: { id: claimId },
@@ -316,18 +338,28 @@ export const respondToClaim = async (
     })
 
     if (status === 'ACCEPTED') {
+        const remaining = claim.listing.quantity - claim.quantity
+        const soldOut = remaining <= 0
+
         await prisma.plantListing.update({
             where: { id: claim.listingId },
-            data: { status: PlantListingStatus.CLAIMED },
-        })
-        await prisma.plantClaim.updateMany({
-            where: {
-                listingId: claim.listingId,
-                id: { not: claimId },
-                status: PlantClaimStatus.PENDING,
+            data: {
+                quantity: Math.max(remaining, 0),
+                status: soldOut ? PlantListingStatus.COMPLETED : PlantListingStatus.AVAILABLE,
             },
-            data: { status: PlantClaimStatus.REJECTED },
         })
+
+        if (soldOut) {
+            await prisma.plantClaim.updateMany({
+                where: {
+                    listingId: claim.listingId,
+                    id: { not: claimId },
+                    status: PlantClaimStatus.PENDING,
+                },
+                data: { status: PlantClaimStatus.REJECTED },
+            })
+        }
+
         await prisma.notification.create({
             data: {
                 type: 'SYSTEM',

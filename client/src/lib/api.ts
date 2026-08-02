@@ -99,6 +99,7 @@ export interface PlantListing {
 export interface PlantClaim {
   id: string
   message?: string | null
+  quantity: number
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
   createdAt: string
   claimant?: { id: string; name: string; avatar: string | null; phone?: string | null }
@@ -117,6 +118,7 @@ export interface ApiResponse<T = unknown> {
   message?: string
   data: T
   meta?: PaginationMeta
+  errors?: { field: string; message: string }[]
 }
 
 
@@ -382,7 +384,7 @@ export const plantApi = {
       body: formData,
     })
   },
-  requestClaim(listingId: string, payload: { message?: string }) {
+  requestClaim(listingId: string, payload: { message?: string; quantity: number }) {
     return api.post<PlantClaim>(`/plants/${listingId}/claims`, payload)
   },
   getMyClaims(query = '') {

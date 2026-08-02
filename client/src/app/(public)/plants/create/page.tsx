@@ -58,7 +58,8 @@ export default function CreatePlantListingPage() {
         })
 
         if (!res.success || !res.data) {
-            setError(res.message ?? 'Could not create listing. Please check your details.')
+            const detailed = res.errors?.map((e) => e.message).join(' ')
+            setError(detailed || res.message || 'Could not create listing. Please check your details.')
             setSubmitting(false)
             return
         }
@@ -97,6 +98,9 @@ export default function CreatePlantListingPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                         />
+                        <p className="text-xs -mt-3 text-gray-400">
+                            At least 5 characters ({title.length}/5)
+                        </p>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Select
                                 label="Plant type"
@@ -123,6 +127,9 @@ export default function CreatePlantListingPage() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
+                        <p className="text-xs -mt-3 text-gray-400">
+                            At least 20 characters ({description.length}/20)
+                        </p>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Input
                                 label="Location (area/city)"

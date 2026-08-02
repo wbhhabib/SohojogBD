@@ -243,6 +243,7 @@ model PlantListing {
 model PlantClaim {
   id         String            @id @default(cuid())
   message    String?
+  quantity   Int               @default(1)
   status     PlantClaimStatus  @default(PENDING)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt

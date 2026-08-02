@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Button from '@/components/ui/button'
 import Badge from '@/components/ui/badge'
+import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import { plantApi } from '@/lib/api'
 import type { PlantListing } from '@/lib/api'
@@ -30,6 +31,7 @@ export default function PlantDetailPage() {
     const [loading, setLoading] = useState(true)
     const [notFoundState, setNotFoundState] = useState(false)
     const [message, setMessage] = useState('')
+    const [claimQuantity, setClaimQuantity] = useState('1')
     const [submitting, setSubmitting] = useState(false)
     const [requestSent, setRequestSent] = useState(false)
     const [error, setError] = useState('')
@@ -54,7 +56,10 @@ export default function PlantDetailPage() {
         }
         setSubmitting(true)
         setError('')
-        const res = await plantApi.requestClaim(listing!.id, { message: message.trim() || undefined })
+        const res = await plantApi.requestClaim(listing!.id, {
+            message: message.trim() || undefined,
+            quantity: Number(claimQuantity) || 1,
+        })
         if (res.success) {
             setRequestSent(true)
         } else {
@@ -160,6 +165,14 @@ export default function PlantDetailPage() {
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
+                                        <Input
+                                            label={`How many? (${listing.quantity} available)`}
+                                            type="number"
+                                            min="1"
+                                            max={listing.quantity}
+                                            value={claimQuantity}
+                                            onChange={(e) => setClaimQuantity(e.target.value)}
+                                        />
                                         <Textarea
                                             label="Message to the owner (optional)"
                                             placeholder="Hi! I'd love this plant for my balcony garden…"
