@@ -59,7 +59,7 @@ interface CampaignOrderByInput {
   createdAt?: 'asc' | 'desc'
 }
 
-const transformCampaign = (campaign: { status: string; [key: string]: unknown }) => ({
+const transformCampaign = (campaign: { status: string;[key: string]: unknown }) => ({
   ...campaign,
   status: toCampaignStatus(campaign.status as CampaignStatus),
 })
@@ -68,12 +68,12 @@ const transformCampaign = (campaign: { status: string; [key: string]: unknown })
 function buildOrderBy(sort?: unknown): CampaignOrderByInput {
   switch (sort) {
     case 'most-funded':
-    case 'raisedAmount':  return { raisedAmount: 'desc' }
-    case 'ending-soon':   return { deadline: 'asc' }
-    case 'most-donors':   return { donorCount: 'desc' }
-    case 'oldest':        return { createdAt: 'asc' }
+    case 'raisedAmount': return { raisedAmount: 'desc' }
+    case 'ending-soon': return { deadline: 'asc' }
+    case 'most-donors': return { donorCount: 'desc' }
+    case 'oldest': return { createdAt: 'asc' }
     case 'newest':
-    default:              return { createdAt: 'desc' }
+    default: return { createdAt: 'desc' }
   }
 }
 
@@ -131,7 +131,7 @@ export const getAllCampaigns = async (
   ])
 
   return {
-    campaigns: campaigns.map((c: { status: string; [key: string]: unknown }) => transformCampaign(c)),
+    campaigns: campaigns.map((c: { status: string;[key: string]: unknown }) => transformCampaign(c)),
     meta: getPaginationMeta(total, page, limit),
   }
 }
@@ -172,7 +172,7 @@ export const getSupportedCampaigns = async (
   ])
 
   return {
-    campaigns: campaigns.map((c: { status: string; [key: string]: unknown }) => transformCampaign(c)),
+    campaigns: campaigns.map((c: { status: string;[key: string]: unknown }) => transformCampaign(c)),
     meta: getPaginationMeta(total, page, limit),
   }
 }
@@ -243,7 +243,7 @@ export const getCreatorCampaigns = async (
   ])
 
   return {
-    campaigns: campaigns.map((c: { status: string; [key: string]: unknown }) => transformCampaign(c)),
+    campaigns: campaigns.map((c: { status: string;[key: string]: unknown }) => transformCampaign(c)),
     meta: getPaginationMeta(total, page, limit),
   }
 }
@@ -304,10 +304,21 @@ export const updateCampaign = async (
     throw createHttpError('Cannot edit this campaign', 403)
   }
 
+  // Self-heal campaigns created before the Bangla-title slug fix, whose
+  // slug ended up empty (breaks cover-image upload and the public URL).
+  let repairedSlug: string | undefined
+  if (!existing.slug) {
+    const existingSlugs = await prisma.campaign
+      .findMany({ select: { slug: true } })
+      .then((rows: Array<{ slug: string }>) => rows.map((row) => row.slug))
+    repairedSlug = generateUniqueSlug(data.title ?? existing.title, existingSlugs)
+  }
+
   const campaign = await prisma.campaign.update({
     where: { id },
     data: {
       ...data,
+      ...(repairedSlug && { slug: repairedSlug }),
       ...(data.status && { status: data.status as CampaignStatus }),
       ...(data.deadline && { deadline: new Date(data.deadline) }),
     },

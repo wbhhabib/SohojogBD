@@ -104,7 +104,7 @@ export default function EditCampaignClient({ campaign }: EditCampaignClientProps
       // Only include deadline in payload if user actually changed it
       // This avoids sending a past deadline that would fail server validation
       if (formData.deadline !== undefined && formData.deadline !== campaign.deadline) {
-        const normalizedDeadline = normalizeDeadline(formData.deadline)
+        const normalizedDeadline = normalizeDeadline(formData.deadline ?? undefined)
         if (normalizedDeadline) payload.deadline = normalizedDeadline
       }
 
@@ -116,7 +116,10 @@ export default function EditCampaignClient({ campaign }: EditCampaignClientProps
       }
 
       if (selectedFiles.length > 0) {
-        await uploadSelectedFiles(campaign.slug, selectedFiles)
+        // Use the freshly-returned slug (the backend may have just repaired
+        // an old empty slug), not the stale one from the original campaign prop.
+        const freshSlug = res.data?.slug || campaign.slug
+        await uploadSelectedFiles(freshSlug, selectedFiles)
       }
 
       setToast(true)

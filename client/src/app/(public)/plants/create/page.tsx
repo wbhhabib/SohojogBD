@@ -101,6 +101,17 @@ export default function CreatePlantListingPage() {
                         <p className="text-xs -mt-3 text-gray-400">
                             At least 5 characters ({title.length}/5)
                         </p>
+                        <Textarea
+                            label="Description"
+                            required
+                            rows={4}
+                            placeholder="Tell people about the plant — care needs, size, why you're giving it away…"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
+                        <p className="text-xs -mt-3 text-gray-400">
+                            At least 20 characters ({description.length}/20)
+                        </p>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Select
                                 label="Plant type"
@@ -119,17 +130,6 @@ export default function CreatePlantListingPage() {
                                 onChange={(e) => setQuantity(e.target.value)}
                             />
                         </div>
-                        <Textarea
-                            label="Description"
-                            required
-                            rows={4}
-                            placeholder="Tell people about the plant — care needs, size, why you're giving it away…"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                        <p className="text-xs -mt-3 text-gray-400">
-                            At least 20 characters ({description.length}/20)
-                        </p>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Input
                                 label="Location (area/city)"
