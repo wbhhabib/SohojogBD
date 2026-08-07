@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as plantService from './plant.service'
+import * as plantAiService from './plant.ai.service'
 import { sendSuccess, sendError, sendPaginated } from '../../utils/response'
 
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
@@ -55,6 +56,16 @@ export const uploadImages = asyncHandler(async (req, res) => {
     const imageUrls = files.map((f) => `/uploads/images/${f.filename}`)
     const listing = await plantService.addListingImages(req.params.id, req.user!.id, imageUrls)
     sendSuccess(res, listing, 'Images uploaded successfully')
+})
+
+export const analyzeImage = asyncHandler(async (req, res) => {
+    const file = req.file as Express.Multer.File | undefined
+    if (!file) {
+        sendError(res, 'No image uploaded', 400)
+        return
+    }
+    const result = await plantAiService.analyzePlantImage(file.buffer, file.mimetype)
+    sendSuccess(res, result, 'Image analyzed successfully')
 })
 
 export const createClaim = asyncHandler(async (req, res) => {

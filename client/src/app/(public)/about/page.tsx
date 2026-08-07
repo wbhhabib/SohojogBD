@@ -5,10 +5,10 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 
 const STATS = [
-  { value: '৳2.4 কোটি', label: 'Total Raised',   sub: 'and counting'      },
-  { value: '1,200+',     label: 'Campaigns',       sub: 'launched to date'  },
-  { value: '15,000+',    label: 'Donors',           sub: 'across Bangladesh' },
-  { value: '98%',        label: 'Success Rate',     sub: 'funded campaigns'  },
+  { value: '৳2.4 কোটি', label: 'Total Raised', sub: 'and counting' },
+  { value: '1,200+', label: 'Campaigns', sub: 'launched to date' },
+  { value: '15,000+', label: 'Donors', sub: 'across Bangladesh' },
+  { value: '98%', label: 'Success Rate', sub: 'funded campaigns' },
 ]
 
 const VALUES = [
@@ -34,31 +34,31 @@ const VALUES = [
 
 const TEAM = [
   {
-    initials: 'RA',
-    name: 'Rahim Uddin Ahmed',
+    initials: 'MH',
+    name: 'Mohsin Habib',
     role: 'Co-founder & CEO',
-    bio: 'Former BRAC program director with 12 years in social development.',
+    bio: 'Student',
     color: 'bg-emerald-600',
   },
   {
-    initials: 'FB',
-    name: 'Fatema Begum',
+    initials: 'AA',
+    name: 'D.M Arif Afsar',
     role: 'Co-founder & CTO',
-    bio: 'Full-stack engineer who built fintech platforms for Southeast Asia.',
+    bio: 'Lecturer',
     color: 'bg-teal-600',
   },
   {
-    initials: 'KH',
-    name: 'Karim Hossain',
+    initials: 'ABC',
+    name: 'ABC',
     role: 'Head of Partnerships',
-    bio: 'Connects NGOs and corporates to amplify campaign reach nationwide.',
+    bio: 'XYZ',
     color: 'bg-blue-600',
   },
   {
-    initials: 'NJ',
-    name: 'Nusrat Jahan',
+    initials: 'XYZ',
+    name: 'XYZ',
     role: 'Head of Community',
-    bio: 'Champions donor trust and creator support across every campaign.',
+    bio: 'ABC',
     color: 'bg-purple-600',
   },
 ]
@@ -90,7 +90,7 @@ export default function AboutPage() {
       <Navbar />
 
       <main className="min-h-screen bg-gray-50">
-<section className="bg-emerald-50 border-b border-emerald-100">
+        <section className="bg-emerald-50 border-b border-emerald-100">
           <div className="max-w-4xl mx-auto px-4 py-16 md:py-24 text-center">
             <span className="inline-block mb-4 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold tracking-wide uppercase">
               Our Story
@@ -107,7 +107,7 @@ export default function AboutPage() {
             </p>
           </div>
         </section>
-<section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {STATS.map((stat) => (
               <div
@@ -123,7 +123,7 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-<section className="max-w-7xl mx-auto px-4 py-10 md:py-14">
+        <section className="max-w-7xl mx-auto px-4 py-10 md:py-14">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
               Our Mission &amp; Values
@@ -151,7 +151,7 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-<section className="max-w-7xl mx-auto px-4 py-10 md:py-14">
+        <section className="max-w-7xl mx-auto px-4 py-10 md:py-14">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Meet the Team</h2>
             <p className="text-slate-500 text-sm mt-2">
@@ -179,7 +179,7 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-<section className="bg-white border-y border-gray-100">
+        <section className="bg-white border-y border-gray-100">
           <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
@@ -206,7 +206,7 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-<section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
           <div className="bg-emerald-700 rounded-2xl px-8 py-14 md:px-16 text-center">
             <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">
               Join us today

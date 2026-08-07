@@ -49,3 +49,16 @@ const multerConfig = multer({
 
 export const uploadSingle = multerConfig.single('image')
 export const uploadMultiple = multerConfig.array('images', 5)
+
+// ── In-memory upload (no disk write) — used for AI image analysis where we ──
+// only need the raw bytes momentarily to send to the Gemini API, not to
+// persist the file as a listing photo.
+const memoryUploadConfig = multer({
+  storage: multer.memoryStorage(),
+  fileFilter,
+  limits: {
+    fileSize: env.MAX_FILE_SIZE,
+  },
+})
+
+export const uploadSingleMemory = memoryUploadConfig.single('image')

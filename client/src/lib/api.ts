@@ -96,6 +96,13 @@ export interface PlantListing {
   claims?: PlantClaim[]
 }
 
+export interface AnalyzedPlant {
+  title: string
+  description: string
+  plantType: string
+  confidence: 'high' | 'medium' | 'low'
+}
+
 export interface PlantClaim {
   id: string
   message?: string | null
@@ -382,6 +389,14 @@ export const plantApi = {
     return request<PlantListing>(`/plants/${id}/images`, {
       method: 'POST',
       body: formData,
+    })
+  },
+  analyzeImage(file: File) {
+    const fd = new FormData()
+    fd.append('image', file)
+    return request<AnalyzedPlant>('/plants/analyze-image', {
+      method: 'POST',
+      body: fd,
     })
   },
   requestClaim(listingId: string, payload: { message?: string; quantity: number }) {

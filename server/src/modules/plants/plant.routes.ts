@@ -4,7 +4,7 @@ import * as plantController from './plant.controller'
 
 import { authenticate } from '../../middlewares/auth.middleware'
 import { validate } from '../../middlewares/validate.middleware'
-import { uploadMultiple } from '../../middlewares/upload.middleware'
+import { uploadMultiple, uploadSingleMemory } from '../../middlewares/upload.middleware'
 
 import {
     createPlantListingSchema,
@@ -26,6 +26,9 @@ router.get('/my/:id', authenticate, plantController.getMyListingById)
 router.get('/claims/my', authenticate, plantController.getMyClaims)
 router.patch('/claims/:claimId', authenticate, validate(updatePlantClaimSchema), plantController.respondToClaim)
 router.delete('/claims/:claimId', authenticate, plantController.cancelClaim)
+
+// ── AI: analyze a plant photo → suggested title/description/type ────────────
+router.post('/analyze-image', authenticate, uploadSingleMemory, plantController.analyzeImage)
 
 // ── Create ────────────────────────────────────────────────────────────────────
 router.post('/', authenticate, validate(createPlantListingSchema), plantController.createListing)
