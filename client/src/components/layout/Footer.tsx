@@ -5,8 +5,9 @@ import { Heart, Twitter, Facebook, Instagram, Linkedin } from 'lucide-react'
 
 const platformLinks = [
   { label: 'Home', href: '/' },
+  { label: 'Our Initiatives', href: '/#initiatives' },
   { label: 'Campaigns', href: '/campaigns' },
-  { label: 'Create Campaign', href: '/creator/campaigns/create' },
+  { label: 'PlantEnthusists', href: '/plants' },
 ]
 
 const companyLinks = [
@@ -37,7 +38,7 @@ export default function Footer() {
               <span className="text-lg font-bold text-white">SohojogBD</span>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Empowering communities through collective giving.
+              Bangladesh&apos;s social support platform — fundraising, volunteering, and community initiatives in one place.
             </p>
             <div className="flex items-center gap-3 mt-5">
               {socials.map(({ icon: Icon, href, label }) => (
@@ -94,7 +95,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-800 pt-6">
           <p className="text-sm text-slate-500 text-center">
-            © 2024 FundRaise. All rights reserved.
+            © 2026 SohojogBD. All rights reserved.
           </p>
         </div>
       </div>

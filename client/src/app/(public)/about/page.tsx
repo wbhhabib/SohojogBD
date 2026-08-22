@@ -1,14 +1,17 @@
+'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Eye, TrendingUp, Users, ShieldCheck, Zap, HeartHandshake } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 
-const STATS = [
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1'
+
+const BASE_STATS = [
   { value: '৳2.4 কোটি', label: 'Total Raised', sub: 'and counting' },
   { value: '1,200+', label: 'Campaigns', sub: 'launched to date' },
   { value: '15,000+', label: 'Donors', sub: 'across Bangladesh' },
-  { value: '98%', label: 'Success Rate', sub: 'funded campaigns' },
 ]
 
 const VALUES = [
@@ -16,19 +19,19 @@ const VALUES = [
     icon: Eye,
     title: 'Transparency',
     description:
-      'Every taka is accounted for. Donors can track exactly where their contributions go, with real-time updates from campaign creators.',
+      'Every contribution is accounted for — whether it\'s a taka, a volunteer hour, or a plant given away. Every initiative stays visible to the community it serves.',
   },
   {
     icon: TrendingUp,
     title: 'Impact',
     description:
-      'We measure success by lives changed. From flood relief to education funds, every campaign is built around meaningful, measurable outcomes.',
+      'We measure success by lives changed — a campaign funded, a family reunited, a student who found a free course, a flock kept healthy.',
   },
   {
     icon: Users,
     title: 'Community',
     description:
-      'We believe in the power of collective action. Our platform connects compassionate donors with passionate changemakers across Bangladesh.',
+      'We believe in the power of collective action. Our platform connects everyday people with everyday ways to support one another across Bangladesh.',
   },
 ]
 
@@ -68,23 +71,43 @@ const WHY_US = [
     icon: ShieldCheck,
     title: 'Secure & Verified',
     description:
-      'All campaigns go through a verification process before going live. Donor funds are held securely and released only upon milestone confirmation.',
+      'Every campaign and listing goes through a verification process before going live, and donor funds are held securely until milestones are confirmed.',
   },
   {
     icon: Zap,
     title: 'Fast & Easy Setup',
     description:
-      'Launch a campaign in under 10 minutes. Our step-by-step creator flow guides you from idea to live fundraiser with zero technical knowledge needed.',
+      'Getting started takes minutes, whichever initiative fits you — no technical knowledge needed, whether you\'re starting a campaign or listing a plant.',
   },
   {
     icon: HeartHandshake,
     title: 'Dedicated Support',
     description:
-      'Our team is available to help creators craft compelling stories and assist donors with any questions — in Bangla and English.',
+      'Our team is available to help creators, volunteers, and everyone in between with any questions — in Bangla and English.',
   },
 ]
 
 export default function AboutPage() {
+  const [plantCount, setPlantCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/plants?limit=1`, { credentials: 'include' })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) setPlantCount(res.meta?.total ?? null)
+      })
+      .catch(() => { })
+  }, [])
+
+  const STATS = [
+    ...BASE_STATS,
+    {
+      value: plantCount !== null ? `${plantCount}+` : '—',
+      label: 'Plants Given',
+      sub: 'through PlantEnthusists',
+    },
+  ]
+
   return (
     <>
       <Navbar />
@@ -97,13 +120,15 @@ export default function AboutPage() {
             </span>
             <h1 className="text-3xl md:text-5xl font-bold text-slate-900 leading-tight mb-5">
               Empowering Bangladesh Through{' '}
-              <span className="text-emerald-600">Collective Giving</span>
+              <span className="text-emerald-600">Collective Support</span>
             </h1>
             <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              We started with a simple belief — that every Bangladeshi deserves access
-              to support in times of need. Our platform removes barriers between
-              generous donors and the causes that need them most, building a stronger,
-              more compassionate Bangladesh one campaign at a time.
+              We started with a simple belief — that every Bangladeshi deserves
+              access to support, in whatever form they need it. From fundraising
+              and volunteering to plant giveaways, group buying, family
+              reunification, free courses, and community vaccination — our
+              platform removes barriers between people and the support they
+              need, building a stronger, more compassionate Bangladesh together.
             </p>
           </div>
         </section>
@@ -212,15 +237,15 @@ export default function AboutPage() {
               Join us today
             </h2>
             <p className="text-emerald-100 text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-              Whether you want to raise funds for a cause or support someone in need —
-              there&apos;s a place for you in our community.
+              Whether you want to give support or find it — there&apos;s a
+              place for you in our community.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/creator/campaigns/create"
+                href="/#initiatives"
                 className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 rounded-lg bg-white text-emerald-700 hover:bg-emerald-50 font-semibold text-sm transition-colors shadow-sm"
               >
-                Start Campaign
+                Explore Initiatives
               </Link>
               <Link
                 href="/campaigns"

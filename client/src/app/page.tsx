@@ -9,7 +9,8 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import CampaignGrid from '@/components/campaign/CampaignGrid'
-import type { Campaign } from '@/lib/api'
+import PlantGrid from '@/components/plant/PlantGrid'
+import type { Campaign, PlantListing } from '@/lib/api'
 
 interface Initiative {
   icon: typeof Heart
@@ -126,36 +127,28 @@ const MISSION_PILLARS = [
   },
 ]
 
-const CATEGORIES = [
-  { emoji: '🎓', name: 'Education', count: 142 },
-  { emoji: '🏥', name: 'Medical', count: 98 },
-  { emoji: '🌿', name: 'Environment', count: 67 },
-  { emoji: '🆘', name: 'Disaster Relief', count: 54 },
-  { emoji: '🐾', name: 'Animal Welfare', count: 39 },
-  { emoji: '🏘️', name: 'Community', count: 83 },
-]
 
 const HOW_IT_WORKS = [
   {
     icon: Rocket,
     step: 1,
-    title: 'Create Your Campaign',
+    title: 'Pick Your Initiative',
     description:
-      'Set up your fundraiser in minutes. Add your story, goal amount, and photos to connect with donors.',
+      'Choose the initiative that fits — start a campaign, give away a plant, join a volunteer group, and more.',
   },
   {
     icon: Share2,
     step: 2,
     title: 'Share With Your Network',
     description:
-      'Spread the word across WhatsApp, Facebook, and email. Every share brings you closer to your goal.',
+      'Spread the word across WhatsApp, Facebook, and email. Every share brings more people into your effort.',
   },
   {
     icon: Heart,
     step: 3,
-    title: 'Receive Donations',
+    title: 'See the Impact',
     description:
-      'Watch contributions come in from supporters across Bangladesh and beyond — securely and instantly.',
+      'Watch support come in — donations, volunteers, plant requests, or new members — from across Bangladesh.',
   },
 ]
 
@@ -163,14 +156,24 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v
 
 export default function HomePage() {
   const [featuredCampaigns, setFeaturedCampaigns] = useState<Campaign[]>([])
+  const [featuredPlants, setFeaturedPlants] = useState<PlantListing[]>([])
 
   useEffect(() => {
-    fetch(`${BASE_URL}/campaigns?limit=6&status=active`, {
+    fetch(`${BASE_URL}/campaigns?limit=3&status=active`, {
       credentials: 'include',
     })
       .then((res) => res.json())
       .then((res) => {
         if (res.success) setFeaturedCampaigns(res.data)
+      })
+      .catch(() => { })
+
+    fetch(`${BASE_URL}/plants?limit=3`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) setFeaturedPlants(res.data)
       })
       .catch(() => { })
   }, [])
@@ -276,8 +279,7 @@ export default function HomePage() {
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold text-slate-900">Our Initiatives</h2>
             <p className="text-slate-500 text-sm mt-1 max-w-xl mx-auto">
-              One platform, many ways to help — where you can do more than
-              just donate
+              Pick your way to help — big or small, every initiative matters.
             </p>
           </div>
 
@@ -349,31 +351,42 @@ export default function HomePage() {
           </div>
         </section>
         <section className="px-4 py-10 max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Browse by Category</h2>
-            <p className="text-slate-500 text-sm mt-1">Find campaigns that align with your values</p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Featured Plants</h2>
+              <p className="text-slate-500 text-sm mt-1">Free saplings, cuttings, and seeds from fellow plant lovers</p>
+            </div>
+            <Link
+              href="/plants"
+              className="hidden sm:inline-flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-slate-600 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+            >
+              View All →
+            </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.name}
-                href={`/campaigns?category=${encodeURIComponent(cat.name)}`}
-                className="group bg-white rounded-xl border border-gray-200 hover:border-emerald-400 hover:shadow-sm p-5 flex flex-col items-center text-center gap-2 transition-all"
-              >
-                <span className="text-3xl">{cat.emoji}</span>
-                <span className="text-sm font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors leading-snug">
-                  {cat.name}
-                </span>
-                <span className="text-xs text-slate-400">{cat.count} campaigns</span>
-              </Link>
-            ))}
+          <PlantGrid listings={featuredPlants} />
+
+          <div className="mt-8 text-center sm:hidden">
+            <Link
+              href="/plants"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-slate-600 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+            >
+              View All Plants →
+            </Link>
+          </div>
+          <div className="mt-8 text-center hidden sm:block">
+            <Link
+              href="/plants"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-lg border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-semibold text-sm transition-colors"
+            >
+              View All Plants
+            </Link>
           </div>
         </section>
         <section className="px-4 py-10 max-w-7xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold text-slate-900">How It Works</h2>
-            <p className="text-slate-500 text-sm mt-1">Get started in three simple steps</p>
+            <p className="text-slate-500 text-sm mt-1">Three simple steps, whichever initiative you choose</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
@@ -402,9 +415,9 @@ export default function HomePage() {
               Ready to make a difference?
             </h2>
             <p className="text-emerald-100 text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-              Join thousands of Bangladeshis who are already changing lives —
-              through fundraising, volunteering, or any of our community
-              initiatives. It only takes a few minutes to get started.
+              Join thousands of Bangladeshis who are already showing up for
+              each other — in whichever way fits them best. It only takes a
+              few minutes to get started.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
