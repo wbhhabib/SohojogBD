@@ -27,6 +27,13 @@ export default function PlantsPage() {
     const [page, setPage] = useState(1)
     const [listings, setListings] = useState<PlantListing[]>([])
     const [total, setTotal] = useState(0)
+    const [impact, setImpact] = useState<{ given: number; available: number; connections: number } | null>(null)
+
+    useEffect(() => {
+        plantApi.getImpactStats()
+            .then((res) => { if (res.success) setImpact(res.data) })
+            .catch(() => { })
+    }, [])
     const [isLoading, setIsLoading] = useState(false)
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -94,7 +101,28 @@ export default function PlantsPage() {
                         </div>
                     </div>
                 </section>
-
+                <section className="max-w-7xl mx-auto px-4 -mt-2 mb-6">
+                    <div className="grid grid-cols-3 gap-3 md:gap-4 bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 md:p-6">
+                        <div className="text-center">
+                            <p className="text-2xl md:text-3xl font-bold text-emerald-700">
+                                {impact ? `${impact.given}+` : '—'}
+                            </p>
+                            <p className="text-xs md:text-sm text-gray-500 mt-0.5 font-medium">Plants Given Away</p>
+                        </div>
+                        <div className="text-center border-x border-gray-100">
+                            <p className="text-2xl md:text-3xl font-bold text-emerald-700">
+                                {impact ? impact.available : '—'}
+                            </p>
+                            <p className="text-xs md:text-sm text-gray-500 mt-0.5 font-medium">Available Now</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-2xl md:text-3xl font-bold text-emerald-700">
+                                {impact ? `${impact.connections}+` : '—'}
+                            </p>
+                            <p className="text-xs md:text-sm text-gray-500 mt-0.5 font-medium">Students Connected</p>
+                        </div>
+                    </div>
+                </section>
                 <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-emerald-100/60 shadow-sm">
                     <div className="max-w-7xl mx-auto px-4 py-3">
                         <div className="relative">

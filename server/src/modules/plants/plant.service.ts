@@ -413,3 +413,14 @@ export const markCompleted = async (id: string, ownerId: string) => {
 
     return listing
 }
+
+
+export const getImpactStats = async () => {
+    const [given, available, connections] = await Promise.all([
+        prisma.plantListing.count({ where: { status: PlantListingStatus.COMPLETED } }),
+        prisma.plantListing.count({ where: { status: PlantListingStatus.AVAILABLE } }),
+        prisma.plantClaim.count({ where: { status: PlantClaimStatus.ACCEPTED } }),
+    ])
+
+    return { given, available, connections }
+}

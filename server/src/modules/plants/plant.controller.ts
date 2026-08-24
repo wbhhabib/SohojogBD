@@ -11,7 +11,10 @@ export const getAllListings = asyncHandler(async (req, res) => {
     const { listings, meta } = await plantService.getAllListings(req.query)
     sendPaginated(res, listings, meta, 'Plant listings fetched successfully')
 })
-
+export const getImpactStats = asyncHandler(async (req, res) => {
+    const stats = await plantService.getImpactStats()
+    sendSuccess(res, stats, 'Plant impact stats fetched successfully')
+})
 export const getListingBySlug = asyncHandler(async (req, res) => {
     const listing = await plantService.getListingBySlug(req.params.slug)
     sendSuccess(res, listing, 'Plant listing fetched successfully')

@@ -364,6 +364,9 @@ export const plantApi = {
   getAll(query = '') {
     return api.get<PlantListing[]>(`/plants${query ? `?${query}` : ''}`)
   },
+  getImpactStats() {
+    return api.get<{ given: number; available: number; connections: number }>('/plants/stats')
+  },
   getBySlug(slug: string) {
     return api.get<PlantListing>(`/plants/${slug}`)
   },

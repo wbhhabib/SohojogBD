@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Rocket, Share2, Heart, Handshake, Sprout, ShoppingBasket,
-  UserSearch, GraduationCap, Syringe, ArrowRight, Users, ShieldCheck,
+  UserSearch, Syringe, ArrowRight, Users, ShieldCheck,
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -61,8 +61,8 @@ const INITIATIVES: Initiative[] = [
   {
     icon: ShoppingBasket,
     title: 'GrowTogether',
-    tagline: 'Group Wholesale Buying',
-    description: 'Small entrepreneurs team up to buy products wholesale together, then split stock and grow their business.',
+    tagline: 'Wholesale Buying & Free Courses',
+    description: 'Small entrepreneurs team up to buy products wholesale together, and organizations list free skill courses for learners in need.',
     href: '/contact',
     live: false,
     iconWrap: 'bg-amber-100',
@@ -79,17 +79,6 @@ const INITIATIVES: Initiative[] = [
     iconWrap: 'bg-rose-100',
     iconColor: 'text-rose-600',
     ring: 'hover:border-rose-400',
-  },
-  {
-    icon: GraduationCap,
-    title: 'SelfDevelopment',
-    tagline: 'Free Skill Courses',
-    description: 'Govt and non-govt organizations list free courses so learners in need can find and join them easily.',
-    href: '/contact',
-    live: false,
-    iconWrap: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
-    ring: 'hover:border-indigo-400',
   },
   {
     icon: Syringe,
@@ -231,7 +220,7 @@ export default function HomePage() {
                   { value: '৳2.4 কোটি+', label: 'Raised' },
                   { value: '1,200+', label: 'Campaigns' },
                   { value: '15,000+', label: 'Donors' },
-                  { value: '7', label: 'Initiatives' },
+                  { value: '6', label: 'Initiatives' },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center">
                     <p className="text-2xl md:text-3xl font-bold text-emerald-700">{stat.value}</p>

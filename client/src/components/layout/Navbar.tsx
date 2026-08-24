@@ -15,7 +15,6 @@ const navLinks = [
   { label: 'PlantEnthusists', href: '/plants' },
   { label: 'GrowTogether', href: '/contact' },
   { label: 'Aponjon', href: '/contact' },
-  { label: 'SelfDevelopment', href: '/contact' },
   { label: 'Vaccination', href: '/contact' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },

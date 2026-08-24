@@ -17,6 +17,7 @@ const router = Router()
 
 // ── Public ────────────────────────────────────────────────────────────────────
 router.get('/', plantController.getAllListings)
+router.get('/stats', plantController.getImpactStats)
 
 // ── My listings (must come before /:slug) ────────────────────────────────────
 router.get('/my', authenticate, plantController.getMyListings)
