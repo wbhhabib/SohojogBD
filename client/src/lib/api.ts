@@ -96,6 +96,42 @@ export interface PlantListing {
   claims?: PlantClaim[]
 }
 
+export interface Organization {
+  id: string
+  slug: string
+  name: string
+  description: string
+  category: string
+  logo?: string | null
+  coverImage?: string | null
+  location: string
+  contactPhone?: string | null
+  contactEmail?: string | null
+  ownerId: string
+  owner?: Pick<UserProfile, 'id' | 'name' | 'avatar' | 'email'>
+  createdAt: string
+  updatedAt: string
+  _count?: { requests: number; updates: number }
+}
+
+export interface VolunteerRequest {
+  id: string
+  message?: string | null
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
+  createdAt: string
+  volunteer?: Pick<UserProfile, 'id' | 'name' | 'avatar' | 'email'> & { phone?: string | null }
+  organization?: Pick<Organization, 'id' | 'name' | 'slug' | 'logo' | 'category'>
+}
+
+export interface OrgUpdate {
+  id: string
+  title: string
+  content: string
+  images: string[]
+  createdAt: string
+  organizationId: string
+}
+
 export interface AnalyzedPlant {
   title: string
   description: string
@@ -416,7 +452,56 @@ export const plantApi = {
   },
 }
 
-
+export const orgApi = {
+  getAll(query = '') {
+    return api.get<Organization[]>(`/orgs${query ? `?${query}` : ''}`)
+  },
+  getBySlug(slug: string) {
+    return api.get<Organization>(`/orgs/${slug}`)
+  },
+  getMy(query = '') {
+    return api.get<Organization[]>(`/orgs/my${query ? `?${query}` : ''}`)
+  },
+  create(payload: Record<string, unknown>) {
+    return api.post<Organization>('/orgs', payload)
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api.patch<Organization>(`/orgs/${id}`, payload)
+  },
+  delete(id: string) {
+    return api.delete(`/orgs/${id}`)
+  },
+  sendVolunteerRequest(orgId: string, payload: Record<string, unknown>) {
+    return api.post<VolunteerRequest>(`/orgs/${orgId}/requests`, payload)
+  },
+  getOrgRequests(orgId: string, query = '') {
+    return api.get<VolunteerRequest[]>(`/orgs/${orgId}/requests${query ? `?${query}` : ''}`)
+  },
+  getMyVolunteerRequests(query = '') {
+    return api.get<VolunteerRequest[]>(`/orgs/requests/my${query ? `?${query}` : ''}`)
+  },
+  respondToRequest(requestId: string, status: 'ACCEPTED' | 'REJECTED') {
+    return api.patch<VolunteerRequest>(`/orgs/requests/${requestId}`, { status })
+  },
+  cancelRequest(requestId: string) {
+    return api.delete(`/orgs/requests/${requestId}`)
+  },
+  createUpdate(orgId: string, payload: Record<string, unknown>) {
+    return api.post<OrgUpdate>(`/orgs/${orgId}/updates`, payload)
+  },
+  getUpdates(orgId: string, query = '') {
+    return api.get<OrgUpdate[]>(`/orgs/${orgId}/updates${query ? `?${query}` : ''}`)
+  },
+  uploadImages(id: string, formData: FormData) {
+    return request<Organization>(`/orgs/${id}/images`, {
+      method: 'POST',
+      body: formData,
+    })
+  },
+  deleteUpdate(updateId: string) {
+    return api.delete(`/orgs/updates/${updateId}`)
+  },
+}
 
 export const notificationApi = {
   getAll(query = '') {

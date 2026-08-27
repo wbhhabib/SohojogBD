@@ -66,6 +66,8 @@ model User {
   reports    Report[]
   plantListings    PlantListing[]
   plantClaims      PlantClaim[]
+  organizations    Organization[]
+  volunteerRequests VolunteerRequest[]
 }
 
 model Campaign {
@@ -256,3 +258,62 @@ model PlantClaim {
   @@index([claimantId])
   @@index([status])
 }
+
+enum VolunteerRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model Organization {
+  id           String             @id @default(cuid())
+  name         String
+  slug         String             @unique
+  description  String
+  category     String
+  logo         String?
+  coverImage   String?
+  location     String
+  contactPhone String?
+  contactEmail String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  ownerId      String
+  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  requests     VolunteerRequest[]
+  updates      OrgUpdate[]
+
+  @@index([ownerId])
+  @@index([category])
+  @@index([slug])
+}
+
+model VolunteerRequest {
+  id             String                 @id @default(cuid())
+  message        String?
+  status         VolunteerRequestStatus @default(PENDING)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  volunteerId    String
+  volunteer      User                   @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([volunteerId])
+  @@index([status])
+}
+
+model OrgUpdate {
+  id             String       @id @default(cuid())
+  title          String
+  content        String       @db.Text
+  images         String[]
+  createdAt      DateTime     @default(now())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+

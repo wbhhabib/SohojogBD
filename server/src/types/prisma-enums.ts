@@ -68,3 +68,11 @@ export const PlantClaimStatus = {
   CANCELLED: 'CANCELLED',
 } as const
 export type PlantClaimStatus = (typeof PlantClaimStatus)[keyof typeof PlantClaimStatus]
+
+export const VolunteerRequestStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type VolunteerRequestStatus = (typeof VolunteerRequestStatus)[keyof typeof VolunteerRequestStatus]

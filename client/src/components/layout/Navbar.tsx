@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Handshake, Menu, LogOut, LayoutDashboard, User, Heart, Sprout } from 'lucide-react'
+import { Handshake, Menu, LogOut, LayoutDashboard, User, Heart, Sprout, Store } from 'lucide-react'
 import Button from '@/components/ui/button'
 import MobileMenu from './MobileMenu'
 import { useAuth } from '@/lib/AuthContext'
@@ -11,11 +11,11 @@ import { useAuth } from '@/lib/AuthContext'
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Campaigns', href: '/campaigns' },
-  { label: 'BDCare', href: '/contact' },
+  { label: 'BDCare', href: '/bdcare' },
   { label: 'PlantEnthusists', href: '/plants' },
-  { label: 'GrowTogether', href: '/contact' },
-  { label: 'Aponjon', href: '/contact' },
-  { label: 'Vaccination', href: '/contact' },
+  { label: 'GrowTogether', href: '/grow-together' },
+  { label: 'Aponjon', href: '/aponjon' },
+  { label: 'Vaccination', href: '/vaccination' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ]
@@ -133,6 +133,14 @@ export default function Navbar() {
                         >
                           <Sprout size={15} className="text-slate-400" />
                           My Plant Listings
+                        </Link>
+                        <Link
+                          href="/grow-together/my"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Store size={15} className="text-slate-400" />
+                          My Wholesale Pools
                         </Link>
                         {role === 'creator' && (
                           <Link

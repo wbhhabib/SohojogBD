@@ -16,6 +16,9 @@ const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Campaigns', href: '/campaigns' },
   { label: 'PlantEnthusists', href: '/plants' },
+  { label: 'GrowTogether', href: '/grow-together' },
+  { label: 'Aponjon', href: '/aponjon' },
+  { label: 'Vaccination', href: '/vaccination' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ]

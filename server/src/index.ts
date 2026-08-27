@@ -29,6 +29,7 @@ import analyticsRoutes from '@/modules/analytics/analytics.routes';
 import reportRoutes from '@/modules/report/report.routes';
 import settingsRoutes from '@/modules/settings/settings.routes';
 import plantRoutes from '@/modules/plants/plant.routes';
+import orgRoutes from '@/modules/orgs/org.routes';
 import { maintenanceMiddleware } from '@/middlewares/maintenance.middleware';
 
 
@@ -115,6 +116,7 @@ app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/plants', plantRoutes);
+app.use('/api/v1/orgs', orgRoutes);
 
 
 app.use((req: Request, res: Response) => {
