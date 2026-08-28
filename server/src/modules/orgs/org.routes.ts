@@ -2,7 +2,7 @@ import { Router } from 'express'
 
 import * as orgController from './org.controller'
 
-import { authenticate, authorize } from '../../middlewares/auth.middleware'
+import { authenticate, authorize, optionalAuthenticate } from '../../middlewares/auth.middleware'
 import { validate } from '../../middlewares/validate.middleware'
 import { uploadMultiple, uploadDocument } from '../../middlewares/upload.middleware'
 import { Role } from '../../types/prisma-enums'
@@ -68,6 +68,6 @@ router.post('/:id/updates', authenticate, validate(createOrgUpdateSchema), orgCo
 router.get('/:id/updates', orgController.getOrgUpdates)
 
 // ── Public: single org by slug ────────────────────────────────────────────
-router.get('/:slug', orgController.getOrgBySlug)
+router.get('/:slug', optionalAuthenticate, orgController.getOrgBySlug)
 
 export default router

@@ -12,7 +12,46 @@ import { orgApi } from '@/lib/api'
 import type { Organization, OrgUpdate } from '@/lib/api'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
-import { MapPin, Phone, Mail, ArrowLeft, Handshake, Send, CheckCircle2, Megaphone } from 'lucide-react'
+import {
+    MapPin, Phone, Mail, Globe, Facebook, ArrowLeft, Handshake, Send,
+    CheckCircle2, Megaphone, BadgeCheck, Clock, AlertCircle, XCircle, Ban,
+} from 'lucide-react'
+
+const CATEGORY_LABEL: Record<string, string> = {
+    REGISTERED: 'Registered Volunteer Organization',
+    TEAM: 'Volunteer Team / Community Group',
+}
+
+function StatusBanner({ org }: { org: Organization }) {
+    const map: Record<string, { icon: React.ElementType; color: string; text: string }> = {
+        PENDING: { icon: Clock, color: 'bg-amber-50 border-amber-200 text-amber-700', text: 'Your registration is submitted and waiting for admin review.' },
+        UNDER_REVIEW: { icon: Clock, color: 'bg-amber-50 border-amber-200 text-amber-700', text: 'An admin is currently reviewing your registration.' },
+        MORE_INFO_REQUIRED: { icon: AlertCircle, color: 'bg-orange-50 border-orange-200 text-orange-700', text: org.adminNote ? `More information needed: ${org.adminNote}` : 'The admin has requested more information.' },
+        REJECTED: { icon: XCircle, color: 'bg-red-50 border-red-200 text-red-700', text: org.rejectReason ? `Registration rejected: ${org.rejectReason}` : 'Your registration was rejected.' },
+        SUSPENDED: { icon: Ban, color: 'bg-red-50 border-red-200 text-red-700', text: 'This organization has been suspended by the platform.' },
+        EXPIRED: { icon: AlertCircle, color: 'bg-gray-50 border-gray-200 text-gray-600', text: 'Verification has expired. Please contact support to renew.' },
+    }
+    const entry = map[org.status]
+    if (!entry) return null
+    const Icon = entry.icon
+    return (
+        <div className={`flex items-start gap-2 rounded-xl border p-4 text-sm mb-5 ${entry.color}`}>
+            <Icon size={16} className="mt-0.5 shrink-0" />
+            {entry.text}
+        </div>
+    )
+}
+
+function VerificationBadge({ org }: { org: Organization }) {
+    if (org.status !== 'APPROVED') return null
+    const isRegistered = org.category === 'REGISTERED'
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white ${isRegistered ? 'bg-emerald-500' : 'bg-sky-500'}`}>
+            <BadgeCheck size={13} />
+            {isRegistered ? 'Registered & Verified' : 'Verified Volunteer Team'}
+        </span>
+    )
+}
 
 export default function OrgDetailPage() {
     const params = useParams()
@@ -29,7 +68,6 @@ export default function OrgDetailPage() {
     const [requestSent, setRequestSent] = useState(false)
     const [error, setError] = useState('')
 
-    // owner: post-update form
     const [postTitle, setPostTitle] = useState('')
     const [postContent, setPostContent] = useState('')
     const [posting, setPosting] = useState(false)
@@ -43,8 +81,10 @@ export default function OrgDetailPage() {
             return
         }
         setOrg(res.data)
-        const updatesRes = await orgApi.getUpdates(res.data.id)
-        if (updatesRes.success) setUpdates(updatesRes.data)
+        if (res.data.status === 'APPROVED') {
+            const updatesRes = await orgApi.getUpdates(res.data.id)
+            if (updatesRes.success) setUpdates(updatesRes.data)
+        }
         setLoading(false)
     }, [slug])
 
@@ -99,7 +139,7 @@ export default function OrgDetailPage() {
                 <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-center px-4">
                     <p className="text-5xl">🤝</p>
                     <h1 className="text-xl font-bold text-gray-900">Organization not found</h1>
-                    <p className="text-gray-500 text-sm">This organization may have been removed.</p>
+                    <p className="text-gray-500 text-sm">This organization may not exist, or is still awaiting approval.</p>
                     <a href="/bdcare" className="text-sky-600 text-sm font-semibold hover:underline">Back to browse</a>
                 </div>
                 <Footer />
@@ -108,6 +148,8 @@ export default function OrgDetailPage() {
     }
 
     const isOwner = user?.id === org.ownerId
+    const isApproved = org.status === 'APPROVED'
+    const locationLine = [org.upazila, org.district, org.division].filter(Boolean).join(', ') || org.fullAddress
 
     return (
         <>
@@ -118,6 +160,8 @@ export default function OrgDetailPage() {
                         <ArrowLeft size={14} />
                         Back to organizations
                     </a>
+
+                    {isOwner && <StatusBanner org={org} />}
 
                     <div className="rounded-2xl overflow-hidden bg-gray-100 h-40 md:h-56 mb-4">
                         {org.coverImage ? (
@@ -142,18 +186,60 @@ export default function OrgDetailPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <Badge variant="info" className="capitalize">{org.category}</Badge>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="info">{CATEGORY_LABEL[org.category] ?? org.category}</Badge>
+                                        <VerificationBadge org={org} />
+                                    </div>
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: "'Lora', Georgia, serif" }}>
+                                <h1 className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                                     {org.name}
                                 </h1>
+                                <p className="text-xs text-gray-400 mb-3">
+                                    {org.orgType === 'Other' ? org.orgTypeOther : org.orgType}
+                                    {org.establishedYear ? ` · Established ${org.establishedYear}` : ''}
+                                </p>
                                 <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed mb-4">{org.description}</p>
+
+                                {org.registration?.registrationAuthority && (
+                                    <p className="text-xs text-gray-500 mb-3">
+                                        Registered with: <span className="font-medium text-gray-700">
+                                            {org.registration.registrationAuthority === 'Other Government Authority'
+                                                ? org.registration.authorityOther
+                                                : org.registration.registrationAuthority}
+                                        </span>
+                                    </p>
+                                )}
+
+                                {org.institution?.institutionName && (
+                                    <p className="text-xs text-gray-500 mb-3">
+                                        Affiliated institution: <span className="font-medium text-gray-700">{org.institution.institutionName}</span>
+                                    </p>
+                                )}
+
                                 <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-3 border-t border-gray-100">
-                                    <span className="flex items-center gap-1.5"><MapPin size={13} className="text-sky-500" /> {org.location}</span>
+                                    <span className="flex items-center gap-1.5"><MapPin size={13} className="text-sky-500" /> {locationLine}</span>
                                     {org.contactPhone && <span className="flex items-center gap-1.5"><Phone size={13} className="text-sky-500" /> {org.contactPhone}</span>}
                                     {org.contactEmail && <span className="flex items-center gap-1.5"><Mail size={13} className="text-sky-500" /> {org.contactEmail}</span>}
+                                    {org.website && <span className="flex items-center gap-1.5"><Globe size={13} className="text-sky-500" /> {org.website}</span>}
+                                    {org.facebookPage && <span className="flex items-center gap-1.5"><Facebook size={13} className="text-sky-500" /> {org.facebookPage}</span>}
                                 </div>
                             </div>
+
+                            {org.areasOfWork.length > 0 && (
+                                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                                    <h2 className="text-sm font-bold text-gray-900 mb-4">Areas of Work</h2>
+                                    <div className="space-y-4">
+                                        {org.areasOfWork.map((a, i) => (
+                                            <div key={a.id ?? i} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                                                <h3 className="text-sm font-semibold text-sky-700">
+                                                    {a.area === 'Other' ? a.areaOther : a.area}
+                                                </h3>
+                                                <p className="text-sm text-gray-600 mt-1">{a.description}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {isOwner && (
                                 <form onSubmit={handlePostUpdate} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-3">
@@ -161,9 +247,13 @@ export default function OrgDetailPage() {
                                         <Megaphone size={15} className="text-sky-500" />
                                         Post an update
                                     </h2>
+                                    {!isApproved && (
+                                        <p className="text-xs text-gray-400">Updates will be visible once your organization is approved.</p>
+                                    )}
                                     <Input
                                         placeholder="Update title"
                                         required
+                                        disabled={!isApproved}
                                         value={postTitle}
                                         onChange={(e) => setPostTitle(e.target.value)}
                                     />
@@ -171,31 +261,34 @@ export default function OrgDetailPage() {
                                         placeholder="Share what's happening…"
                                         rows={3}
                                         required
+                                        disabled={!isApproved}
                                         value={postContent}
                                         onChange={(e) => setPostContent(e.target.value)}
                                     />
-                                    <Button type="submit" variant="primary" isLoading={posting}>
+                                    <Button type="submit" variant="primary" isLoading={posting} disabled={!isApproved}>
                                         Post Update
                                     </Button>
                                 </form>
                             )}
 
-                            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                                <h2 className="text-sm font-bold text-gray-900 mb-4">Updates</h2>
-                                {updates.length === 0 ? (
-                                    <p className="text-sm text-gray-400">No updates posted yet.</p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {updates.map((u) => (
-                                            <div key={u.id} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                                                <h3 className="text-sm font-semibold text-gray-900">{u.title}</h3>
-                                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">{u.content}</p>
-                                                <span className="text-xs text-gray-400 mt-1 block">{timeAgo(u.createdAt)}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            {isApproved && (
+                                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                                    <h2 className="text-sm font-bold text-gray-900 mb-4">Updates</h2>
+                                    {updates.length === 0 ? (
+                                        <p className="text-sm text-gray-400">No updates posted yet.</p>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {updates.map((u) => (
+                                                <div key={u.id} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                                                    <h3 className="text-sm font-semibold text-gray-900">{u.title}</h3>
+                                                    <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">{u.content}</p>
+                                                    <span className="text-xs text-gray-400 mt-1 block">{timeAgo(u.createdAt)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="md:col-span-2 space-y-4">
@@ -204,6 +297,10 @@ export default function OrgDetailPage() {
                                     <div className="rounded-xl bg-sky-50 border border-sky-100 p-4 text-sm text-sky-700">
                                         This is your organization. Manage requests from{' '}
                                         <a href="/bdcare/my" className="font-semibold underline">My Orgs</a>.
+                                    </div>
+                                ) : !isApproved ? (
+                                    <div className="rounded-xl bg-gray-50 border border-gray-200 p-4 text-sm text-gray-500">
+                                        This organization isn&apos;t open for volunteers yet.
                                     </div>
                                 ) : requestSent ? (
                                     <div className="rounded-xl bg-sky-50 border border-sky-100 p-4 flex items-start gap-2 text-sm text-sky-700">

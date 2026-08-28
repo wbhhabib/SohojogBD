@@ -41,3 +41,29 @@ export const authorize = (...roles: Role[]) => {
     next()
   }
 }
+
+export const optionalAuthenticate = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const authHeader = req.headers.authorization
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    next()
+    return
+  }
+
+  const token = authHeader.split(' ')[1]
+  const payload = verifyAccessToken(token)
+
+  if (payload) {
+    req.user = {
+      id: payload.id,
+      email: payload.email,
+      role: payload.role as 'DONOR' | 'CREATOR' | 'ADMIN',
+    }
+  }
+
+  next()
+}

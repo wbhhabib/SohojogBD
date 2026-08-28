@@ -19,6 +19,16 @@ const statusVariant: Record<string, 'success' | 'warning' | 'default' | 'info' |
     PENDING: 'warning', ACCEPTED: 'success', REJECTED: 'danger', CANCELLED: 'default',
 }
 
+const orgStatusVariant: Record<string, 'success' | 'warning' | 'default' | 'info' | 'danger'> = {
+    PENDING: 'warning', UNDER_REVIEW: 'warning', MORE_INFO_REQUIRED: 'warning',
+    APPROVED: 'success', REJECTED: 'danger', SUSPENDED: 'danger', EXPIRED: 'default',
+}
+
+const orgStatusLabel: Record<string, string> = {
+    PENDING: 'Pending Review', UNDER_REVIEW: 'Under Review', MORE_INFO_REQUIRED: 'Info Needed',
+    APPROVED: 'Approved', REJECTED: 'Rejected', SUSPENDED: 'Suspended', EXPIRED: 'Expired',
+}
+
 function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) {
     const [open, setOpen] = useState(false)
     const [requests, setRequests] = useState<VolunteerRequest[]>([])
@@ -62,9 +72,11 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
                 </div>
                 <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm truncate">{org.name}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin size={11} /> {org.location}</p>
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                        <MapPin size={11} /> {[org.district, org.division].filter(Boolean).join(', ') || org.fullAddress}
+                    </p>
                 </div>
-                <Badge variant="info" className="capitalize">{org.category}</Badge>
+                <Badge variant={orgStatusVariant[org.status]}>{orgStatusLabel[org.status] ?? org.status}</Badge>
                 <button onClick={toggle} className="text-xs font-semibold text-sky-600 hover:underline">
                     {open ? 'Hide requests' : `Requests (${org._count?.requests ?? 0})`}
                 </button>
@@ -129,7 +141,9 @@ function RequestRow({ request, onChange }: { request: VolunteerRequest; onChange
             </div>
             <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 text-sm truncate">{request.organization?.name}</p>
-                <p className="text-xs text-gray-500">{request.organization?.category}</p>
+                <p className="text-xs text-gray-500">
+                    {request.organization?.category === 'REGISTERED' ? 'Registered Organization' : 'Volunteer Team'}
+                </p>
                 <p className="text-[11px] text-gray-400 mt-0.5">Requested {timeAgo(request.createdAt)}</p>
             </div>
             <Badge variant={statusVariant[request.status]} className="capitalize">{request.status.toLowerCase()}</Badge>

@@ -2,19 +2,33 @@ import React from 'react'
 import Link from 'next/link'
 import type { Organization } from '@/lib/api'
 import { getImageUrl } from '@/lib/utils'
-import { MapPin, Users, Megaphone } from 'lucide-react'
+import { MapPin, Users, BadgeCheck } from 'lucide-react'
 
 interface OrgCardProps {
     org: Organization
 }
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-    Education: '🎓', Health: '🏥', 'Disaster Relief': '🆘', Environment: '🌿',
-    'Animal Welfare': '🐾', Community: '🏘️', Poverty: '🤝', 'Youth Development': '🌟', Other: '📌',
+const CATEGORY_LABEL: Record<string, string> = {
+    REGISTERED: 'Registered Organization',
+    TEAM: 'Volunteer Team',
+}
+
+const CATEGORY_EMOJI: Record<string, string> = {
+    REGISTERED: '📋',
+    TEAM: '🤝',
+}
+
+function verificationBadge(org: Organization) {
+    if (org.status !== 'APPROVED') return null
+    return org.category === 'REGISTERED'
+        ? { label: 'Registered & Verified', color: 'bg-emerald-500' }
+        : { label: 'Verified Volunteer Team', color: 'bg-sky-500' }
 }
 
 export default function OrgCard({ org }: OrgCardProps) {
-    const emoji = CATEGORY_EMOJIS[org.category] ?? '📌'
+    const emoji = CATEGORY_EMOJI[org.category] ?? '📌'
+    const badge = verificationBadge(org)
+    const locationLabel = [org.district, org.division].filter(Boolean).join(', ') || org.fullAddress
 
     return (
         <Link
@@ -36,9 +50,17 @@ export default function OrgCard({ org }: OrgCardProps) {
                 <div className="absolute top-3 left-3">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md">
                         <span>{emoji}</span>
-                        {org.category}
+                        {CATEGORY_LABEL[org.category] ?? org.category}
                     </span>
                 </div>
+                {badge && (
+                    <div className="absolute top-3 right-3">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white shadow-md ${badge.color}`}>
+                            <BadgeCheck size={12} />
+                            {badge.label}
+                        </span>
+                    </div>
+                )}
             </div>
             <div className="flex items-center gap-3 px-4 -mt-6">
                 <div className="w-12 h-12 rounded-full border-4 border-white bg-white overflow-hidden shadow-sm shrink-0">
@@ -59,7 +81,7 @@ export default function OrgCard({ org }: OrgCardProps) {
                 <div className="flex items-center justify-between mt-auto pt-2 border-t border-sky-50 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                         <MapPin size={12} className="text-sky-500" />
-                        {org.location}
+                        {locationLabel}
                     </span>
                     {typeof org._count?.requests === 'number' && (
                         <span className="flex items-center gap-1">
