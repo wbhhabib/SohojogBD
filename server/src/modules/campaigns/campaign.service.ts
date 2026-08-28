@@ -59,7 +59,9 @@ interface CampaignOrderByInput {
   createdAt?: 'asc' | 'desc'
 }
 
-const transformCampaign = (campaign: { status: string;[key: string]: unknown }) => ({
+const transformCampaign = <T extends { status: string }>(
+  campaign: T
+): Omit<T, 'status'> & { status: string } => ({
   ...campaign,
   status: toCampaignStatus(campaign.status as CampaignStatus),
 })

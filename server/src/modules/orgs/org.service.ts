@@ -1,4 +1,4 @@
-import { VolunteerRequestStatus, Role, OrgVerificationStatus } from '../../types/prisma-enums'
+import { VolunteerRequestStatus, Role, OrgVerificationStatus, OrgCategory } from '../../types/prisma-enums'
 import { prisma } from '../../config/database'
 import { generateUniqueSlug } from '../../utils/slug'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
@@ -86,8 +86,8 @@ const OWNER_OR_ADMIN_SELECT = {
 } as const
 
 interface OrgWhereInput {
-    category?: string
-    status?: string
+    category?: OrgCategory
+    status?: OrgVerificationStatus
     ownerId?: string
     OR?: Array<{
         name?: { contains: string; mode: 'insensitive' }
@@ -110,8 +110,12 @@ export const getAllOrgs = async (query: {
     // Public listing only ever shows fully verified orgs.
     const where: OrgWhereInput = { status: OrgVerificationStatus.APPROVED }
 
-    if (query.category && typeof query.category === 'string') {
-        where.category = query.category
+    if (
+        query.category &&
+        typeof query.category === 'string' &&
+        (Object.values(OrgCategory) as string[]).includes(query.category)
+    ) {
+        where.category = query.category as OrgCategory
     }
 
     if (query.search && typeof query.search === 'string') {
@@ -380,6 +384,31 @@ export const deleteOrg = async (id: string, userId: string, userRole: string) =>
     return { message: 'Organization deleted successfully' }
 }
 
+// Checks whether `filename` (the stored key from an uploaded document) is
+// referenced by any organization owned by `userId` — across all the places
+// a document URL can be stored. Used to gate access to
+// GET /organizations/documents/:filename for non-admins.
+export const userOwnsDocument = async (userId: string, filename: string): Promise<boolean> => {
+    const needle = `/${filename}`
+
+    const match = await prisma.organization.findFirst({
+        where: {
+            ownerId: userId,
+            OR: [
+                { registration: { certificateUrl: { endsWith: needle } } },
+                { teamEvidence: { activityReportUrl: { endsWith: needle } } },
+                { teamEvidence: { supportingDocUrl: { endsWith: needle } } },
+                { institution: { authorizationDocUrl: { endsWith: needle } } },
+                { representative: { nidDocUrl: { endsWith: needle } } },
+                { representative: { authorizationDocUrl: { endsWith: needle } } },
+            ],
+        },
+        select: { id: true },
+    })
+
+    return !!match
+}
+
 // ── Admin: verification dashboard ───────────────────────────────────────────
 
 export const getAdminOrgs = async (query: {
@@ -392,8 +421,20 @@ export const getAdminOrgs = async (query: {
     const { skip, take, page, limit } = getPagination(query)
 
     const where: OrgWhereInput = {}
-    if (query.category && typeof query.category === 'string') where.category = query.category
-    if (query.status && typeof query.status === 'string') where.status = query.status
+    if (
+        query.category &&
+        typeof query.category === 'string' &&
+        (Object.values(OrgCategory) as string[]).includes(query.category)
+    ) {
+        where.category = query.category as OrgCategory
+    }
+    if (
+        query.status &&
+        typeof query.status === 'string' &&
+        (Object.values(OrgVerificationStatus) as string[]).includes(query.status)
+    ) {
+        where.status = query.status as OrgVerificationStatus
+    }
     if (query.search && typeof query.search === 'string') {
         where.OR = [
             { name: { contains: query.search, mode: 'insensitive' } },

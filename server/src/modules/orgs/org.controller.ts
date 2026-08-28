@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
+import path from 'path'
 import * as orgService from './org.service'
 import { sendSuccess, sendError, sendPaginated } from '../../utils/response'
+import { DOCUMENT_STORAGE_DIR } from '../../middlewares/upload.middleware'
+import { Role } from '../../types/prisma-enums'
 
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
     (req: Request, res: Response, next: NextFunction) =>
@@ -63,8 +66,44 @@ export const uploadOrgDocument = asyncHandler(async (req, res) => {
         sendError(res, 'No file uploaded', 400)
         return
     }
-    const url = `/uploads/documents/${file.filename}`
+    // Not a publicly reachable path — it's a key the client stores and later
+    // submits (e.g. as registration.certificateUrl). Fetching the actual file
+    // back requires auth; see getOrgDocument below.
+    const url = `/api/v1/organizations/documents/${file.filename}`
     sendSuccess(res, { url }, 'Document uploaded successfully', 201)
+})
+
+// Serves a previously-uploaded verification document. Only the admin team or
+// the organization that owns the document (i.e. the doc's filename appears
+// somewhere in that org's registration/teamEvidence/institution/representative
+// records) may fetch it — this is what keeps NID copies etc. private per the
+// spec's section 13.
+export const getOrgDocument = asyncHandler(async (req, res) => {
+    const { filename } = req.params
+
+    // Filenames are generated server-side as uuid+ext (see upload.middleware.ts);
+    // reject anything else outright so this can never be used as a path-traversal
+    // primitive even before we touch the filesystem.
+    if (!/^[a-f0-9-]+\.[a-z0-9]+$/i.test(filename)) {
+        sendError(res, 'Document not found', 404)
+        return
+    }
+
+    const isAdmin = req.user!.role === Role.ADMIN
+    if (!isAdmin) {
+        const owns = await orgService.userOwnsDocument(req.user!.id, filename)
+        if (!owns) {
+            sendError(res, 'Access denied', 403)
+            return
+        }
+    }
+
+    const filePath = path.join(process.cwd(), DOCUMENT_STORAGE_DIR, filename)
+    res.sendFile(filePath, (err) => {
+        if (err && !res.headersSent) {
+            sendError(res, 'Document not found', 404)
+        }
+    })
 })
 
 // ── Admin: verification dashboard ──────────────────────────────────────

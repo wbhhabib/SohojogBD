@@ -32,8 +32,11 @@ router.delete('/requests/:requestId', authenticate, orgController.cancelVoluntee
 // ── Org updates (single-update actions, must come before /:slug) ─────────
 router.delete('/updates/:updateId', authenticate, orgController.deleteOrgUpdate)
 
-// ── Verification document upload (used while filling the multi-step form) ─
+// ── Verification document upload/download (used while filling the form, ──
+// and later by admins/owners reviewing it). Access-controlled — see
+// org.controller.ts#getOrgDocument for who's allowed to fetch a given file.
 router.post('/documents', authenticate, uploadDocument, orgController.uploadOrgDocument)
+router.get('/documents/:filename', authenticate, orgController.getOrgDocument)
 
 // ── Admin: verification dashboard (must come before /:slug) ──────────────
 router.get('/admin/all', authenticate, authorize(Role.ADMIN), orgController.getAdminOrgs)

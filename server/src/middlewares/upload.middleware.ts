@@ -65,10 +65,16 @@ export const uploadSingleMemory = memoryUploadConfig.single('image')
 
 // ── Verification documents (org registration certificates, NID copies, ────
 // authorization letters, activity reports) — PDF or image, up to 10MB.
-// Stored in a separate, non-public-by-default folder since these can
-// contain sensitive personal data (NID numbers etc). Serve these only
-// through an authenticated/authorized route, never from the static
-// /uploads mount used for public images.
+// IMPORTANT: this is stored OUTSIDE env.UPLOAD_DIR on purpose. `env.UPLOAD_DIR`
+// is mounted publicly via `express.static` in index.ts (used for campaign/org
+// images), so anything placed inside it is reachable by anyone who has the
+// URL — fine for public images, NOT fine for NID copies and certificates.
+// These files are only ever read back through the authenticated
+// `GET /organizations/documents/:filename` route (org.controller.ts), which
+// checks the requester is an admin or the owner of the org that referenced
+// this file, and streams it from this private directory.
+export const DOCUMENT_STORAGE_DIR = path.join(`${env.UPLOAD_DIR}-private`, 'documents')
+
 const DOCUMENT_MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const ALLOWED_DOCUMENT_MIME_TYPES = [
   'application/pdf',
@@ -83,9 +89,8 @@ const documentStorage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) => {
-    const uploadPath = path.join(env.UPLOAD_DIR, 'documents')
-    fs.mkdirSync(uploadPath, { recursive: true })
-    cb(null, uploadPath)
+    fs.mkdirSync(DOCUMENT_STORAGE_DIR, { recursive: true })
+    cb(null, DOCUMENT_STORAGE_DIR)
   },
   filename: (
     req: Request,
