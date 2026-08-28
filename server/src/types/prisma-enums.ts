@@ -76,3 +76,29 @@ export const VolunteerRequestStatus = {
   CANCELLED: 'CANCELLED',
 } as const
 export type VolunteerRequestStatus = (typeof VolunteerRequestStatus)[keyof typeof VolunteerRequestStatus]
+
+// ── Organization verification system ────────────────────────────────────
+
+export const OrgCategory = {
+  REGISTERED: 'REGISTERED',
+  TEAM: 'TEAM',
+} as const
+export type OrgCategory = (typeof OrgCategory)[keyof typeof OrgCategory]
+
+export const OrgVerificationStatus = {
+  PENDING: 'PENDING',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  MORE_INFO_REQUIRED: 'MORE_INFO_REQUIRED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  SUSPENDED: 'SUSPENDED',
+  EXPIRED: 'EXPIRED',
+} as const
+export type OrgVerificationStatus = (typeof OrgVerificationStatus)[keyof typeof OrgVerificationStatus]
+
+export const InstitutionAffiliation = {
+  YES: 'YES',
+  NO: 'NO',
+  NOT_APPLICABLE: 'NOT_APPLICABLE',
+} as const
+export type InstitutionAffiliation = (typeof InstitutionAffiliation)[keyof typeof InstitutionAffiliation]

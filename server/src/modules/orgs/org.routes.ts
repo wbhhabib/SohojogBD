@@ -2,13 +2,15 @@ import { Router } from 'express'
 
 import * as orgController from './org.controller'
 
-import { authenticate } from '../../middlewares/auth.middleware'
+import { authenticate, authorize } from '../../middlewares/auth.middleware'
 import { validate } from '../../middlewares/validate.middleware'
-import { uploadMultiple } from '../../middlewares/upload.middleware'
+import { uploadMultiple, uploadDocument } from '../../middlewares/upload.middleware'
+import { Role } from '../../types/prisma-enums'
 
 import {
     createOrgSchema,
     updateOrgSchema,
+    updateVerificationStatusSchema,
     createVolunteerRequestSchema,
     updateVolunteerRequestSchema,
     createOrgUpdateSchema,
@@ -29,6 +31,20 @@ router.delete('/requests/:requestId', authenticate, orgController.cancelVoluntee
 
 // ── Org updates (single-update actions, must come before /:slug) ─────────
 router.delete('/updates/:updateId', authenticate, orgController.deleteOrgUpdate)
+
+// ── Verification document upload (used while filling the multi-step form) ─
+router.post('/documents', authenticate, uploadDocument, orgController.uploadOrgDocument)
+
+// ── Admin: verification dashboard (must come before /:slug) ──────────────
+router.get('/admin/all', authenticate, authorize(Role.ADMIN), orgController.getAdminOrgs)
+router.get('/admin/:id', authenticate, authorize(Role.ADMIN), orgController.getAdminOrgById)
+router.patch(
+    '/admin/:id/status',
+    authenticate,
+    authorize(Role.ADMIN),
+    validate(updateVerificationStatusSchema),
+    orgController.updateVerificationStatus
+)
 
 // ── Create ────────────────────────────────────────────────────────────────
 router.post('/', authenticate, validate(createOrgSchema), orgController.createOrg)
