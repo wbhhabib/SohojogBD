@@ -69,7 +69,7 @@ export const uploadOrgDocument = asyncHandler(async (req, res) => {
     // Not a publicly reachable path — it's a key the client stores and later
     // submits (e.g. as registration.certificateUrl). Fetching the actual file
     // back requires auth; see getOrgDocument below.
-    const url = `/api/v1/organizations/documents/${file.filename}`
+    const url = `/api/v1/orgs/documents/${file.filename}`
     sendSuccess(res, { url }, 'Document uploaded successfully', 201)
 })
 

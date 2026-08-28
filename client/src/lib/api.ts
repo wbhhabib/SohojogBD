@@ -96,22 +96,111 @@ export interface PlantListing {
   claims?: PlantClaim[]
 }
 
+export type OrgCategory = 'REGISTERED' | 'TEAM'
+export type OrgVerificationStatus =
+  | 'PENDING' | 'UNDER_REVIEW' | 'MORE_INFO_REQUIRED'
+  | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'EXPIRED'
+export type InstitutionAffiliation = 'YES' | 'NO' | 'NOT_APPLICABLE'
+
+export interface AreaOfWork {
+  id?: string
+  area: string
+  areaOther?: string | null
+  description: string
+}
+
+export interface OrgRegistration {
+  registrationAuthority: string
+  authorityOther?: string | null
+  registrationNumber?: string
+  registrationDate: string
+  expiryDate?: string | null
+  certificateUrl?: string
+}
+
+export interface OrgTeamEvidence {
+  pastActivities?: string | null
+  activityCount?: number | null
+  volunteerCountApprox?: number | null
+  recentActivity?: string | null
+  photos: string[]
+  activityReportUrl?: string | null
+  facebookPageUrl?: string | null
+  previousCampaignLinks: string[]
+  supportingDocUrl?: string | null
+}
+
+export interface OrgInstitution {
+  institutionName: string
+  institutionType: string
+  department?: string | null
+  clubName?: string | null
+  advisorName?: string | null
+  advisorContact?: string | null
+  affiliated: InstitutionAffiliation
+  authorizationDocUrl?: string | null
+}
+
+export interface OrgRepresentative {
+  fullName: string
+  designation: string
+  designationOther?: string | null
+  mobile: string
+  email?: string | null
+  nidNumber?: string
+  nidDocUrl?: string
+  authorizationDocUrl?: string | null
+}
+
 export interface Organization {
   id: string
   slug: string
   name: string
   description: string
-  category: string
+  category: OrgCategory
+  orgType: string
+  orgTypeOther?: string | null
+  establishedYear?: number | null
   logo?: string | null
   coverImage?: string | null
-  location: string
-  contactPhone?: string | null
+  contactPhone: string
   contactEmail?: string | null
+  website?: string | null
+  facebookPage?: string | null
+  otherSocialLinks?: string | null
+
+  division?: string | null
+  district?: string | null
+  upazila?: string | null
+  fullAddress: string
+  postalCode?: string | null
+  latitude?: number | null
+  longitude?: number | null
+
+  status: OrgVerificationStatus
+  adminNote?: string | null
+  rejectReason?: string | null
+
+  areasOfWork: AreaOfWork[]
+  registration?: OrgRegistration | null
+  teamEvidence?: OrgTeamEvidence | null
+  institution?: OrgInstitution | null
+  representative?: OrgRepresentative | null
+
   ownerId: string
-  owner?: Pick<UserProfile, 'id' | 'name' | 'avatar' | 'email'>
+  owner?: Pick<UserProfile, 'id' | 'name' | 'avatar'>
   createdAt: string
   updatedAt: string
   _count?: { requests: number; updates: number }
+}
+
+export interface OrgVerificationLog {
+  id: string
+  oldStatus: OrgVerificationStatus | null
+  newStatus: OrgVerificationStatus
+  reason?: string | null
+  createdAt: string
+  admin: { id: string; name: string }
 }
 
 export interface VolunteerRequest {
@@ -500,6 +589,25 @@ export const orgApi = {
   },
   deleteUpdate(updateId: string) {
     return api.delete(`/orgs/updates/${updateId}`)
+  },
+  // ── Verification document upload ──────────────────────────────────────
+  uploadDocument(file: File) {
+    const fd = new FormData()
+    fd.append('document', file)
+    return request<{ url: string }>('/orgs/documents', {
+      method: 'POST',
+      body: fd,
+    })
+  },
+  // ── Admin verification dashboard ──────────────────────────────────────
+  adminGetAll(query = '') {
+    return api.get<Organization[]>(`/orgs/admin/all${query ? `?${query}` : ''}`)
+  },
+  adminGetById(id: string) {
+    return api.get<Organization & { verificationLogs: OrgVerificationLog[] }>(`/orgs/admin/${id}`)
+  },
+  adminUpdateStatus(id: string, payload: { status: OrgVerificationStatus; reason?: string; adminNote?: string }) {
+    return api.patch<Organization>(`/orgs/admin/${id}/status`, payload)
   },
 }
 
