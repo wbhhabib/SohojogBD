@@ -68,8 +68,8 @@ model User {
   plantClaims      PlantClaim[]
   organizations    Organization[]
   volunteerRequests VolunteerRequest[]
+  orgVerificationLogs OrgVerificationLog[] @relation("OrgVerificationAdmin")
 }
-
 model Campaign {
   id              String           @id @default(cuid())
   title           String
@@ -266,27 +266,159 @@ enum VolunteerRequestStatus {
   CANCELLED
 }
 
+enum OrgCategory {
+  REGISTERED
+  TEAM
+}
+
+enum OrgVerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  MORE_INFO_REQUIRED
+  APPROVED
+  REJECTED
+  SUSPENDED
+  EXPIRED
+}
+
+enum InstitutionAffiliation {
+  YES
+  NO
+  NOT_APPLICABLE
+}
+
 model Organization {
-  id           String             @id @default(cuid())
-  name         String
-  slug         String             @unique
-  description  String
-  category     String
-  logo         String?
-  coverImage   String?
-  location     String
-  contactPhone String?
-  contactEmail String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  ownerId      String
-  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  requests     VolunteerRequest[]
-  updates      OrgUpdate[]
+  id               String                 @id @default(cuid())
+  name             String
+  slug             String                 @unique
+  description      String
+  category         OrgCategory
+  orgType          String
+  orgTypeOther     String?
+  establishedYear  Int?
+  logo             String?
+  coverImage       String?
+  contactPhone     String
+  contactEmail     String?
+  website          String?
+  facebookPage     String?
+  otherSocialLinks String?
+
+  division     String?
+  district     String?
+  upazila      String?
+  fullAddress  String
+  postalCode   String?
+  latitude     Float?
+  longitude    Float?
+
+  status       OrgVerificationStatus @default(PENDING)
+  adminNote    String?
+  rejectReason String?
+
+  declarationAccepted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  areasOfWork    AreaOfWork[]
+  registration   OrgRegistration?
+  teamEvidence   OrgTeamEvidence?
+  institution    OrgInstitution?
+  representative OrgRepresentative?
+  requests       VolunteerRequest[]
+  updates        OrgUpdate[]
+  verificationLogs OrgVerificationLog[]
 
   @@index([ownerId])
   @@index([category])
+  @@index([status])
   @@index([slug])
+}
+
+model AreaOfWork {
+  id             String       @id @default(cuid())
+  area           String
+  areaOther      String?
+  description    String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+// ── Registered Organization only ──────────────────────────────────────────
+model OrgRegistration {
+  id                    String       @id @default(cuid())
+  registrationAuthority String
+  authorityOther        String?
+  registrationNumber    String
+  registrationDate      DateTime
+  expiryDate            DateTime?
+  certificateUrl        String?
+  organizationId         String       @unique
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ── Volunteer Team / Community Group only ─────────────────────────────────
+model OrgTeamEvidence {
+  id                    String       @id @default(cuid())
+  pastActivities        String?
+  activityCount         Int?
+  volunteerCountApprox  Int?
+  recentActivity        String?
+  photos                String[]
+  activityReportUrl     String?
+  facebookPageUrl       String?
+  previousCampaignLinks String[]
+  supportingDocUrl      String?
+  organizationId        String       @unique
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ── School / College / University groups only ─────────────────────────────
+model OrgInstitution {
+  id                  String                  @id @default(cuid())
+  institutionName     String
+  institutionType     String
+  department          String?
+  clubName            String?
+  advisorName         String?
+  advisorContact      String?
+  affiliated          InstitutionAffiliation  @default(NOT_APPLICABLE)
+  authorizationDocUrl String?
+  organizationId      String                  @unique
+  organization        Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model OrgRepresentative {
+  id                  String       @id @default(cuid())
+  fullName            String
+  designation         String
+  designationOther    String?
+  mobile              String
+  email                String?
+  nidNumber           String
+  nidDocUrl           String?
+  authorizationDocUrl String?
+  organizationId      String       @unique
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model OrgVerificationLog {
+  id             String                 @id @default(cuid())
+  oldStatus      OrgVerificationStatus?
+  newStatus      OrgVerificationStatus
+  reason         String?
+  createdAt      DateTime               @default(now())
+  organizationId String
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  adminId        String
+  admin          User                   @relation("OrgVerificationAdmin", fields: [adminId], references: [id])
+
+  @@index([organizationId])
 }
 
 model VolunteerRequest {
