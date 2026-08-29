@@ -62,8 +62,8 @@ export default function OrgCard({ org }: OrgCardProps) {
                     </div>
                 )}
             </div>
-            <div className="flex items-center gap-3 px-4 -mt-6">
-                <div className="w-12 h-12 rounded-full border-4 border-white bg-white overflow-hidden shadow-sm shrink-0">
+            <div className="flex items-center gap-3 px-4 -mt-7 relative z-10">
+                <div className="w-14 h-14 rounded-full border-[3px] border-white bg-white overflow-hidden shadow-md shrink-0 ring-1 ring-gray-100">
                     {org.logo ? (
                         <img src={getImageUrl(org.logo)} alt="" className="w-full h-full object-cover" />
                     ) : (

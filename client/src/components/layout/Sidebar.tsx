@@ -17,6 +17,7 @@ import {
   TrendingUp,
   ChevronRight,
   Sparkles,
+  Handshake,
 } from 'lucide-react'
 
 interface SidebarUser {
@@ -54,6 +55,7 @@ const adminNav: NavItem[] = [
   { label: 'Overview', href: '/dashboard/admin', icon: LayoutDashboard },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
+  { label: 'Organizations', href: '/admin/organizations', icon: Handshake },
   { label: 'Donations', href: '/admin/donations', icon: HandCoins },
   { label: 'Reports', href: '/admin/reports', icon: FileText },
   { label: 'Analytics', href: '/admin/analytics', icon: TrendingUp },

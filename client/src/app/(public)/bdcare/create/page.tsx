@@ -10,7 +10,9 @@ import Textarea from '@/components/ui/textarea'
 import Button from '@/components/ui/button'
 import { orgApi } from '@/lib/api'
 import { useAuth } from '@/lib/AuthContext'
-import { Handshake, ShieldCheck, Users2, Check, Upload, Loader2 } from 'lucide-react'
+import { Handshake, ShieldCheck, Users2 } from 'lucide-react'
+import DocUpload from '@/components/org/DocUpload'
+import PhotosUpload from '@/components/org/PhotosUpload'
 
 // ── Constants mirrored from server/src/modules/orgs/org.schema.ts ─────────
 const REGISTERED_ORG_TYPES = [
@@ -54,60 +56,6 @@ const STEP_LABELS = [
     'Institution', 'Representative', 'Location', 'Declaration', 'Review',
 ]
 
-interface DocUploadProps {
-    label: string
-    required?: boolean
-    value: string
-    onChange: (url: string) => void
-    hint?: string
-}
-
-function DocUpload({ label, required, value, onChange, hint }: DocUploadProps) {
-    const [uploading, setUploading] = useState(false)
-    const [err, setErr] = useState('')
-
-    const handleFile = async (file: File | null) => {
-        if (!file) return
-        setUploading(true)
-        setErr('')
-        const res = await orgApi.uploadDocument(file)
-        if (res.success && res.data) {
-            onChange(res.data.url)
-        } else {
-            setErr(res.message ?? 'Upload failed. Please try again.')
-        }
-        setUploading(false)
-    }
-
-    return (
-        <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-slate-700">
-                {label} {required && <span className="text-red-500">*</span>}
-            </label>
-            {hint && <p className="text-xs text-gray-400">{hint}</p>}
-            <div className="flex items-center gap-3">
-                <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-sky-300 bg-sky-50 text-sky-700 text-sm font-medium cursor-pointer hover:bg-sky-100 transition-colors">
-                    {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                    {value ? 'Replace file' : 'Upload file'}
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="hidden"
-                        disabled={uploading}
-                        onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-                    />
-                </label>
-                {value && !uploading && (
-                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                        <Check size={13} /> Uploaded
-                    </span>
-                )}
-            </div>
-            {err && <p className="text-xs text-red-600">{err}</p>}
-        </div>
-    )
-}
-
 export default function RegisterOrgPage() {
     const router = useRouter()
     const { user, ready } = useAuth()
@@ -150,6 +98,7 @@ export default function RegisterOrgPage() {
     const [previousCampaignLinks, setPreviousCampaignLinks] = useState('')
     const [activityReportUrl, setActivityReportUrl] = useState('')
     const [supportingDocUrl, setSupportingDocUrl] = useState('')
+    const [teamPhotos, setTeamPhotos] = useState<string[]>([])
 
     // ── Step 5: Institution (conditional on orgType) ──
     const [institutionName, setInstitutionName] = useState('')
@@ -315,7 +264,7 @@ export default function RegisterOrgPage() {
                     : [],
                 activityReportUrl: activityReportUrl || undefined,
                 supportingDocUrl: supportingDocUrl || undefined,
-                photos: [],
+                photos: teamPhotos,
             }
         }
 
@@ -517,6 +466,7 @@ export default function RegisterOrgPage() {
                                 <Input label="Previous Campaign Links (comma-separated)" value={previousCampaignLinks} onChange={(e) => setPreviousCampaignLinks(e.target.value)} />
                                 <DocUpload label="Activity Report" value={activityReportUrl} onChange={setActivityReportUrl} />
                                 <DocUpload label="Supporting Documents (optional)" value={supportingDocUrl} onChange={setSupportingDocUrl} />
+                                <PhotosUpload label="Activity Photos (optional)" value={teamPhotos} onChange={setTeamPhotos} />
                             </div>
                         )}
 
@@ -647,7 +597,7 @@ export default function RegisterOrgPage() {
 
                         <div className="flex items-center justify-between pt-2">
                             {currentIndex > 0 ? (
-                                <Button type="button" variant="secondary" onClick={goBack}>Back</Button>
+                                <Button type="button" variant="outline" onClick={goBack}>Back</Button>
                             ) : <span />}
 
                             {step === 8 ? (

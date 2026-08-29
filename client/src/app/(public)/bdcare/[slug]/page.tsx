@@ -210,12 +210,6 @@ export default function OrgDetailPage() {
                                     </p>
                                 )}
 
-                                {org.institution?.institutionName && (
-                                    <p className="text-xs text-gray-500 mb-3">
-                                        Affiliated institution: <span className="font-medium text-gray-700">{org.institution.institutionName}</span>
-                                    </p>
-                                )}
-
                                 <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-3 border-t border-gray-100">
                                     <span className="flex items-center gap-1.5"><MapPin size={13} className="text-sky-500" /> {locationLine}</span>
                                     {org.contactPhone && <span className="flex items-center gap-1.5"><Phone size={13} className="text-sky-500" /> {org.contactPhone}</span>}
@@ -238,6 +232,39 @@ export default function OrgDetailPage() {
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            )}
+
+                            {org.institution?.institutionName && (
+                                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                                    <h2 className="text-sm font-bold text-gray-900 mb-4">Institution</h2>
+                                    <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-xs text-gray-400">Institution Name</p>
+                                            <p className="text-gray-800">{org.institution.institutionName}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-400">Institution Type</p>
+                                            <p className="text-gray-800">{org.institution.institutionType}</p>
+                                        </div>
+                                        {org.institution.department && (
+                                            <div>
+                                                <p className="text-xs text-gray-400">Department / Faculty</p>
+                                                <p className="text-gray-800">{org.institution.department}</p>
+                                            </div>
+                                        )}
+                                        {org.institution.clubName && (
+                                            <div>
+                                                <p className="text-xs text-gray-400">Club / Society</p>
+                                                <p className="text-gray-800">{org.institution.clubName}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {org.institution.affiliated === 'YES' && (
+                                        <p className="text-xs text-emerald-600 font-medium mt-3 flex items-center gap-1.5">
+                                            <BadgeCheck size={13} /> Officially affiliated with this institution
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
@@ -294,9 +321,14 @@ export default function OrgDetailPage() {
                         <div className="md:col-span-2 space-y-4">
                             <div className="bg-white rounded-2xl border border-gray-200 p-6">
                                 {isOwner ? (
-                                    <div className="rounded-xl bg-sky-50 border border-sky-100 p-4 text-sm text-sky-700">
-                                        This is your organization. Manage requests from{' '}
-                                        <a href="/bdcare/my" className="font-semibold underline">My Orgs</a>.
+                                    <div className="rounded-xl bg-sky-50 border border-sky-100 p-4 text-sm text-sky-700 space-y-2">
+                                        <p>
+                                            This is your organization. Manage requests from{' '}
+                                            <a href="/bdcare/my" className="font-semibold underline">My Orgs</a>.
+                                        </p>
+                                        <a href={`/bdcare/${slug}/edit`} className="inline-block px-3 py-1.5 rounded-lg bg-white border border-sky-200 text-sky-700 text-xs font-semibold hover:bg-sky-100 transition-colors">
+                                            Edit Organization
+                                        </a>
                                     </div>
                                 ) : !isApproved ? (
                                     <div className="rounded-xl bg-gray-50 border border-gray-200 p-4 text-sm text-gray-500">

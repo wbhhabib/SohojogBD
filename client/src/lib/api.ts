@@ -627,3 +627,21 @@ export const notificationApi = {
     return api.patch('/notifications/read-all')
   },
 }
+
+// ── Authenticated document viewer (NID/certificate/etc — not plain public URLs) ──
+export async function openOrgDocument(url: string): Promise<void> {
+  const token = getAccessToken()
+  // Some documents may have been saved with an old/duplicated "/api/v1" prefix
+  // (a past backend bug) — strip it so this works for both old and new data.
+  const path = url.replace(/^\/api\/v1/, '')
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    alert('Could not open this document.')
+    return
+  }
+  const blob = await res.blob()
+  const objectUrl = URL.createObjectURL(blob)
+  window.open(objectUrl, '_blank')
+}
