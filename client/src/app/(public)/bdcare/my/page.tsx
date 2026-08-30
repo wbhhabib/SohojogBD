@@ -194,9 +194,14 @@ export default function MyOrgsPage() {
                             </div>
                             <h1 className="text-xl font-bold text-gray-900">My BDCare Activity</h1>
                         </div>
-                        <a href="/bdcare/create">
-                            <Button variant="primary" size="sm"><Plus size={14} /> New Organization</Button>
-                        </a>
+                        <div className="flex items-center gap-2">
+                            <a href="/bdcare/sos/settings" className="text-xs font-semibold text-red-600 hover:underline">
+                                🆘 Alert Settings
+                            </a>
+                            <a href="/bdcare/create">
+                                <Button variant="primary" size="sm"><Plus size={14} /> New Organization</Button>
+                            </a>
+                        </div>
                     </div>
 
                     <Tabs

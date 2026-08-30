@@ -83,7 +83,11 @@ export default function BDCarePage() {
                                     and stay updated on the causes you care about.
                                 </p>
                             </div>
-                            <div className="flex gap-4 shrink-0">
+                            <div className="flex gap-3 shrink-0">
+                                <a href="/bdcare/sos"
+                                    className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-red-200 hover:shadow-xl hover:-translate-y-0.5 transition-all bg-red-600 hover:bg-red-700">
+                                    🆘 Emergency SOS
+                                </a>
                                 <a href="/bdcare/create"
                                     className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-sky-200 hover:shadow-xl hover:-translate-y-0.5 transition-all"
                                     style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)' }}>
