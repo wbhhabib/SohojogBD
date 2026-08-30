@@ -658,3 +658,76 @@ export async function openOrgDocument(url: string): Promise<void> {
   const objectUrl = URL.createObjectURL(blob)
   window.open(objectUrl, '_blank')
 }
+
+
+export type SOSStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CANCELLED'
+export type SOSResponseStatus = 'ACKNOWLEDGED' | 'ON_THE_WAY' | 'ARRIVED'
+
+export interface SOSRequest {
+  id: string
+  message: string
+  latitude: number
+  longitude: number
+  address?: string | null
+  status: SOSStatus
+  createdAt: string
+  updatedAt: string
+  requesterId: string
+  requester?: { id: string; name: string; avatar: string | null; phone: string | null }
+  _count?: { responses: number }
+  notifiedCount?: number
+}
+
+export interface SOSResponseItem {
+  id: string
+  status: SOSResponseStatus
+  createdAt: string
+  responder: { id: string; name: string; avatar: string | null; phone: string | null }
+}
+
+export interface SOSRequestDetail extends SOSRequest {
+  responses: SOSResponseItem[]
+}
+
+export interface SOSNearbyItem extends SOSRequest {
+  distanceKm: number
+}
+
+export interface ResponderSettings {
+  respLat: number | null
+  respLng: number | null
+  respRadiusKm: number | null
+  pushEnabled: boolean
+}
+
+export const sosApi = {
+  create(payload: { message: string; latitude: number; longitude: number; address?: string; radiusKm?: number }) {
+    return api.post<SOSRequest>('/sos', payload)
+  },
+  getById(id: string) {
+    return api.get<SOSRequestDetail>(`/sos/${id}`)
+  },
+  getMy() {
+    return api.get<SOSRequest[]>('/sos/my')
+  },
+  getNearby() {
+    return api.get<SOSNearbyItem[]>('/sos/nearby')
+  },
+  respond(id: string, status: SOSResponseStatus) {
+    return api.post(`/sos/${id}/respond`, { status })
+  },
+  updateStatus(id: string, status: 'RESOLVED' | 'CANCELLED') {
+    return api.patch<SOSRequest>(`/sos/${id}/status`, { status })
+  },
+  getResponderSettings() {
+    return api.get<ResponderSettings>('/sos/responder-settings')
+  },
+  updateResponderSettings(payload: {
+    respLat?: number | null
+    respLng?: number | null
+    respRadiusKm?: number
+    pushEnabled?: boolean
+  }) {
+    return api.patch<ResponderSettings>('/sos/responder-settings', payload)
+  },
+}

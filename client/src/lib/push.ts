@@ -45,7 +45,7 @@ export async function subscribeToPush(): Promise<{ success: boolean; message?: s
     const reg = await navigator.serviceWorker.ready
     const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(keyRes.data.publicKey),
+        applicationServerKey: urlBase64ToUint8Array(keyRes.data.publicKey) as BufferSource,
     })
 
     const res = await pushApi.subscribe(subscription.toJSON() as PushSubscriptionJSON)
