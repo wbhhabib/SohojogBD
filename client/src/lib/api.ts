@@ -611,6 +611,19 @@ export const orgApi = {
   },
 }
 
+
+export const pushApi = {
+  getVapidPublicKey() {
+    return api.get<{ publicKey: string }>('/push/vapid-public-key')
+  },
+  subscribe(subscription: PushSubscriptionJSON) {
+    return api.post('/push/subscribe', subscription)
+  },
+  unsubscribe(endpoint: string) {
+    return api.post('/push/unsubscribe', { endpoint })
+  },
+}
+
 export const notificationApi = {
   getAll(query = '') {
     return api.get<Notification[]>(

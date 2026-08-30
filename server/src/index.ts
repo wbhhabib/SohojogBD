@@ -30,6 +30,8 @@ import reportRoutes from '@/modules/report/report.routes';
 import settingsRoutes from '@/modules/settings/settings.routes';
 import plantRoutes from '@/modules/plants/plant.routes';
 import orgRoutes from '@/modules/orgs/org.routes';
+import pushRoutes from '@/modules/push/push.routes';
+import sosRoutes from '@/modules/sos/sos.routes';
 import { maintenanceMiddleware } from '@/middlewares/maintenance.middleware';
 
 
@@ -117,6 +119,8 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/plants', plantRoutes);
 app.use('/api/v1/orgs', orgRoutes);
+app.use('/api/v1/push', pushRoutes);
+app.use('/api/v1/sos', sosRoutes);
 
 
 app.use((req: Request, res: Response) => {

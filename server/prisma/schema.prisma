@@ -50,7 +50,11 @@ model User {
   role             Role           @default(DONOR)
   avatar           String?
   phone            String?
-  address          String?
+    address          String?
+  respLat          Float?
+  respLng          Float?
+  respRadiusKm     Int?           @default(5)
+  pushEnabled      Boolean        @default(false)
   isVerified       Boolean        @default(false)
   isBanned         Boolean        @default(false)
   verifyToken      String?
@@ -69,6 +73,9 @@ model User {
   organizations    Organization[]
   volunteerRequests VolunteerRequest[]
   orgVerificationLogs OrgVerificationLog[] @relation("OrgVerificationAdmin")
+  sosRequests         SOSRequest[]
+  sosResponses        SOSResponse[]
+  pushSubscriptions   PushSubscription[]
 }
 model Campaign {
   id              String           @id @default(cuid())
@@ -449,3 +456,51 @@ model OrgUpdate {
   @@index([organizationId])
 }
 
+enum SOSStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  CANCELLED
+}
+
+model SOSRequest {
+  id          String       @id @default(cuid())
+  message     String
+  latitude    Float
+  longitude   Float
+  address     String?
+  status      SOSStatus    @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  requesterId String
+  requester   User         @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  responses   SOSResponse[]
+
+  @@index([requesterId])
+  @@index([status])
+}
+
+model SOSResponse {
+  id           String     @id @default(cuid())
+  status       String     @default("ACKNOWLEDGED") // ACKNOWLEDGED | ON_THE_WAY | ARRIVED
+  createdAt    DateTime   @default(now())
+  sosRequestId String
+  sosRequest   SOSRequest @relation(fields: [sosRequestId], references: [id], onDelete: Cascade)
+  responderId  String
+  responder    User       @relation(fields: [responderId], references: [id], onDelete: Cascade)
+
+  @@unique([sosRequestId, responderId])
+  @@index([sosRequestId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

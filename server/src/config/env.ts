@@ -30,6 +30,12 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional().default(''),
 
   GEMINI_API_KEY: z.string().optional().default(''),
+
+  VAPID_PUBLIC_KEY: z.string().min(1),
+  VAPID_PRIVATE_KEY: z.string().min(1),
+  VAPID_CONTACT_EMAIL: z.string().min(1),
+  SOS_MATCH_RADIUS_KM: z.string().default('5').transform(Number),
+  SOS_MAX_NOTIFIED: z.string().default('30').transform(Number),
 })
 
 const parsed = envSchema.safeParse(process.env)

@@ -102,3 +102,12 @@ export const InstitutionAffiliation = {
   NOT_APPLICABLE: 'NOT_APPLICABLE',
 } as const
 export type InstitutionAffiliation = (typeof InstitutionAffiliation)[keyof typeof InstitutionAffiliation]
+
+
+export const SOSStatus = {
+  OPEN: 'OPEN',
+  ACKNOWLEDGED: 'ACKNOWLEDGED',
+  RESOLVED: 'RESOLVED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type SOSStatus = (typeof SOSStatus)[keyof typeof SOSStatus]
