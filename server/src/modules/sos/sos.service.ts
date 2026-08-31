@@ -2,6 +2,7 @@ import { VolunteerRequestStatus, SOSStatus, Role } from '../../types/prisma-enum
 import { prisma } from '../../config/database'
 import { env } from '../../config/env'
 import { sendPushToUser } from '../push/push.service'
+import { canRespondToSOS } from '../verification/verification.service'
 import {
     CreateSOSInput,
     ResponderSettingsInput,
@@ -169,6 +170,21 @@ export const respondToSOS = async (
     if (!sos) throw createHttpError('SOS request not found', 404)
     if (sos.status !== SOSStatus.OPEN) {
         throw createHttpError('This SOS request is no longer open', 400)
+    }
+
+    // 🔴 Minor-block: verification + বয়স ≥ ১৮ দুটোই independently satisfy হতে হবে
+    const eligibility = await canRespondToSOS(responderId)
+    if (!eligibility.allowed) {
+        const messages: Record<string, string> = {
+            NOT_VERIFIED: 'SOS-এ সাড়া দেওয়ার আগে আপনার প্রোফাইল ভেরিফাই করতে হবে।',
+            DOB_MISSING: 'SOS-এ সাড়া দেওয়ার আগে জন্মতারিখ যোগ করে প্রোফাইল সম্পূর্ণ করুন।',
+            UNDER_18: 'নিরাপত্তার কারণে ১৮ বছরের কম বয়সীরা SOS-এ সাড়া দিতে পারবেন না।',
+            USER_NOT_FOUND: 'ইউজার পাওয়া যায়নি।',
+        }
+        throw createHttpError(
+            messages[eligibility.reason ?? ''] ?? 'আপনি এই মুহূর্তে SOS-এ সাড়া দিতে পারবেন না।',
+            403,
+        )
     }
 
     const response = await prisma.sOSResponse.upsert({
