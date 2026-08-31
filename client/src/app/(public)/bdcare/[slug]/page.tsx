@@ -10,6 +10,7 @@ import Textarea from '@/components/ui/textarea'
 import Input from '@/components/ui/input'
 import { orgApi } from '@/lib/api'
 import type { Organization, OrgUpdate } from '@/lib/api'
+import { verificationApi } from '@/lib/verificationApi'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
 import {
@@ -89,6 +90,13 @@ export default function OrgDetailPage() {
     }, [slug])
 
     useEffect(() => { fetchOrg() }, [fetchOrg])
+    useEffect(() => {
+        const draft = sessionStorage.getItem(`draft:volunteer:${slug}`)
+        if (draft) {
+            setMessage(draft)
+            sessionStorage.removeItem(`draft:volunteer:${slug}`)
+        }
+    }, [slug])
 
     const handleRequest = async () => {
         if (!user) {
@@ -97,6 +105,16 @@ export default function OrgDetailPage() {
         }
         setSubmitting(true)
         setError('')
+
+        // action নেওয়ার আগে profile-completeness চেক
+        const check = await verificationApi.checkReadiness('VOLUNTEER_REQUEST')
+        if (check.success && check.data && !check.data.ready) {
+            // draft হিসেবে message রেখে verification page-এ পাঠানো, ফিরে এলে restore হবে
+            sessionStorage.setItem(`draft:volunteer:${slug}`, message)
+            router.push(`/verification/volunteer?redirect=${encodeURIComponent(`/bdcare/${slug}`)}`)
+            return
+        }
+
         const res = await orgApi.sendVolunteerRequest(org!.id, {
             message: message.trim() || undefined,
         })

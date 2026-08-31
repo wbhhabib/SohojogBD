@@ -8,6 +8,7 @@ import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import PoolMeter from '@/components/growtogether/PoolMeter'
 import { useAuth } from '@/lib/AuthContext'
+import { verificationApi } from '@/lib/verificationApi'
 import { formatBDT } from '@/lib/utils'
 import {
     getPoolBySlug, joinPool, cancelPool, leavePool,
@@ -46,6 +47,17 @@ export default function PoolDetailPage() {
     }, [slug])
 
     useEffect(() => { fetchPool() }, [fetchPool])
+
+    useEffect(() => {
+        const draft = sessionStorage.getItem(`draft:pool-join:${slug}`)
+        if (draft) {
+            const parsed = JSON.parse(draft)
+            setQuantity(parsed.quantity ?? '')
+            setNote(parsed.note ?? '')
+            sessionStorage.removeItem(`draft:pool-join:${slug}`)
+        }
+    }, [slug])
+
 
     if (loading) {
         return (
@@ -94,6 +106,14 @@ export default function PoolDetailPage() {
             setError(`Please enter at least ${pool.minJoinQuantity} ${pool.unit}`)
             return
         }
+
+        const check = await verificationApi.checkReadiness('WHOLESALE_JOIN')
+        if (check.success && check.data && !check.data.ready) {
+            sessionStorage.setItem(`draft:pool-join:${slug}`, JSON.stringify({ quantity, note }))
+            router.push(`/verification/core?action=WHOLESALE_JOIN&redirect=${encodeURIComponent(`/grow-together/${slug}`)}`)
+            return
+        }
+
         setSubmitting(true)
         const res = await joinPool(pool.id, { quantity: qty, note: note.trim() || undefined }, { id: user.id, name: user.name, avatar: user.avatar })
         if (res.success && res.data) {

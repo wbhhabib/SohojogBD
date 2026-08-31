@@ -12,6 +12,7 @@ import { plantApi } from '@/lib/api'
 import type { PlantListing } from '@/lib/api'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
+import { verificationApi } from '@/lib/verificationApi'
 import { MapPin, Leaf, Phone, User, ArrowLeft, Gift, Send, CheckCircle2 } from 'lucide-react'
 
 const statusVariant: Record<string, 'success' | 'warning' | 'default' | 'info'> = {
@@ -49,6 +50,16 @@ export default function PlantDetailPage() {
 
     useEffect(() => { fetchListing() }, [fetchListing])
 
+    useEffect(() => {
+        const draft = sessionStorage.getItem(`draft:plant-claim:${slug}`)
+        if (draft) {
+            const parsed = JSON.parse(draft)
+            setMessage(parsed.message ?? '')
+            setClaimQuantity(parsed.claimQuantity ?? '1')
+            sessionStorage.removeItem(`draft:plant-claim:${slug}`)
+        }
+    }, [slug])
+
     const handleRequest = async () => {
         if (!user) {
             router.push(`/auth/login?next=/plants/${slug}`)
@@ -56,6 +67,14 @@ export default function PlantDetailPage() {
         }
         setSubmitting(true)
         setError('')
+
+        const check = await verificationApi.checkReadiness('PLANT_CLAIM')
+        if (check.success && check.data && !check.data.ready) {
+            sessionStorage.setItem(`draft:plant-claim:${slug}`, JSON.stringify({ message, claimQuantity }))
+            router.push(`/verification/core?action=PLANT_CLAIM&redirect=${encodeURIComponent(`/plants/${slug}`)}`)
+            return
+        }
+
         const res = await plantApi.requestClaim(listing!.id, {
             message: message.trim() || undefined,
             quantity: Number(claimQuantity) || 1,

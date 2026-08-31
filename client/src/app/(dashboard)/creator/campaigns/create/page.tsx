@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { verificationApi } from '@/lib/verificationApi'
 import { CheckCircle, ImageIcon, X } from 'lucide-react'
 
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -108,7 +109,7 @@ function CoverUploadStep({ slug, onSkip, onDone }: CoverUploadStepProps) {
 
       <ImageUploadPreview
         initialImages={[]}
-        onChange={() => {}}
+        onChange={() => { }}
         onFilesChange={setFiles}
         maxFiles={5}
       />
@@ -201,6 +202,13 @@ export default function CreateCampaignPage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
   const [createdSlug, setCreatedSlug] = useState('')
   const [formData, setFormData] = useState<Partial<Campaign>>({})
+  useEffect(() => {
+    const draft = sessionStorage.getItem('draft:campaign-create')
+    if (draft) {
+      setFormData(JSON.parse(draft))
+      sessionStorage.removeItem('draft:campaign-create')
+    }
+  }, [])
   const [submitting, setSubmitting] = useState(false)
   const [visible, setVisible] = useState(true)
   const [error, setError] = useState('')
@@ -297,6 +305,16 @@ export default function CreateCampaignPage() {
       const normalizedDeadline = normalizeDeadline(formData.deadline)
       if (!normalizedDeadline || new Date(normalizedDeadline) <= new Date()) {
         setError('Deadline must be a future date.')
+        return
+      }
+
+      // Profile-completeness guard
+      const check = await verificationApi.checkReadiness('CAMPAIGN_CREATE')
+      if (check.success && check.data && !check.data.ready) {
+        sessionStorage.setItem('draft:campaign-create', JSON.stringify(formData))
+        router.push(
+          `/verification/core?action=CAMPAIGN_CREATE&redirect=${encodeURIComponent('/creator/campaigns/create')}`,
+        )
         return
       }
 
@@ -430,7 +448,7 @@ export default function CreateCampaignPage() {
                   <ImageUploadPreview
                     initialImages={previewImages}
                     onChange={(images) => handleFormChange({ images })}
-                    onFilesChange={() => {}}
+                    onFilesChange={() => { }}
                     maxFiles={5}
                   />
                 </div>
