@@ -32,6 +32,7 @@ import plantRoutes from '@/modules/plants/plant.routes';
 import orgRoutes from '@/modules/orgs/org.routes';
 import pushRoutes from '@/modules/push/push.routes';
 import sosRoutes from '@/modules/sos/sos.routes';
+import verificationRoutes from './modules/verification/verification.routes'
 import { maintenanceMiddleware } from '@/middlewares/maintenance.middleware';
 
 
@@ -121,7 +122,7 @@ app.use('/api/v1/plants', plantRoutes);
 app.use('/api/v1/orgs', orgRoutes);
 app.use('/api/v1/push', pushRoutes);
 app.use('/api/v1/sos', sosRoutes);
-
+app.use('/api/v1/verification', verificationRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({

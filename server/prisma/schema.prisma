@@ -42,6 +42,18 @@ enum NotifType {
   SYSTEM
 }
 
+enum VerificationStatus {
+  NOT_SUBMITTED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum IdentityType {
+  NID
+  BIRTH_CERTIFICATE
+}
+
 model User {
   id               String         @id @default(cuid())
   name             String
@@ -50,7 +62,7 @@ model User {
   role             Role           @default(DONOR)
   avatar           String?
   phone            String?
-    address          String?
+  address          String?
   respLat          Float?
   respLng          Float?
   respRadiusKm     Int?           @default(5)
@@ -60,6 +72,33 @@ model User {
   verifyToken      String?
   resetToken       String?
   resetTokenExpiry DateTime?
+
+  // --- Common/core verification fields ---
+  dateOfBirth              DateTime?
+  identityType             IdentityType?
+  identityNumber           String?
+  identityDocPicture       String?
+  emergencyContactName     String?
+  emergencyContactRelation String?
+  emergencyContactPhone    String?
+  verificationStatus       VerificationStatus @default(NOT_SUBMITTED)
+  verificationNote         String?
+
+  // --- Contextual fields (action-specific, but stored on User) ---
+  sex                 String?
+  occupation          String?
+  educationLevel      String?
+  institution         String?
+  bloodGroup          String?
+  skill               String?
+  division            String?
+  district            String?
+  upazila             String?
+  hasTraining         Boolean?  @default(false)
+  trainingCertificate String?
+  isStudent           Boolean?  @default(false)
+  studentIdCard       String?
+
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   campaigns        Campaign[]
