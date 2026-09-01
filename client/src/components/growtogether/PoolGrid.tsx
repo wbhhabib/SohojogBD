@@ -15,8 +15,8 @@ export default function PoolGrid({ pools, loading = false }: PoolGridProps) {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="rounded-2xl overflow-hidden border" style={{ borderColor: '#E9D9B8' }}>
-                        <Skeleton className="h-9 w-full rounded-none" />
+                    <div key={i} className="rounded-2xl overflow-hidden border border-amber-100/60">
+                        <Skeleton className="h-32 w-full rounded-none" />
                         <div className="p-4 space-y-3">
                             <Skeleton className="h-4 w-3/4" />
                             <Skeleton className="h-3 w-full" />

@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
+import Badge from '@/components/ui/badge'
 import PoolMeter from '@/components/growtogether/PoolMeter'
 import { useAuth } from '@/lib/AuthContext'
 import { verificationApi } from '@/lib/verificationApi'
@@ -64,7 +65,7 @@ export default function PoolDetailPage() {
             <>
                 <Navbar />
                 <div className="min-h-[60vh] flex items-center justify-center">
-                    <span className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: '#E8A33D', borderTopColor: 'transparent' }} />
+                    <span className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
                 </div>
                 <Footer />
             </>
@@ -77,9 +78,9 @@ export default function PoolDetailPage() {
                 <Navbar />
                 <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-center px-4">
                     <p className="text-5xl">📦</p>
-                    <h1 className="text-xl font-bold" style={{ color: '#2A2118' }}>Pool not found</h1>
-                    <p className="text-sm" style={{ color: '#6B5B44' }}>This pool may have been removed or the link is wrong.</p>
-                    <a href="/grow-together" className="text-sm font-semibold hover:underline" style={{ color: '#B4472A' }}>Back to browse</a>
+                    <h1 className="text-xl font-bold text-gray-900">Pool not found</h1>
+                    <p className="text-sm text-gray-500">This pool may have been removed or the link is wrong.</p>
+                    <a href="/grow-together" className="text-sm font-semibold text-amber-600 hover:underline">Back to browse</a>
                 </div>
                 <Footer />
             </>
@@ -143,9 +144,9 @@ export default function PoolDetailPage() {
     return (
         <>
             <Navbar />
-            <main className="min-h-screen" style={{ background: '#FBF3E7' }}>
+            <main className="min-h-screen" style={{ background: 'linear-gradient(180deg, #fffbeb 0%, #f9fafb 120px)' }}>
                 <div className="max-w-5xl mx-auto px-4 py-8">
-                    <a href="/grow-together" className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors" style={{ color: '#6B5B44' }}>
+                    <a href="/grow-together" className="inline-flex items-center gap-1.5 text-sm mb-5 text-gray-500 hover:text-amber-600 transition-colors">
                         <ArrowLeft size={14} />
                         Back to pools
                     </a>
@@ -153,46 +154,44 @@ export default function PoolDetailPage() {
                     <div className="grid md:grid-cols-5 gap-6">
                         {/* ── left: details ── */}
                         <div className="md:col-span-3 space-y-4">
-                            <div className="rounded-2xl p-6" style={{ background: '#FFFDF9', border: '1px solid #E9D9B8' }}>
+                            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span
-                                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-                                        style={{ background: '#F0E4CE', color: '#8A5A20' }}
-                                    >
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700">
                                         {emoji} {pool.category}
                                     </span>
                                     {pool.status !== 'OPEN' && (
-                                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full capitalize" style={{ background: '#F1F1EC', color: '#6B5B44' }}>
+                                        <Badge variant="default" className="capitalize">
                                             {pool.status.replace('_', ' ').toLowerCase()}
-                                        </span>
+                                        </Badge>
                                     )}
                                 </div>
-                                <h1 className="text-2xl font-bold mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif", color: '#1C1A17' }}>
+                                <h1 className="text-2xl font-bold text-gray-900 mb-3"
+                                    style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
                                     {pool.title}
                                 </h1>
-                                <p className="text-sm whitespace-pre-line leading-relaxed" style={{ color: '#4A3E2E' }}>
+                                <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
                                     {pool.description}
                                 </p>
                             </div>
 
-                            <div className="rounded-2xl p-6" style={{ background: '#FFFDF9', border: '1px solid #E9D9B8' }}>
-                                <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#2A2118' }}>
-                                    <Users size={15} style={{ color: '#B4472A' }} />
+                            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
+                                <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Users size={15} className="text-amber-600" />
                                     Who&apos;s in ({pool.participants.length})
                                 </h2>
                                 {pool.participants.length === 0 ? (
-                                    <p className="text-sm" style={{ color: '#A88860' }}>No one has joined yet — be the first!</p>
+                                    <p className="text-sm text-gray-400">No one has joined yet — be the first!</p>
                                 ) : (
                                     <div className="space-y-2.5">
                                         {pool.participants.map((pt) => (
                                             <div key={pt.id} className="flex items-center justify-between text-sm">
-                                                <span className="flex items-center gap-2" style={{ color: '#2A2118' }}>
-                                                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ background: '#F0E4CE', color: '#8A5A20' }}>
+                                                <span className="flex items-center gap-2 text-gray-800">
+                                                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-amber-50 text-amber-700">
                                                         {pt.participant.name.charAt(0).toUpperCase()}
                                                     </span>
                                                     {pt.participant.name}
                                                 </span>
-                                                <span className="tabular-nums font-medium" style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#6B5B44' }}>
+                                                <span className="tabular-nums font-medium text-gray-500">
                                                     {pt.quantity} {pool.unit}
                                                 </span>
                                             </div>
@@ -204,11 +203,11 @@ export default function PoolDetailPage() {
 
                         {/* ── right: pool meter + join box ── */}
                         <div className="md:col-span-2 space-y-4">
-                            <div className="rounded-2xl p-6" style={{ background: '#FFFDF9', border: '1px solid #E9D9B8' }}>
+                            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
                                 <div className="flex items-end justify-between mb-1">
                                     <div>
-                                        <p className="text-[10px] uppercase tracking-wide font-semibold" style={{ color: '#8A5A20' }}>Pool price</p>
-                                        <p className="text-2xl font-bold tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#B4472A' }}>
+                                        <p className="text-[10px] uppercase tracking-wide font-semibold text-amber-600">Pool price</p>
+                                        <p className="text-2xl font-bold tabular-nums text-gray-900">
                                             {formatBDT(pool.pricePerUnit)}<span className="text-sm font-medium text-gray-400">/{pool.unit}</span>
                                         </p>
                                     </div>
@@ -219,7 +218,7 @@ export default function PoolDetailPage() {
                                     )}
                                 </div>
                                 {pool.marketPricePerUnit && (
-                                    <p className="text-xs mb-3" style={{ color: '#A88860' }}>
+                                    <p className="text-xs mb-3 text-gray-400">
                                         Usual retail price: <span className="line-through">{formatBDT(pool.marketPricePerUnit)}</span>
                                     </p>
                                 )}
@@ -228,24 +227,23 @@ export default function PoolDetailPage() {
                                     <PoolMeter pool={pool} />
                                 </div>
 
-                                <div className="flex flex-col gap-2 text-sm mb-4" style={{ color: '#4A3E2E' }}>
-                                    <span className="flex items-center gap-2"><MapPin size={14} style={{ color: '#B4472A' }} /> {pool.location}, {pool.division}</span>
-                                    <span className="flex items-center gap-2"><Package size={14} style={{ color: '#B4472A' }} /> Min. {pool.minJoinQuantity} {pool.unit} per person</span>
-                                    <span className="flex items-center gap-2"><CalendarClock size={14} style={{ color: '#B4472A' }} /> {left > 0 ? `${left} day${left !== 1 ? 's' : ''} left` : 'Deadline passed'}</span>
-                                    <span className="flex items-center gap-2"><User size={14} style={{ color: '#B4472A' }} /> Started by {pool.owner.name}</span>
+                                <div className="flex flex-col gap-2 text-sm mb-4 text-gray-600">
+                                    <span className="flex items-center gap-2"><MapPin size={14} className="text-amber-600" /> {pool.location}, {pool.upazila}, {pool.district}, {pool.division}</span>
+                                    <span className="flex items-center gap-2"><Package size={14} className="text-amber-600" /> Min. {pool.minJoinQuantity} {pool.unit} per person</span>
+                                    <span className="flex items-center gap-2"><CalendarClock size={14} className="text-amber-600" /> {left > 0 ? `${left} day${left !== 1 ? 's' : ''} left` : 'Deadline passed'}</span>
+                                    <span className="flex items-center gap-2"><User size={14} className="text-amber-600" /> Started by {pool.owner.name}</span>
                                 </div>
 
                                 {isOwner ? (
                                     <div className="space-y-2">
-                                        <div className="rounded-xl p-3 text-sm" style={{ background: '#F0E4CE', color: '#8A5A20' }}>
+                                        <div className="rounded-xl p-3 text-sm bg-amber-50 text-amber-700">
                                             This is your pool. You&apos;ll see who joins right here.
                                         </div>
                                         {isOpen && (
                                             <button
                                                 onClick={handleCancelPool}
                                                 disabled={actionBusy}
-                                                className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg border transition-colors disabled:opacity-60"
-                                                style={{ borderColor: '#E0BFA0', color: '#B4472A' }}
+                                                className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60"
                                             >
                                                 <XCircle size={13} />
                                                 Cancel this pool
@@ -253,18 +251,18 @@ export default function PoolDetailPage() {
                                         )}
                                     </div>
                                 ) : !isOpen && !hasJoined ? (
-                                    <div className="rounded-xl p-3 text-sm" style={{ background: '#F1F1EC', color: '#6B5B44' }}>
+                                    <div className="rounded-xl p-3 text-sm bg-gray-50 text-gray-500">
                                         This pool is no longer accepting new joins.
                                     </div>
                                 ) : hasJoined && myEntry ? (
                                     <div className="space-y-3">
-                                        <div className="rounded-xl p-4 flex items-start gap-2 text-sm" style={{ background: 'rgba(60,107,75,0.08)', color: '#2F5A3F', border: '1px solid rgba(60,107,75,0.2)' }}>
+                                        <div className="rounded-xl p-4 flex items-start gap-2 text-sm bg-emerald-50 text-emerald-700 border border-emerald-100">
                                             <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
                                             <span>You&apos;re in for <strong>{myEntry.quantity} {pool.unit}</strong>. Join the group to coordinate sizes, payment, and pickup.</span>
                                         </div>
                                         {pool.groupLink ? (
-                                            <a
-                                                href={pool.groupLink}
+
+                                            <a href={pool.groupLink}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="w-full inline-flex items-center justify-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl transition-all"
@@ -274,15 +272,14 @@ export default function PoolDetailPage() {
                                                 Open WhatsApp Group
                                             </a>
                                         ) : (
-                                            <div className="rounded-xl p-3 text-xs" style={{ background: '#F0E4CE', color: '#8A5A20' }}>
+                                            <div className="rounded-xl p-3 text-xs bg-amber-50 text-amber-700">
                                                 No group link yet — reach the pool starter directly at {pool.contactPhone}.
                                             </div>
                                         )}
                                         <button
                                             onClick={handleLeave}
                                             disabled={actionBusy}
-                                            className="w-full text-xs font-medium py-1.5 disabled:opacity-60"
-                                            style={{ color: '#A88860' }}
+                                            className="w-full text-xs font-medium py-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-60"
                                         >
                                             Withdraw my interest
                                         </button>
@@ -307,27 +304,27 @@ export default function PoolDetailPage() {
                                         <button
                                             onClick={handleJoin}
                                             disabled={submitting}
-                                            className="w-full inline-flex items-center justify-center gap-2 text-[#12293D] text-sm font-bold px-5 py-3 rounded-xl shadow-md transition-all disabled:opacity-60"
-                                            style={{ background: 'linear-gradient(135deg, #E8A33D, #D98E2B)' }}
+                                            className="w-full inline-flex items-center justify-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-amber-200 hover:shadow-xl transition-all disabled:opacity-60"
+                                            style={{ background: 'linear-gradient(135deg, #d97706, #f97316)' }}
                                         >
                                             {submitting && <Loader2 size={15} className="animate-spin" />}
                                             Commit My Quantity
                                         </button>
                                         {!user && (
-                                            <p className="text-xs text-center" style={{ color: '#A88860' }}>You&apos;ll need to log in first.</p>
+                                            <p className="text-xs text-center text-gray-400">You&apos;ll need to log in first.</p>
                                         )}
                                     </div>
                                 ) : null}
 
                                 {pool.contactPhone && (isOwner || hasJoined) && (
-                                    <div className="mt-3 pt-3 flex items-center gap-2 text-sm" style={{ borderTop: '1px dashed #E9D9B8', color: '#4A3E2E' }}>
-                                        <Phone size={13} style={{ color: '#B4472A' }} />
+                                    <div className="mt-3 pt-3 flex items-center gap-2 text-sm border-t border-dashed border-amber-100 text-gray-600">
+                                        <Phone size={13} className="text-amber-600" />
                                         {pool.contactPhone}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="rounded-2xl p-4 text-xs flex items-start gap-2" style={{ background: 'rgba(200,134,43,0.06)', border: '1px dashed #E9D9B8', color: '#8A5A20' }}>
+                            <div className="rounded-2xl p-4 text-xs flex items-start gap-2 bg-amber-50/60 border border-dashed border-amber-200 text-amber-700">
                                 <MessageCircle size={14} className="mt-0.5 shrink-0" />
                                 Once you commit, coordinate exact sizes, payment, and pickup details in the WhatsApp/Messenger group — not all details are managed on this page.
                             </div>

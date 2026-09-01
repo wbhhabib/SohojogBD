@@ -54,6 +54,13 @@ enum IdentityType {
   BIRTH_CERTIFICATE
 }
 
+enum PoolStatus {
+  OPEN
+  TARGET_REACHED
+  CLOSED
+  CANCELLED
+}
+
 model User {
   id               String         @id @default(cuid())
   name             String
@@ -115,6 +122,8 @@ model User {
   sosRequests         SOSRequest[]
   sosResponses        SOSResponse[]
   pushSubscriptions   PushSubscription[]
+  wholesalePools      WholesalePool[]
+  poolParticipations  PoolParticipant[]
 }
 model Campaign {
   id              String           @id @default(cuid())
@@ -303,6 +312,56 @@ model PlantClaim {
   @@index([listingId])
   @@index([claimantId])
   @@index([status])
+}
+
+model WholesalePool {
+  id                 String            @id @default(cuid())
+  title              String
+  slug               String            @unique
+  description        String
+  category           String
+  unit               String
+  targetQuantity     Int
+  minJoinQuantity    Int               @default(1)
+  pricePerUnit       Int
+  marketPricePerUnit Int?
+  division           String
+  district           String
+  upazila            String
+  location           String
+  contactPhone       String
+  groupLink          String?
+  images             String[]
+  status             PoolStatus        @default(OPEN)
+  deadline           DateTime
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  ownerId            String
+  owner              User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  participants       PoolParticipant[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([category])
+  @@index([division])
+  @@index([district])
+  @@index([upazila])
+  @@index([slug])
+}
+
+model PoolParticipant {
+  id            String        @id @default(cuid())
+  quantity      Int
+  note          String?
+  createdAt     DateTime      @default(now())
+  poolId        String
+  pool          WholesalePool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  participantId String
+  participant   User          @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@unique([poolId, participantId])
+  @@index([poolId])
+  @@index([participantId])
 }
 
 enum VolunteerRequestStatus {

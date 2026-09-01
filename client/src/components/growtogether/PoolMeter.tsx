@@ -15,34 +15,17 @@ export default function PoolMeter({ pool, compact = false }: PoolMeterProps) {
     return (
         <div className="w-full">
             <div className="flex items-baseline justify-between mb-1.5">
-                <span
-                    className={`${compact ? 'text-[11px]' : 'text-xs'} font-semibold uppercase tracking-wide`}
-                    style={{ color: '#8A5A20' }}
-                >
+                <span className={`${compact ? 'text-[11px]' : 'text-xs'} font-semibold uppercase tracking-wide ${reached ? 'text-emerald-600' : 'text-amber-600'}`}>
                     {reached ? 'Target reached' : 'Pool filling up'}
                 </span>
-                <span
-                    className={`${compact ? 'text-[11px]' : 'text-xs'} tabular-nums`}
-                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#2A2118' }}
-                >
-                    <strong>{joined}</strong> / {pool.targetQuantity} {pool.unit}
+                <span className={`${compact ? 'text-[11px]' : 'text-xs'} tabular-nums text-gray-600`}>
+                    <strong className="text-gray-900">{joined}</strong> / {pool.targetQuantity} {pool.unit}
                 </span>
             </div>
-            <div
-                className="relative h-3 rounded-full overflow-hidden"
-                style={{
-                    background: '#F0E4CE',
-                    border: '1px dashed #C9A876',
-                }}
-            >
+            <div className="relative h-2.5 rounded-full overflow-hidden bg-amber-50 border border-amber-100">
                 <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                        width: `${pct}%`,
-                        background: reached
-                            ? 'linear-gradient(90deg, #3C6B4B, #4F8862)'
-                            : 'linear-gradient(90deg, #C8862B, #E8A33D)',
-                    }}
+                    className={`h-full rounded-full transition-all duration-500 ${reached ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}
+                    style={{ width: `${pct}%` }}
                 />
             </div>
         </div>

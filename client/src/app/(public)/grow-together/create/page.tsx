@@ -34,6 +34,8 @@ export default function CreatePoolPage() {
     const [pricePerUnit, setPricePerUnit] = useState('')
     const [marketPricePerUnit, setMarketPricePerUnit] = useState('')
     const [division, setDivision] = useState<Division | ''>('')
+    const [district, setDistrict] = useState('')
+    const [upazila, setUpazila] = useState('')
     const [location, setLocation] = useState('')
     const [contactPhone, setContactPhone] = useState('')
     const [groupLink, setGroupLink] = useState('')
@@ -54,6 +56,8 @@ export default function CreatePoolPage() {
         if (!category) return setError('Please select a product category')
         if (!unit) return setError('Please select a unit')
         if (!division) return setError('Please select your area')
+        if (!district.trim()) return setError('Please enter your district')
+        if (!upazila.trim()) return setError('Please enter your upazila/thana')
         if (!deadline) return setError('Please pick a deadline for the pool')
         if (Number(targetQuantity) <= 0) return setError('Target quantity must be greater than 0')
         if (Number(pricePerUnit) <= 0) return setError('Pool price must be greater than 0')
@@ -70,6 +74,8 @@ export default function CreatePoolPage() {
                 pricePerUnit: Number(pricePerUnit),
                 marketPricePerUnit: marketPricePerUnit ? Number(marketPricePerUnit) : undefined,
                 division,
+                district: district.trim(),
+                upazila: upazila.trim(),
                 location,
                 contactPhone,
                 groupLink: groupLink || undefined,
@@ -92,23 +98,24 @@ export default function CreatePoolPage() {
     return (
         <>
             <Navbar />
-            <main className="min-h-screen py-10" style={{ background: '#FBF3E7' }}>
+            <main className="min-h-screen py-10" style={{ background: 'linear-gradient(180deg, #fffbeb 0%, #f9fafb 120px)' }}>
                 <div className="max-w-2xl mx-auto px-4">
-                    <div className="flex items-center gap-2 mb-6">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#F0E4CE' }}>
-                            <PackagePlus size={18} style={{ color: '#8A5A20' }} />
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-50">
+                            <PackagePlus size={18} className="text-amber-600" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold" style={{ color: '#2A2118', fontFamily: "'Space Grotesk', sans-serif" }}>
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-900"
+                                style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
                                 Start a Wholesale Pool
                             </h1>
-                            <p className="text-sm" style={{ color: '#6B5B44' }}>
+                            <p className="text-sm text-gray-500">
                                 Set a target quantity — once enough entrepreneurs join, everyone gets the wholesale rate.
                             </p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="rounded-2xl p-6 space-y-5" style={{ background: '#FFFDF9', border: '1px solid #E9D9B8' }}>
+                    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6 space-y-5">
                         <Input
                             label="Product name"
                             required
@@ -116,7 +123,7 @@ export default function CreatePoolPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                         />
-                        <p className="text-xs -mt-3" style={{ color: '#A88860' }}>At least 5 characters ({title.length}/5)</p>
+                        <p className="text-xs -mt-3 text-gray-400">At least 5 characters ({title.length}/5)</p>
 
                         <Textarea
                             label="Description"
@@ -126,7 +133,7 @@ export default function CreatePoolPage() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
-                        <p className="text-xs -mt-3" style={{ color: '#A88860' }}>At least 20 characters ({description.length}/20)</p>
+                        <p className="text-xs -mt-3 text-gray-400">At least 20 characters ({description.length}/20)</p>
 
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Select
@@ -195,7 +202,7 @@ export default function CreatePoolPage() {
                             onChange={(e) => setDeadline(e.target.value)}
                         />
 
-                        <hr style={{ borderColor: '#E9D9B8' }} />
+                        <hr className="border-amber-100" />
 
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Select
@@ -215,6 +222,23 @@ export default function CreatePoolPage() {
                             />
                         </div>
 
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <Input
+                                label="District"
+                                required
+                                placeholder="e.g. Dhaka"
+                                value={district}
+                                onChange={(e) => setDistrict(e.target.value)}
+                            />
+                            <Input
+                                label="Upazila / Thana"
+                                required
+                                placeholder="e.g. Mirpur"
+                                value={upazila}
+                                onChange={(e) => setUpazila(e.target.value)}
+                            />
+                        </div>
+
                         <Input
                             label="Contact phone"
                             required
@@ -228,7 +252,7 @@ export default function CreatePoolPage() {
                             value={groupLink}
                             onChange={(e) => setGroupLink(e.target.value)}
                         />
-                        <p className="text-xs -mt-3" style={{ color: '#A88860' }}>
+                        <p className="text-xs -mt-3 text-gray-400">
                             Interested entrepreneurs will commit a quantity here, then move to this group to work out sizes, payment, and pickup.
                         </p>
 
@@ -237,8 +261,8 @@ export default function CreatePoolPage() {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full inline-flex items-center justify-center gap-2 text-[#12293D] text-sm font-bold px-5 py-3 rounded-xl shadow-md transition-all disabled:opacity-60"
-                            style={{ background: 'linear-gradient(135deg, #E8A33D, #D98E2B)' }}
+                            className="w-full inline-flex items-center justify-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-amber-200 hover:shadow-xl transition-all disabled:opacity-60"
+                            style={{ background: 'linear-gradient(135deg, #d97706, #f97316)' }}
                         >
                             {submitting && <Loader2 size={15} className="animate-spin" />}
                             Publish Pool

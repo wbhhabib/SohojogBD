@@ -104,6 +104,14 @@ export const InstitutionAffiliation = {
 export type InstitutionAffiliation = (typeof InstitutionAffiliation)[keyof typeof InstitutionAffiliation]
 
 
+export const PoolStatus = {
+  OPEN: 'OPEN',
+  TARGET_REACHED: 'TARGET_REACHED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type PoolStatus = (typeof PoolStatus)[keyof typeof PoolStatus]
+
 export const SOSStatus = {
   OPEN: 'OPEN',
   ACKNOWLEDGED: 'ACKNOWLEDGED',
