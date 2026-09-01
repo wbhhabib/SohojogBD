@@ -66,6 +66,14 @@ export const verificationApi = {
         fd.append('document', file)
         return api.post<{ filename: string }>('/verification/documents', fd)
     },
+    // Admin — pending queue আনা
+    adminGetPending(query = '') {
+        return api.get<VerificationProfile[]>(`/verification/admin/pending${query ? `?${query}` : ''}`)
+    },
+    // Admin — approve/reject করা
+    adminReview(userId: string, payload: { status: 'VERIFIED' | 'REJECTED'; note?: string }) {
+        return api.post(`/verification/admin/${userId}/review`, payload)
+    },
 }
 
 // NID/certificate ছবি পাবলিক URL না — auth token সহ fetch করে blob হিসেবে

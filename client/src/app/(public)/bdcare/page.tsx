@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import OrgGrid from '@/components/org/OrgGrid'
+import EventCard from '@/components/org/EventCard'
+import type { OrgUpdate } from '@/lib/api'
 import Pagination from '@/components/ui/pagination'
 import { orgApi } from '@/lib/api'
 import type { Organization } from '@/lib/api'
@@ -13,6 +15,7 @@ const ORG_CATEGORIES = [
     'Education', 'Health', 'Disaster Relief', 'Environment',
     'Animal Welfare', 'Community', 'Poverty', 'Youth Development', 'Other',
 ]
+const DIVISIONS = ['Dhaka', 'Chattogram', 'Rajshahi', 'Khulna', 'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh']
 
 const CATEGORY_ICONS: Record<string, string> = {
     All: '🌟', Education: '🎓', Health: '🏥', 'Disaster Relief': '🆘', Environment: '🌿',
@@ -28,6 +31,10 @@ export default function BDCarePage() {
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [total, setTotal] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
+    const [events, setEvents] = useState<OrgUpdate[]>([])
+    const [eventsLoading, setEventsLoading] = useState(false)
+    const [eventDivision, setEventDivision] = useState('')
+    const [eventDistrict, setEventDistrict] = useState('')
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -49,6 +56,23 @@ export default function BDCarePage() {
             .catch(() => { })
             .finally(() => setIsLoading(false))
     }, [search, category, page])
+
+    const fetchEvents = useCallback(() => {
+        setEventsLoading(true)
+        const params = new URLSearchParams()
+        params.set('limit', '9')
+        if (eventDivision) params.set('division', eventDivision)
+        if (eventDistrict.trim()) params.set('district', eventDistrict.trim())
+
+        orgApi.getEventsFeed(params.toString())
+            .then((res) => {
+                if (res.success) setEvents(res.data)
+            })
+            .catch(() => { })
+            .finally(() => setEventsLoading(false))
+    }, [eventDivision, eventDistrict])
+
+    useEffect(() => { fetchEvents() }, [fetchEvents])
 
     useEffect(() => { fetchOrgs() }, [fetchOrgs])
 
@@ -115,7 +139,42 @@ export default function BDCarePage() {
                         </div>
                     </div>
                 </div>
+                <section className="mb-10">
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                        <h2 className="text-lg font-bold text-slate-900">Regular Events</h2>
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={eventDivision}
+                                onChange={(e) => setEventDivision(e.target.value)}
+                                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5"
+                            >
+                                <option value="">All Divisions</option>
+                                {DIVISIONS.map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                placeholder="District"
+                                value={eventDistrict}
+                                onChange={(e) => setEventDistrict(e.target.value)}
+                                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 w-32"
+                            />
+                        </div>
+                    </div>
 
+                    {eventsLoading ? (
+                        <p className="text-sm text-slate-400">Loading…</p>
+                    ) : events.length === 0 ? (
+                        <p className="text-sm text-slate-400">No events found for this area yet.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {events.map((event) => (
+                                <EventCard key={event.id} event={event} />
+                            ))}
+                        </div>
+                    )}
+                </section>
                 <section className="max-w-7xl mx-auto px-4 py-8">
                     <div className="mb-7">
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">

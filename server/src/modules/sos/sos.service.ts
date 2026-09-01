@@ -71,10 +71,27 @@ export const createSOSRequest = async (requesterId: string, data: CreateSOSInput
             respLat: { not: null },
             respLng: { not: null },
         },
-        select: { id: true, respLat: true, respLng: true, respRadiusKm: true },
+        select: {
+            id: true,
+            respLat: true,
+            respLng: true,
+            respRadiusKm: true,
+            dateOfBirth: true,
+            verificationStatus: true,
+        },
     })
 
+    const isEligibleResponder = (c: { dateOfBirth: Date | null; verificationStatus: string }) => {
+        if (c.verificationStatus !== 'VERIFIED') return false
+        if (!c.dateOfBirth) return false
+        const age = Math.floor(
+            (Date.now() - c.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+        )
+        return age >= 18
+    }
+
     const nearby = candidates
+        .filter(isEligibleResponder)
         .map((c) => ({
             ...c,
             distance: distanceKm(data.latitude, data.longitude, c.respLat!, c.respLng!),
@@ -176,13 +193,13 @@ export const respondToSOS = async (
     const eligibility = await canRespondToSOS(responderId)
     if (!eligibility.allowed) {
         const messages: Record<string, string> = {
-            NOT_VERIFIED: 'SOS-এ সাড়া দেওয়ার আগে আপনার প্রোফাইল ভেরিফাই করতে হবে।',
-            DOB_MISSING: 'SOS-এ সাড়া দেওয়ার আগে জন্মতারিখ যোগ করে প্রোফাইল সম্পূর্ণ করুন।',
-            UNDER_18: 'নিরাপত্তার কারণে ১৮ বছরের কম বয়সীরা SOS-এ সাড়া দিতে পারবেন না।',
-            USER_NOT_FOUND: 'ইউজার পাওয়া যায়নি।',
+            NOT_VERIFIED: 'Your profile must be verified before responding to SOS requests.',
+            DOB_MISSING: 'Please add your date of birth to complete your profile before responding.',
+            UNDER_18: 'For safety reasons, users under 18 cannot respond to SOS requests.',
+            USER_NOT_FOUND: 'User not found.',
         }
         throw createHttpError(
-            messages[eligibility.reason ?? ''] ?? 'আপনি এই মুহূর্তে SOS-এ সাড়া দিতে পারবেন না।',
+            messages[eligibility.reason ?? ''] ?? 'You are not eligible to respond to SOS requests right now.',
             403,
         )
     }

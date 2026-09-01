@@ -719,6 +719,11 @@ export const createOrgUpdate = async (
             title: data.title,
             content: data.content,
             images: data.images,
+            eventDate: data.eventDate,
+            place: data.place,
+            division: data.division,
+            district: data.district,
+            upazila: data.upazila,
         },
     })
 
@@ -743,7 +748,47 @@ export const getOrgUpdates = async (
 
     return { updates, meta: getPaginationMeta(total, page, limit) }
 }
+// ── Public global events feed (bdcare front page-এর জন্য) ──────────────
+export const getEventsFeed = async (query: {
+    page?: unknown
+    limit?: unknown
+    division?: string
+    district?: string
+    upazila?: string
+}) => {
+    const { skip, take, page, limit } = getPagination(query)
 
+    const where: Record<string, unknown> = {}
+    if (query.division) where.division = query.division
+    if (query.district) where.district = query.district
+    if (query.upazila) where.upazila = query.upazila
+
+    const [updates, total] = await Promise.all([
+        prisma.orgUpdate.findMany({
+            where,
+            skip,
+            take,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                organization: { select: { id: true, name: true, slug: true, logo: true } },
+            },
+        }),
+        prisma.orgUpdate.count({ where }),
+    ])
+
+    return { updates, meta: getPaginationMeta(total, page, limit) }
+}
+
+export const getEventById = async (id: string) => {
+    const update = await prisma.orgUpdate.findUnique({
+        where: { id },
+        include: {
+            organization: { select: { id: true, name: true, slug: true, logo: true, phone: true } },
+        },
+    })
+    if (!update) throw createHttpError('Event not found', 404)
+    return update
+}
 export const deleteOrgUpdate = async (updateId: string, ownerId: string) => {
     const update = await prisma.orgUpdate.findUnique({
         where: { id: updateId },

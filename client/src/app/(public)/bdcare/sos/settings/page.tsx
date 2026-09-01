@@ -8,6 +8,7 @@ import Button from '@/components/ui/button'
 import { sosApi } from '@/lib/api'
 import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '@/lib/push'
 import { useAuth } from '@/lib/AuthContext'
+import { verificationApi } from '@/lib/verificationApi'
 import { Bell, BellOff, MapPin, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 
 export default function SOSSettingsPage() {
@@ -86,6 +87,13 @@ export default function SOSSettingsPage() {
         setMessage('')
 
         if (!pushEnabled) {
+            const check = await verificationApi.checkReadiness('SOS_RESPOND')
+            if (check.success && check.data && !check.data.ready) {
+                router.push(`/verification/core?action=SOS_RESPOND&redirect=${encodeURIComponent('/bdcare/sos/settings')}`)
+                setToggling(false)
+                return
+            }
+
             const result = await subscribeToPush()
             if (!result.success) {
                 setError(result.message ?? 'Could not enable alerts.')

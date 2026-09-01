@@ -166,6 +166,25 @@ export const getOrgUpdates = asyncHandler(async (req, res) => {
     sendPaginated(res, updates, meta, 'Updates fetched successfully')
 })
 
+export const getEventsFeed = asyncHandler(async (req, res) => {
+    const { updates, meta } = await orgService.getEventsFeed(req.query as never)
+    sendPaginated(res, updates, meta, 'Events fetched successfully')
+})
+
+export const getEventById = asyncHandler(async (req, res) => {
+    const event = await orgService.getEventById(req.params.id)
+    sendSuccess(res, event, 'Event fetched successfully')
+})
+
+export const uploadUpdateImage = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        sendError(res, 'No image uploaded', 400)
+        return
+    }
+    const url = `/uploads/images/${req.file.filename}`
+    sendSuccess(res, { url }, 'Image uploaded successfully', 201)
+})
+
 export const deleteOrgUpdate = asyncHandler(async (req, res) => {
     const result = await orgService.deleteOrgUpdate(req.params.updateId, req.user!.id)
     sendSuccess(res, null, result.message)

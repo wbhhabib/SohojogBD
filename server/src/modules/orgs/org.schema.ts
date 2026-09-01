@@ -310,6 +310,11 @@ export const createOrgUpdateSchema = z.object({
     title: z.string().min(3).max(150),
     content: z.string().min(10).max(2000),
     images: z.array(z.string()).max(5).default([]),
+    eventDate: z.coerce.date().optional(),
+    place: z.string().max(150).optional(),
+    division: z.string().max(50).optional(),
+    district: z.string().max(50).optional(),
+    upazila: z.string().max(50).optional(),
 })
 
 // ── Types ────────────────────────────────────────────────────────────────

@@ -71,6 +71,11 @@ export default function OrgDetailPage() {
 
     const [postTitle, setPostTitle] = useState('')
     const [postContent, setPostContent] = useState('')
+    const [postImage, setPostImage] = useState<File | null>(null)
+    const [postEventDate, setPostEventDate] = useState('')
+    const [postPlace, setPostPlace] = useState('')
+    const [postDivision, setPostDivision] = useState('')
+    const [postDistrict, setPostDistrict] = useState('')
     const [posting, setPosting] = useState(false)
 
     const fetchOrg = useCallback(async () => {
@@ -106,15 +111,6 @@ export default function OrgDetailPage() {
         setSubmitting(true)
         setError('')
 
-        // action নেওয়ার আগে profile-completeness চেক
-        const check = await verificationApi.checkReadiness('VOLUNTEER_REQUEST')
-        if (check.success && check.data && !check.data.ready) {
-            // draft হিসেবে message রেখে verification page-এ পাঠানো, ফিরে এলে restore হবে
-            sessionStorage.setItem(`draft:volunteer:${slug}`, message)
-            router.push(`/verification/volunteer?redirect=${encodeURIComponent(`/bdcare/${slug}`)}`)
-            return
-        }
-
         const res = await orgApi.sendVolunteerRequest(org!.id, {
             message: message.trim() || undefined,
         })
@@ -129,11 +125,33 @@ export default function OrgDetailPage() {
     const handlePostUpdate = async (e: React.FormEvent) => {
         e.preventDefault()
         setPosting(true)
-        const res = await orgApi.createUpdate(org!.id, { title: postTitle, content: postContent, images: [] })
+
+        let imageUrl: string | undefined
+        if (postImage) {
+            const fd = new FormData()
+            fd.append('image', postImage)
+            const up = await orgApi.uploadUpdateImage(fd)
+            if (up.success && up.data) imageUrl = up.data.url
+        }
+
+        const res = await orgApi.createUpdate(org!.id, {
+            title: postTitle,
+            content: postContent,
+            images: imageUrl ? [imageUrl] : [],
+            eventDate: postEventDate || undefined,
+            place: postPlace || undefined,
+            division: postDivision || undefined,
+            district: postDistrict || undefined,
+        })
         if (res.success && res.data) {
             setUpdates((prev) => [res.data!, ...prev])
             setPostTitle('')
             setPostContent('')
+            setPostImage(null)
+            setPostEventDate('')
+            setPostPlace('')
+            setPostDivision('')
+            setPostDistrict('')
         }
         setPosting(false)
     }
@@ -310,6 +328,43 @@ export default function OrgDetailPage() {
                                         value={postContent}
                                         onChange={(e) => setPostContent(e.target.value)}
                                     />
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-medium text-gray-600">Event Cover Image (optional)</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            disabled={!isApproved}
+                                            onChange={(e) => setPostImage(e.target.files?.[0] ?? null)}
+                                            className="text-sm"
+                                        />
+                                    </div>
+                                    <Input
+                                        type="datetime-local"
+                                        placeholder="Event date & time (optional)"
+                                        disabled={!isApproved}
+                                        value={postEventDate}
+                                        onChange={(e) => setPostEventDate(e.target.value)}
+                                    />
+                                    <Input
+                                        placeholder="Place (optional)"
+                                        disabled={!isApproved}
+                                        value={postPlace}
+                                        onChange={(e) => setPostPlace(e.target.value)}
+                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            placeholder="Division (optional)"
+                                            disabled={!isApproved}
+                                            value={postDivision}
+                                            onChange={(e) => setPostDivision(e.target.value)}
+                                        />
+                                        <Input
+                                            placeholder="District (optional)"
+                                            disabled={!isApproved}
+                                            value={postDistrict}
+                                            onChange={(e) => setPostDistrict(e.target.value)}
+                                        />
+                                    </div>
                                     <Button type="submit" variant="primary" isLoading={posting} disabled={!isApproved}>
                                         Post Update
                                     </Button>

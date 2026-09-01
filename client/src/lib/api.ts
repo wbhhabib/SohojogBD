@@ -221,6 +221,21 @@ export interface OrgUpdate {
   organizationId: string
 }
 
+export interface OrgUpdate {
+  id: string
+  title: string
+  content: string
+  images: string[]
+  eventDate?: string | null
+  place?: string | null
+  division?: string | null
+  district?: string | null
+  upazila?: string | null
+  createdAt: string
+  organizationId: string
+  organization?: { id: string; name: string; slug: string; logo?: string | null; contactPhone?: string | null }
+}
+
 export interface AnalyzedPlant {
   title: string
   description: string
@@ -577,6 +592,15 @@ export const orgApi = {
   },
   createUpdate(orgId: string, payload: Record<string, unknown>) {
     return api.post<OrgUpdate>(`/orgs/${orgId}/updates`, payload)
+  },
+  getEventsFeed(query = '') {
+    return api.get<OrgUpdate[]>(`/orgs/updates/feed${query ? `?${query}` : ''}`)
+  },
+  getEventById(id: string) {
+    return api.get<OrgUpdate>(`/orgs/updates/feed/${id}`)
+  },
+  uploadUpdateImage(fd: FormData) {
+    return api.post<{ url: string }>('/orgs/updates/upload-image', fd)
   },
   getUpdates(orgId: string, query = '') {
     return api.get<OrgUpdate[]>(`/orgs/${orgId}/updates${query ? `?${query}` : ''}`)

@@ -4,7 +4,7 @@ import * as orgController from './org.controller'
 
 import { authenticate, authorize, optionalAuthenticate } from '../../middlewares/auth.middleware'
 import { validate } from '../../middlewares/validate.middleware'
-import { uploadMultiple, uploadDocument } from '../../middlewares/upload.middleware'
+import { uploadMultiple, uploadDocument, uploadSingle } from '../../middlewares/upload.middleware'
 import { Role } from '../../types/prisma-enums'
 
 import {
@@ -66,6 +66,9 @@ router.get('/:id/requests', authenticate, orgController.getOrgRequests)
 // ── Org updates (feed) ────────────────────────────────────────────────────
 router.post('/:id/updates', authenticate, validate(createOrgUpdateSchema), orgController.createOrgUpdate)
 router.get('/:id/updates', orgController.getOrgUpdates)
+router.get('/updates/feed', orgController.getEventsFeed)
+router.get('/updates/feed/:id', orgController.getEventById)
+router.post('/updates/upload-image', authenticate, uploadSingle, orgController.uploadUpdateImage)
 
 // ── Public: single org by slug ────────────────────────────────────────────
 router.get('/:slug', optionalAuthenticate, orgController.getOrgBySlug)
