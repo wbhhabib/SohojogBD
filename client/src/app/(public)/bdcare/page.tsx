@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import OrgGrid from '@/components/org/OrgGrid'
 import EventCard from '@/components/org/EventCard'
+import LocationSelect from '@/components/common/LocationSelect'
 import type { OrgUpdate } from '@/lib/api'
 import Pagination from '@/components/ui/pagination'
 import { orgApi } from '@/lib/api'
@@ -28,6 +29,9 @@ export default function BDCarePage() {
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('All')
     const [page, setPage] = useState(1)
+    const [orgType, setOrgType] = useState('')
+    const [orgDivision, setOrgDivision] = useState('')
+    const [orgDistrict, setOrgDistrict] = useState('')
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [total, setTotal] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
@@ -44,7 +48,10 @@ export default function BDCarePage() {
         params.set('page', String(page))
         params.set('limit', String(PAGE_SIZE))
         if (search.trim()) params.set('search', search.trim())
-        if (category !== 'All') params.set('category', category)
+        if (category !== 'All') params.set('areaOfWork', category)
+        if (orgType) params.set('category', orgType)
+        if (orgDivision) params.set('division', orgDivision)
+        if (orgDistrict) params.set('district', orgDistrict)
 
         orgApi.getAll(params.toString())
             .then((res) => {
@@ -55,7 +62,7 @@ export default function BDCarePage() {
             })
             .catch(() => { })
             .finally(() => setIsLoading(false))
-    }, [search, category, page])
+    }, [search, category, orgType, orgDivision, orgDistrict, page])
 
     const fetchEvents = useCallback(() => {
         setEventsLoading(true)
@@ -139,7 +146,79 @@ export default function BDCarePage() {
                         </div>
                     </div>
                 </div>
-                <section className="mb-10">
+
+                <section className="max-w-7xl mx-auto px-4 py-8">
+                    <h2 className="text-lg font-bold text-slate-900 mb-4">Organizations &amp; Volunteer Teams</h2>
+                    <div className="mb-7 relative">
+                        <div className="flex gap-2 overflow-x-auto pb-2 pr-8 scrollbar-hide">
+                            {['All', ...ORG_CATEGORIES].map((cat) => {
+                                const isActive = cat === category
+                                const emoji = CATEGORY_ICONS[cat] ?? '📌'
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => handleCategory(cat)}
+                                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold
+                      transition-all duration-200 whitespace-nowrap
+                      ${isActive
+                                                ? 'text-white shadow-md shadow-sky-200'
+                                                : 'bg-white border border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600 hover:bg-sky-50'
+                                            }`}
+                                        style={isActive ? { background: 'linear-gradient(135deg, #0284c7, #3b82f6)' } : {}}
+                                    >
+                                        <span>{emoji}</span>
+                                        {cat}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-10 bg-gradient-to-l from-[#f9fafb] to-transparent" />
+                    </div>
+                    <div className="mb-5">
+                        <LocationSelect
+                            layout="inline"
+                            division={orgDivision}
+                            district={orgDistrict}
+                            upazila=""
+                            onDivisionChange={setOrgDivision}
+                            onDistrictChange={setOrgDistrict}
+                            onUpazilaChange={() => { }}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between mb-5">
+                        <p className="text-sm text-gray-500">
+                            {isLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <span className="w-3 h-3 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+                                    Loading organizations…
+                                </span>
+                            ) : (
+                                <>
+                                    <span className="font-bold text-gray-800">{total}</span> organization{total !== 1 ? 's' : ''} found
+                                </>
+                            )}
+                        </p>
+                        <a href="/bdcare/my" className="flex items-center gap-1.5 text-xs font-semibold text-sky-600 hover:text-sky-700">
+                            <Users size={13} />
+                            My orgs &amp; requests
+                        </a>
+                    </div>
+
+                    <OrgGrid orgs={orgs} loading={isLoading} />
+
+                    {totalPages > 1 && (
+                        <div className="mt-12 flex justify-center">
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                onPageChange={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                            />
+                        </div>
+                    )}
+                </section>
+
+                <section className="max-w-7xl mx-auto px-4 mt-6 mb-10 pt-8 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                         <h2 className="text-lg font-bold text-slate-900">Regular Events</h2>
                         <div className="flex items-center gap-2">
@@ -172,63 +251,6 @@ export default function BDCarePage() {
                             {events.map((event) => (
                                 <EventCard key={event.id} event={event} />
                             ))}
-                        </div>
-                    )}
-                </section>
-                <section className="max-w-7xl mx-auto px-4 py-8">
-                    <div className="mb-7">
-                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {['All', ...ORG_CATEGORIES].map((cat) => {
-                                const isActive = cat === category
-                                const emoji = CATEGORY_ICONS[cat] ?? '📌'
-                                return (
-                                    <button
-                                        key={cat}
-                                        onClick={() => handleCategory(cat)}
-                                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold
-                      transition-all duration-200 whitespace-nowrap
-                      ${isActive
-                                                ? 'text-white shadow-md shadow-sky-200'
-                                                : 'bg-white border border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600 hover:bg-sky-50'
-                                            }`}
-                                        style={isActive ? { background: 'linear-gradient(135deg, #0284c7, #3b82f6)' } : {}}
-                                    >
-                                        <span>{emoji}</span>
-                                        {cat}
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-5">
-                        <p className="text-sm text-gray-500">
-                            {isLoading ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="w-3 h-3 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-                                    Loading organizations…
-                                </span>
-                            ) : (
-                                <>
-                                    <span className="font-bold text-gray-800">{total}</span> organization{total !== 1 ? 's' : ''} found
-                                </>
-                            )}
-                        </p>
-                        <a href="/bdcare/my" className="flex items-center gap-1.5 text-xs font-semibold text-sky-600 hover:text-sky-700">
-                            <Users size={13} />
-                            My orgs &amp; requests
-                        </a>
-                    </div>
-
-                    <OrgGrid orgs={orgs} loading={isLoading} />
-
-                    {totalPages > 1 && (
-                        <div className="mt-12 flex justify-center">
-                            <Pagination
-                                currentPage={page}
-                                totalPages={totalPages}
-                                onPageChange={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                            />
                         </div>
                     )}
                 </section>

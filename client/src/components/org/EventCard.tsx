@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Calendar, MapPin } from 'lucide-react'
+import { Calendar, MapPin, Building2 } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { OrgUpdate } from '@/lib/api'
 
@@ -24,6 +24,16 @@ export default function EventCard({ event }: { event: OrgUpdate }) {
                     <img src={getImageUrl(cover)} alt={event.title} className="w-full h-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+                {event.organization && (
+                    <div className="absolute top-3 left-3">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md">
+                            <Building2 size={12} />
+                            {event.organization.name}
+                        </span>
+                    </div>
+                )}
+
                 <p className="absolute bottom-2 left-3 right-3 text-white font-semibold text-sm line-clamp-2">
                     {event.title}
                 </p>
@@ -40,9 +50,6 @@ export default function EventCard({ event }: { event: OrgUpdate }) {
                         <MapPin size={12} />
                         {event.place}
                     </p>
-                )}
-                {event.organization && (
-                    <p className="text-xs text-emerald-600 font-medium pt-1">{event.organization.name}</p>
                 )}
             </div>
         </Link>

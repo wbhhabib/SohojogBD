@@ -13,6 +13,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { Handshake, ShieldCheck, Users2 } from 'lucide-react'
 import DocUpload from '@/components/org/DocUpload'
 import PhotosUpload from '@/components/org/PhotosUpload'
+import LocationSelect from '@/components/common/LocationSelect'
 
 // ── Constants mirrored from server/src/modules/orgs/org.schema.ts ─────────
 const REGISTERED_ORG_TYPES = [
@@ -47,7 +48,6 @@ const TEAM_DESIGNATIONS = [
     'Team Leader', 'Team Coordinator', 'Founder', 'Group Admin',
     'Volunteer Coordinator', 'President', 'General Secretary', 'Other',
 ]
-const DIVISIONS = ['Dhaka', 'Chattogram', 'Rajshahi', 'Khulna', 'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh']
 
 interface AreaEntry { area: string; areaOther: string; description: string }
 
@@ -539,12 +539,16 @@ export default function RegisterOrgPage() {
                                 <h2 className="text-sm font-bold text-gray-900">
                                     {category === 'REGISTERED' ? 'Official Office Address' : 'Primary Operating Area'}
                                 </h2>
+                                <LocationSelect
+                                    required
+                                    division={division}
+                                    district={district}
+                                    upazila={upazila}
+                                    onDivisionChange={setDivision}
+                                    onDistrictChange={setDistrict}
+                                    onUpazilaChange={setUpazila}
+                                />
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <Select label="Division" required placeholder="Select division" options={DIVISIONS.map((v) => ({ label: v, value: v }))} value={division} onChange={(e) => setDivision(e.target.value)} />
-                                    <Input label="District" required value={district} onChange={(e) => setDistrict(e.target.value)} />
-                                </div>
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <Input label="Upazila / Thana" required value={upazila} onChange={(e) => setUpazila(e.target.value)} />
                                     <Input label="Postal Code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
                                 </div>
                                 <Textarea label="Full Address / Operating Area" required rows={2} value={fullAddress} onChange={(e) => setFullAddress(e.target.value)} />
