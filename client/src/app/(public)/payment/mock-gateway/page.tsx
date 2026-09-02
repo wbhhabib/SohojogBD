@@ -7,10 +7,10 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Shield, Lock, CreditCard, CheckCircle, AlertCircle, ChevronRight, Loader2, Phone, RefreshCw } from 'lucide-react'
 
 const CARD_BRANDS = [
-  { name: 'Visa',       emoji: '💳', bg: '#f0f4ff', border: '#c7d2fe', label: 'Visa / Debit' },
+  { name: 'Visa', emoji: '💳', bg: '#f0f4ff', border: '#c7d2fe', label: 'Visa / Debit' },
   { name: 'Mastercard', emoji: '💳', bg: '#fff0f0', border: '#fecaca', label: 'Mastercard' },
-  { name: 'bKash',      emoji: '📱', bg: '#fff0f8', border: '#fbcfe8', label: 'bKash' },
-  { name: 'Nagad',      emoji: '📱', bg: '#fff7ed', border: '#fed7aa', label: 'Nagad' },
+  { name: 'bKash', emoji: '📱', bg: '#fff0f8', border: '#fbcfe8', label: 'bKash' },
+  { name: 'Nagad', emoji: '📱', bg: '#fff7ed', border: '#fed7aa', label: 'Nagad' },
 ]
 
 function fmt4(val: string) {
@@ -28,31 +28,31 @@ type Step = 'method' | 'card' | 'otp' | 'processing' | 'done'
 
 function MockGatewayContent() {
   const searchParams = useSearchParams()
-  const router       = useRouter()
+  const router = useRouter()
 
-  const amount       = searchParams.get('amount')       ?? '500'
-  const donationId   = searchParams.get('donationId')   ?? 'DEMO'
-  const campaign     = searchParams.get('campaign')     ?? 'Campaign'
+  const amount = searchParams.get('amount') ?? '500'
+  const donationId = searchParams.get('donationId') ?? 'DEMO'
+  const campaign = searchParams.get('campaign') ?? 'Campaign'
   const campaignSlug = searchParams.get('campaignSlug') ?? ''
-  const successUrl   = searchParams.get('successUrl')   ?? '/payment/success'
+  const successUrl = searchParams.get('successUrl') ?? '/payment/success'
 
-  const [step,        setStep]       = useState<Step>('method')
-  const [method,      setMethod]     = useState<string | null>(null)
-  const [cardNo,      setCardNo]     = useState('')
-  const [expiry,      setExpiry]     = useState('')
-  const [cvv,         setCvv]        = useState('')
-  const [holderName,  setHolderName] = useState('')
-  const [phone,       setPhone]      = useState('')
-  const [errors,      setErrors]     = useState<Record<string, string>>({})
-  const [progress,    setProgress]   = useState(0)
-  const [mounted,     setMounted]    = useState(false)
+  const [step, setStep] = useState<Step>('method')
+  const [method, setMethod] = useState<string | null>(null)
+  const [cardNo, setCardNo] = useState('')
+  const [expiry, setExpiry] = useState('')
+  const [cvv, setCvv] = useState('')
+  const [holderName, setHolderName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [progress, setProgress] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
 
-  const [otpDigits,   setOtpDigits]  = useState(['', '', '', '', '', ''])
-  const [otpError,    setOtpError]   = useState('')
-  const [otpSent,     setOtpSent]    = useState(false)
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', ''])
+  const [otpError, setOtpError] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
-  const [otpShake,    setOtpShake]   = useState(false)
+  const [otpShake, setOtpShake] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => { setTimeout(() => setMounted(true), 60) }, [])
@@ -80,11 +80,11 @@ function MockGatewayContent() {
   useEffect(() => {
     if (step !== 'done') return
     const params = new URLSearchParams({
-      tran_id:      `TXN${Date.now()}`,
+      tran_id: `TXN${Date.now()}`,
       bank_tran_id: `BANK${Math.floor(Math.random() * 1e9)}`,
       amount, store_amount: amount, currency: 'BDT',
-      card_type:   (method === 'bKash' || method === 'Nagad') ? 'MOBILE_BANKING' : 'VISA-Debit',
-      card_brand:  method ?? 'VISA',
+      card_type: (method === 'bKash' || method === 'Nagad') ? 'MOBILE_BANKING' : 'VISA-Debit',
+      card_brand: method ?? 'VISA',
       card_issuer: 'Demo Bank BD',
       donationId,
       campaignSlug,
@@ -99,11 +99,11 @@ function MockGatewayContent() {
     const e: Record<string, string> = {}
     if (!isMobile) {
       if (cardNo.replace(/\s/g, '').length < 16) e.cardNo = 'Valid 16-digit card number required'
-      if (expiry.length < 5)                     e.expiry = 'Valid expiry required (MM/YY)'
-      if (cvv.length < 3)                        e.cvv    = 'Valid CVV required'
-      if (!holderName.trim())                    e.name   = 'Card holder name required'
+      if (expiry.length < 5) e.expiry = 'Valid expiry required (MM/YY)'
+      if (cvv.length < 3) e.cvv = 'Valid CVV required'
+      if (!holderName.trim()) e.name = 'Card holder name required'
     } else {
-      if (phone.replace(/\D/g, '').length < 11)  e.phone  = 'Valid 11-digit mobile number required'
+      if (phone.replace(/\D/g, '').length < 11) e.phone = 'Valid 11-digit mobile number required'
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -175,13 +175,13 @@ function MockGatewayContent() {
   return (
     <div className={`min-h-screen bg-[#f0f4f8] flex flex-col items-center justify-center px-4 py-10
       transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-<div className="mb-4 px-4 py-1.5 bg-amber-100 border border-amber-300 rounded-full text-xs font-semibold text-amber-700 flex items-center gap-1.5">
+      <div className="mb-4 px-4 py-1.5 bg-amber-100 border border-amber-300 rounded-full text-xs font-semibold text-amber-700 flex items-center gap-1.5">
         <AlertCircle size={12} />
         DEMO MODE — No real payment will be charged
       </div>
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-<div className="bg-[#003d7a] px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#003d7a] px-6 py-4 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
@@ -196,11 +196,11 @@ function MockGatewayContent() {
             <Shield size={12} /> 256-bit SSL
           </div>
         </div>
-{(step === 'method' || step === 'card' || step === 'otp') && (
+        {(step === 'method' || step === 'card' || step === 'otp') && (
           <div className="flex border-b border-gray-100">
             {['Method', 'Details', 'OTP Verify'].map((label, i) => {
               const active = (step === 'method' && i === 0) || (step === 'card' && i === 1) || (step === 'otp' && i === 2)
-              const done   = (step === 'card' && i === 0) || (step === 'otp' && i <= 1)
+              const done = (step === 'card' && i === 0) || (step === 'otp' && i <= 1)
               return (
                 <div key={label} className={`flex-1 flex flex-col items-center py-2.5 text-[10px] font-semibold gap-1
                   ${active ? 'text-[#003d7a]' : done ? 'text-emerald-600' : 'text-gray-400'}`}>
@@ -214,7 +214,7 @@ function MockGatewayContent() {
             })}
           </div>
         )}
-<div className="bg-[#e8f4fd] border-b border-blue-100 px-6 py-3 flex items-center justify-between">
+        <div className="bg-[#e8f4fd] border-b border-blue-100 px-6 py-3 flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-500">Donating to</p>
             <p className="text-sm font-semibold text-slate-800 truncate max-w-[200px]">{decodeURIComponent(campaign)}</p>
@@ -226,7 +226,7 @@ function MockGatewayContent() {
         </div>
 
         <div className="p-6">
-{step === 'method' && (
+          {step === 'method' && (
             <div>
               <p className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <CreditCard size={15} className="text-[#003d7a]" />
@@ -248,7 +248,7 @@ function MockGatewayContent() {
               </p>
             </div>
           )}
-{step === 'card' && (
+          {step === 'card' && (
             <div>
               <button onClick={() => setStep('method')}
                 className="text-xs text-[#003d7a] font-medium mb-4 flex items-center gap-1 hover:underline">
@@ -283,7 +283,7 @@ function MockGatewayContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-<div className="rounded-xl p-4 text-white text-xs font-mono relative overflow-hidden"
+                  <div className="rounded-xl p-4 text-white text-xs font-mono relative overflow-hidden"
                     style={{ background: 'linear-gradient(135deg, #003d7a, #0066cc)' }}>
                     <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-10 bg-white"
                       style={{ transform: 'translate(30%,-30%)' }} />
@@ -318,7 +318,7 @@ function MockGatewayContent() {
                     <div>
                       <label className="text-xs font-semibold text-slate-600 block mb-1">CVV</label>
                       <input type="password" placeholder="•••" maxLength={4} value={cvv}
-                        onChange={e => { setCvv(e.target.value.replace(/\D/g,'').slice(0,4)); setErrors({}) }}
+                        onChange={e => { setCvv(e.target.value.replace(/\D/g, '').slice(0, 4)); setErrors({}) }}
                         className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003d7a]/30
                           ${errors.cvv ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-[#003d7a]'}`} />
                       {errors.cvv && <p className="text-red-500 text-[11px] mt-1">{errors.cvv}</p>}
@@ -345,7 +345,7 @@ function MockGatewayContent() {
               </button>
             </div>
           )}
-{step === 'otp' && (
+          {step === 'otp' && (
             <div>
               <div className="flex flex-col items-center mb-6">
                 <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
@@ -357,13 +357,13 @@ function MockGatewayContent() {
                   <span className="font-semibold text-slate-700">{maskedContact}</span>
                 </p>
               </div>
-<div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-5 flex items-center gap-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-5 flex items-center gap-2">
                 <AlertCircle size={13} className="text-amber-500 shrink-0" />
                 <p className="text-[11px] text-amber-700">
                   Demo OTP: <span className="font-bold tracking-widest">123456</span>
                 </p>
               </div>
-<div className={`flex gap-2 justify-center mb-2 ${otpShake ? 'animate-bounce' : ''}`}>
+              <div className={`flex gap-2 justify-center mb-2 ${otpShake ? 'animate-bounce' : ''}`}>
                 {otpDigits.map((d, i) => (
                   <input
                     key={i}
@@ -379,7 +379,7 @@ function MockGatewayContent() {
                       transition-all duration-150
                       ${otpError ? 'border-red-400 bg-red-50 text-red-600'
                         : d ? 'border-[#003d7a] bg-blue-50 text-[#003d7a]'
-                        : 'border-gray-200 focus:border-[#003d7a]'}`}
+                          : 'border-gray-200 focus:border-[#003d7a]'}`}
                   />
                 ))}
               </div>
@@ -387,8 +387,8 @@ function MockGatewayContent() {
               {otpError && (
                 <p className="text-center text-red-500 text-xs font-medium mt-1 mb-3">{otpError}</p>
               )}
-<div className="flex items-center justify-center gap-1 mt-3 mb-5">
-                <p className="text-xs text-slate-400">Didn't receive OTP?</p>
+              <div className="flex items-center justify-center gap-1 mt-3 mb-5">
+                <p className="text-xs text-slate-400">Didn&apos;t receive OTP?</p>
                 <button onClick={handleResend} disabled={resendTimer > 0}
                   className={`flex items-center gap-1 text-xs font-semibold
                     ${resendTimer > 0 ? 'text-slate-400 cursor-not-allowed' : 'text-[#003d7a] hover:underline'}`}>
@@ -439,9 +439,9 @@ function MockGatewayContent() {
               <p className="font-bold text-emerald-800 text-base">Payment Confirmed!</p>
               <p className="text-slate-500 text-xs">Redirecting to receipt…</p>
               <div className="flex gap-1">
-                {[0,1,2].map(i => (
+                {[0, 1, 2].map(i => (
                   <span key={i} className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce"
-                    style={{ animationDelay: `${i*0.15}s` }} />
+                    style={{ animationDelay: `${i * 0.15}s` }} />
                 ))}
               </div>
             </div>

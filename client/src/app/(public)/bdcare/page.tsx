@@ -10,7 +10,7 @@ import type { OrgUpdate } from '@/lib/api'
 import Pagination from '@/components/ui/pagination'
 import { orgApi } from '@/lib/api'
 import type { Organization } from '@/lib/api'
-import { Search, Handshake, PlusCircle, Users } from 'lucide-react'
+import { Search, Handshake, PlusCircle, Users, SlidersHorizontal, X } from 'lucide-react'
 
 const ORG_CATEGORIES = [
     'Education', 'Health', 'Disaster Relief', 'Environment',
@@ -22,6 +22,13 @@ const CATEGORY_ICONS: Record<string, string> = {
     All: '🌟', Education: '🎓', Health: '🏥', 'Disaster Relief': '🆘', Environment: '🌿',
     'Animal Welfare': '🐾', Community: '🏘️', Poverty: '🤝', 'Youth Development': '🌟', Other: '📌',
 }
+
+
+const ORG_TYPE_FILTERS = [
+    { value: '', label: 'All Types' },
+    { value: 'REGISTERED', label: 'Registered' },
+    { value: 'TEAM', label: 'Volunteer Team' },
+]
 
 const PAGE_SIZE = 9
 
@@ -39,6 +46,7 @@ export default function BDCarePage() {
     const [eventsLoading, setEventsLoading] = useState(false)
     const [eventDivision, setEventDivision] = useState('')
     const [eventDistrict, setEventDistrict] = useState('')
+    const [showFilters, setShowFilters] = useState(false)
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -85,6 +93,20 @@ export default function BDCarePage() {
 
     const handleSearch = (val: string) => { setSearch(val); setPage(1) }
     const handleCategory = (val: string) => { setCategory(val); setPage(1) }
+    const handleOrgType = (val: string) => { setOrgType(val); setPage(1) }
+    const clearFilters = () => {
+        setCategory('All')
+        setOrgType('')
+        setOrgDivision('')
+        setOrgDistrict('')
+        setPage(1)
+    }
+    const activeFilterCount = [
+        category !== 'All',
+        orgType !== '',
+        orgDivision !== '',
+        orgDistrict !== '',
+    ].filter(Boolean).length
 
     return (
         <>
@@ -148,43 +170,110 @@ export default function BDCarePage() {
                 </div>
 
                 <section className="max-w-7xl mx-auto px-4 py-8">
-                    <h2 className="text-lg font-bold text-slate-900 mb-4">Organizations &amp; Volunteer Teams</h2>
-                    <div className="mb-7 relative">
-                        <div className="flex gap-2 overflow-x-auto pb-2 pr-8 scrollbar-hide">
-                            {['All', ...ORG_CATEGORIES].map((cat) => {
-                                const isActive = cat === category
-                                const emoji = CATEGORY_ICONS[cat] ?? '📌'
-                                return (
-                                    <button
-                                        key={cat}
-                                        onClick={() => handleCategory(cat)}
-                                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold
-                      transition-all duration-200 whitespace-nowrap
-                      ${isActive
-                                                ? 'text-white shadow-md shadow-sky-200'
-                                                : 'bg-white border border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600 hover:bg-sky-50'
-                                            }`}
-                                        style={isActive ? { background: 'linear-gradient(135deg, #0284c7, #3b82f6)' } : {}}
-                                    >
-                                        <span>{emoji}</span>
-                                        {cat}
+                    <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+                        <h2 className="text-lg font-bold text-slate-900">Organizations &amp; Volunteer Teams</h2>
+                        <button
+                            onClick={() => setShowFilters(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:border-sky-300 hover:text-sky-600 transition-all"
+                        >
+                            <SlidersHorizontal size={15} />
+                            Filters
+                            {activeFilterCount > 0 && (
+                                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-sky-600 text-white text-[11px] font-bold">
+                                    {activeFilterCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {showFilters && (
+                        <div
+                            className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/40"
+                            onClick={() => setShowFilters(false)}
+                        >
+                            <div
+                                className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto p-6"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-lg font-bold text-slate-900">Search filters</h3>
+                                    <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600">
+                                        <X size={20} />
                                     </button>
-                                )
-                            })}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">
+                                            Category
+                                        </h4>
+                                        <div className="flex flex-col gap-2.5">
+                                            {['All', ...ORG_CATEGORIES].map((cat) => (
+                                                <button
+                                                    key={cat}
+                                                    onClick={() => handleCategory(cat)}
+                                                    className={`text-left text-sm flex items-center gap-1.5 ${cat === category ? 'font-bold text-sky-600' : 'text-gray-600 hover:text-sky-600'
+                                                        }`}
+                                                >
+                                                    <span>{CATEGORY_ICONS[cat] ?? '📌'}</span>
+                                                    {cat}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">
+                                            Type
+                                        </h4>
+                                        <div className="flex flex-col gap-2.5">
+                                            {ORG_TYPE_FILTERS.map((opt) => (
+                                                <button
+                                                    key={opt.value || 'all-types'}
+                                                    onClick={() => handleOrgType(opt.value)}
+                                                    className={`text-left text-sm ${opt.value === orgType ? 'font-bold text-sky-600' : 'text-gray-600 hover:text-sky-600'
+                                                        }`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">
+                                            Location
+                                        </h4>
+                                        <LocationSelect
+                                            layout="stacked"
+                                            division={orgDivision}
+                                            district={orgDistrict}
+                                            upazila=""
+                                            onDivisionChange={setOrgDivision}
+                                            onDistrictChange={setOrgDistrict}
+                                            onUpazilaChange={() => { }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                    <button
+                                        onClick={clearFilters}
+                                        className="text-sm font-semibold text-gray-500 hover:text-red-600"
+                                    >
+                                        Clear all filters
+                                    </button>
+                                    <button
+                                        onClick={() => setShowFilters(false)}
+                                        className="text-sm font-bold text-white px-5 py-2 rounded-lg"
+                                        style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)' }}
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-10 bg-gradient-to-l from-[#f9fafb] to-transparent" />
-                    </div>
-                    <div className="mb-5">
-                        <LocationSelect
-                            layout="inline"
-                            division={orgDivision}
-                            district={orgDistrict}
-                            upazila=""
-                            onDivisionChange={setOrgDivision}
-                            onDistrictChange={setOrgDistrict}
-                            onUpazilaChange={() => { }}
-                        />
-                    </div>
+                    )}
 
                     <div className="flex items-center justify-between mb-5">
                         <p className="text-sm text-gray-500">

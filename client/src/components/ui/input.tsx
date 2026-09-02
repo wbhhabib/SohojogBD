@@ -15,6 +15,7 @@ interface InputProps {
   name?: string
   required?: boolean
   min?: string | number
+  max?: string | number
 }
 
 export function Input({
@@ -29,6 +30,7 @@ export function Input({
   name,
   required = false,
   min,
+  max,
 }: InputProps) {
   return (
     <div className="flex flex-col gap-1">
@@ -47,6 +49,7 @@ export function Input({
         placeholder={placeholder}
         required={required}
         min={min}
+        max={max}
         className={`
           border rounded-lg px-3 py-2 w-full text-sm text-slate-900
           placeholder:text-slate-400

@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect } from 'react'
 import Select from '@/components/ui/select'
-import { allDivision, districtOf, upazilasOf, DivisionName } from '@bangladeshi/bangladesh-address'
+import { allDivision, districtsOf, upazilaNamesOf, DivisionName } from '@bangladeshi/bangladesh-address/build/src'
 
 interface LocationSelectProps {
     division: string
@@ -31,12 +31,12 @@ export default function LocationSelect({
 }: LocationSelectProps) {
     const districts = useMemo(() => {
         if (!division) return []
-        return districtOf(division as DivisionName) ?? []
+        return districtsOf(division as DivisionName) ?? []
     }, [division])
 
     const upazilas = useMemo(() => {
         if (!district) return []
-        return upazilasOf(district) ?? []
+        return upazilaNamesOf(district) ?? []
     }, [district])
 
     // Division বদলালে আগের District/Upazila আর valid না থাকতে পারে, তাই reset করা

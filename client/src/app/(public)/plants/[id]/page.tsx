@@ -205,7 +205,7 @@ export default function PlantDetailPage() {
                                             Request this Plant
                                         </Button>
                                         {!user && (
-                                            <p className="text-xs text-gray-400 text-center">You'll need to log in first.</p>
+                                            <p className="text-xs text-gray-400 text-center">You&apos;ll need to log in first.</p>
                                         )}
                                     </div>
                                 )}
