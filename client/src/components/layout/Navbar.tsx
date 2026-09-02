@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Handshake, Menu, LogOut, LayoutDashboard, User, Heart, Sprout, Store } from 'lucide-react'
+import { Handshake, Menu, LogOut, LayoutDashboard, User, Heart, Sprout, Store, GraduationCap } from 'lucide-react'
 import Button from '@/components/ui/button'
 import MobileMenu from './MobileMenu'
 import { useAuth } from '@/lib/AuthContext'
@@ -135,12 +135,20 @@ export default function Navbar() {
                           My Plant Listings
                         </Link>
                         <Link
-                          href="/grow-together/my"
+                          href="/grow-together/pools/my"
                           onClick={() => setDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
                         >
                           <Store size={15} className="text-slate-400" />
                           My Wholesale Pools
+                        </Link>
+                        <Link
+                          href="/grow-together/courses/my"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <GraduationCap size={15} className="text-slate-400" />
+                          My Courses
                         </Link>
                         {role === 'creator' && (
                           <Link

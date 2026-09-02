@@ -31,7 +31,7 @@ export default function MyPoolsPage() {
 
     useEffect(() => {
         if (ready && !user) {
-            router.push('/auth/login?next=/grow-together/my')
+            router.push('/auth/login?next=/grow-together/pools/my')
         }
     }, [ready, user, router])
 
@@ -62,7 +62,7 @@ export default function MyPoolsPage() {
                             </div>
                         </div>
 
-                        <a href="/grow-together/create"
+                        <a href="/grow-together/pools/create"
                             className="inline-flex items-center gap-2 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-amber-200 hover:shadow-xl hover:-translate-y-0.5 transition-all shrink-0"
                             style={{ background: 'linear-gradient(135deg, #d97706, #f97316)' }}
                         >

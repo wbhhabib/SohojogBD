@@ -45,7 +45,7 @@ export default function CreatePoolPage() {
 
     useEffect(() => {
         if (ready && !user) {
-            router.push('/auth/login?next=/grow-together/create')
+            router.push('/auth/login?next=/grow-together/pools/create')
         }
     }, [ready, user, router])
 
@@ -90,7 +90,7 @@ export default function CreatePoolPage() {
             return
         }
 
-        router.push(`/grow-together/${res.data.slug}`)
+        router.push(`/grow-together/pools/${res.data.slug}`)
     }
 
     if (!ready || !user) return null

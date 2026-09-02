@@ -80,7 +80,7 @@ export default function PoolDetailPage() {
                     <p className="text-5xl">📦</p>
                     <h1 className="text-xl font-bold text-gray-900">Pool not found</h1>
                     <p className="text-sm text-gray-500">This pool may have been removed or the link is wrong.</p>
-                    <a href="/grow-together" className="text-sm font-semibold text-amber-600 hover:underline">Back to browse</a>
+                    <a href="/grow-together/pools" className="text-sm font-semibold text-amber-600 hover:underline">Back to browse</a>
                 </div>
                 <Footer />
             </>
@@ -98,7 +98,7 @@ export default function PoolDetailPage() {
 
     const handleJoin = async () => {
         if (!user) {
-            router.push(`/auth/login?next=/grow-together/${slug}`)
+            router.push(`/auth/login?next=/grow-together/pools/${slug}`)
             return
         }
         setError('')
@@ -111,7 +111,7 @@ export default function PoolDetailPage() {
         const check = await verificationApi.checkReadiness('WHOLESALE_JOIN')
         if (check.success && check.data && !check.data.ready) {
             sessionStorage.setItem(`draft:pool-join:${slug}`, JSON.stringify({ quantity, note }))
-            router.push(`/verification/core?action=WHOLESALE_JOIN&redirect=${encodeURIComponent(`/grow-together/${slug}`)}`)
+            router.push(`/verification/core?action=WHOLESALE_JOIN&redirect=${encodeURIComponent(`/grow-together/pools/${slug}`)}`)
             return
         }
 
@@ -146,7 +146,7 @@ export default function PoolDetailPage() {
             <Navbar />
             <main className="min-h-screen" style={{ background: 'linear-gradient(180deg, #fffbeb 0%, #f9fafb 120px)' }}>
                 <div className="max-w-5xl mx-auto px-4 py-8">
-                    <a href="/grow-together" className="inline-flex items-center gap-1.5 text-sm mb-5 text-gray-500 hover:text-amber-600 transition-colors">
+                    <a href="/grow-together/pools" className="inline-flex items-center gap-1.5 text-sm mb-5 text-gray-500 hover:text-amber-600 transition-colors">
                         <ArrowLeft size={14} />
                         Back to pools
                     </a>
