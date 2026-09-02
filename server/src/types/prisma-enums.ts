@@ -112,6 +112,19 @@ export const PoolStatus = {
 } as const
 export type PoolStatus = (typeof PoolStatus)[keyof typeof PoolStatus]
 
+export const CourseMode = {
+  ONLINE: 'ONLINE',
+  OFFLINE: 'OFFLINE',
+  HYBRID: 'HYBRID',
+} as const
+export type CourseMode = (typeof CourseMode)[keyof typeof CourseMode]
+
+export const CourseStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+} as const
+export type CourseStatus = (typeof CourseStatus)[keyof typeof CourseStatus]
+
 export const SOSStatus = {
   OPEN: 'OPEN',
   ACKNOWLEDGED: 'ACKNOWLEDGED',

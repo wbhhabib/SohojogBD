@@ -220,7 +220,7 @@ export const joinPool = async (poolId: string, userId: string, data: JoinPoolInp
     if (pool.status !== PoolStatus.OPEN && pool.status !== PoolStatus.TARGET_REACHED) {
         throw createHttpError('This pool is no longer accepting participants', 400)
     }
-    const alreadyIn = pool.participants.some((p) => p.participantId === userId)
+    const alreadyIn = pool.participants.some((p: { participantId: string }) => p.participantId === userId)
     if (alreadyIn) throw createHttpError('You have already joined this pool', 400)
     if (data.quantity < pool.minJoinQuantity) {
         throw createHttpError(`Minimum join quantity is ${pool.minJoinQuantity}`, 400)
@@ -262,7 +262,7 @@ export const leavePool = async (poolId: string, userId: string) => {
     })
     if (!pool) throw createHttpError('Pool not found', 404)
 
-    const participation = pool.participants.find((p) => p.participantId === userId)
+    const participation = pool.participants.find((p: { participantId: string }) => p.participantId === userId)
     if (!participation) throw createHttpError('You have not joined this pool', 400)
 
     await prisma.poolParticipant.delete({ where: { id: participation.id } })

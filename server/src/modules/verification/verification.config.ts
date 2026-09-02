@@ -61,7 +61,7 @@ export const ACTION_REQUIRED_FIELDS: Record<ActionType, CheckableField[]> = {
         'emergencyContactPhone',
     ],
 
-    WHOLESALE_JOIN: ['phone', 'address'],
+    WHOLESALE_JOIN: [...CORE_FIELDS],
 
     COURSE_APPLY: [...CORE_FIELDS, 'educationLevel', 'institution'],
 

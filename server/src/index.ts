@@ -34,6 +34,7 @@ import pushRoutes from '@/modules/push/push.routes';
 import sosRoutes from '@/modules/sos/sos.routes';
 import verificationRoutes from './modules/verification/verification.routes'
 import poolRoutes from '@/modules/growtogether/pool.routes';
+import courseRoutes from '@/modules/growtogether/course.routes';
 import { maintenanceMiddleware } from '@/middlewares/maintenance.middleware';
 
 
@@ -125,6 +126,7 @@ app.use('/api/v1/push', pushRoutes);
 app.use('/api/v1/sos', sosRoutes);
 app.use('/api/v1/verification', verificationRoutes);
 app.use('/api/v1/grow-together/pools', poolRoutes);
+app.use('/api/v1/grow-together/courses', courseRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({

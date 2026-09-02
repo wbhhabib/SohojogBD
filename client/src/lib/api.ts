@@ -217,15 +217,6 @@ export interface OrgUpdate {
   title: string
   content: string
   images: string[]
-  createdAt: string
-  organizationId: string
-}
-
-export interface OrgUpdate {
-  id: string
-  title: string
-  content: string
-  images: string[]
   eventDate?: string | null
   place?: string | null
   division?: string | null

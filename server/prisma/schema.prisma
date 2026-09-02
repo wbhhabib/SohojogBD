@@ -434,7 +434,8 @@ model Organization {
   institution    OrgInstitution?
   representative OrgRepresentative?
   requests       VolunteerRequest[]
-  updates        OrgUpdate[]
+    updates        OrgUpdate[]
+  courses        Course[]
   verificationLogs OrgVerificationLog[]
 
   @@index([ownerId])
@@ -607,4 +608,49 @@ model PushSubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum CourseMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum CourseStatus {
+  OPEN
+  CLOSED
+}
+
+model Course {
+  id             String       @id @default(cuid())
+  title          String
+  slug           String       @unique
+  description    String
+  skillCategory  String
+  mode           CourseMode
+  duration       String
+  eligibility    String?
+  division       String?
+  district       String?
+  upazila        String?
+  startDate      DateTime?
+  isOngoing      Boolean      @default(false)
+  seatsAvailable Int?
+  contactPhone   String
+  contactEmail   String?
+  applyLink      String?
+  status         CourseStatus @default(OPEN)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([skillCategory])
+  @@index([mode])
+  @@index([division])
+  @@index([district])
+  @@index([upazila])
+  @@index([status])
+  @@index([slug])
 }
