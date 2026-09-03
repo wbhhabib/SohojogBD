@@ -125,6 +125,24 @@ export const CourseStatus = {
 } as const
 export type CourseStatus = (typeof CourseStatus)[keyof typeof CourseStatus]
 
+export const CourseProviderInstitutionType = {
+  GOVERNMENT_PROJECT: 'GOVERNMENT_PROJECT',
+  NGO: 'NGO',
+  PRIVATE_COMPANY: 'PRIVATE_COMPANY',
+  UNIVERSITY_CLUB: 'UNIVERSITY_CLUB',
+  INTERNATIONAL_ORG: 'INTERNATIONAL_ORG',
+} as const
+export type CourseProviderInstitutionType = (typeof CourseProviderInstitutionType)[keyof typeof CourseProviderInstitutionType]
+
+export const CourseProviderStatus = {
+  PENDING: 'PENDING',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  SUSPENDED: 'SUSPENDED',
+} as const
+export type CourseProviderStatus = (typeof CourseProviderStatus)[keyof typeof CourseProviderStatus]
+
 export const SOSStatus = {
   OPEN: 'OPEN',
   ACKNOWLEDGED: 'ACKNOWLEDGED',

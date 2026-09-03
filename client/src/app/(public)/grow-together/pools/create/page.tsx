@@ -7,13 +7,13 @@ import Footer from '@/components/layout/Footer'
 import Input from '@/components/ui/input'
 import Select from '@/components/ui/select'
 import Textarea from '@/components/ui/textarea'
+import LocationSelect from '@/components/common/LocationSelect'
 import { useAuth } from '@/lib/AuthContext'
-import { createPool, POOL_CATEGORIES, DIVISIONS, UNITS } from '@/lib/growTogetherApi'
+import { createPool, POOL_CATEGORIES, UNITS } from '@/lib/growTogetherApi'
 import type { PoolCategory, Division } from '@/lib/growTogetherApi'
 import { PackagePlus, Loader2 } from 'lucide-react'
 
 const CATEGORY_OPTIONS = POOL_CATEGORIES.map((v) => ({ label: v, value: v }))
-const DIVISION_OPTIONS = DIVISIONS.map((v) => ({ label: v, value: v }))
 const UNIT_OPTIONS = UNITS.map((v) => ({ label: v, value: v }))
 
 function minDateStr(daysFromNow: number) {
@@ -204,40 +204,23 @@ export default function CreatePoolPage() {
 
                         <hr className="border-amber-100" />
 
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <Select
-                                label="Area (division)"
-                                required
-                                placeholder="Select your area"
-                                options={DIVISION_OPTIONS}
-                                value={division}
-                                onChange={(e) => setDivision(e.target.value as Division)}
-                            />
-                            <Input
-                                label="Location (area/market)"
-                                required
-                                placeholder="e.g. Mirpur 10, Dhaka"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                            />
-                        </div>
+                        <LocationSelect
+                            division={division}
+                            district={district}
+                            upazila={upazila}
+                            onDivisionChange={(val) => setDivision(val as Division)}
+                            onDistrictChange={setDistrict}
+                            onUpazilaChange={setUpazila}
+                            required
+                        />
 
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <Input
-                                label="District"
-                                required
-                                placeholder="e.g. Dhaka"
-                                value={district}
-                                onChange={(e) => setDistrict(e.target.value)}
-                            />
-                            <Input
-                                label="Upazila / Thana"
-                                required
-                                placeholder="e.g. Mirpur"
-                                value={upazila}
-                                onChange={(e) => setUpazila(e.target.value)}
-                            />
-                        </div>
+                        <Input
+                            label="Location (area/market)"
+                            required
+                            placeholder="e.g. Mirpur 10, Dhaka"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                        />
 
                         <Input
                             label="Contact phone"

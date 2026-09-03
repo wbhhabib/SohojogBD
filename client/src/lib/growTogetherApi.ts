@@ -11,6 +11,7 @@
 
 import { api } from '@/lib/api'
 import type { ApiResponse as BaseApiResponse } from '@/lib/api'
+import { allDivision, DivisionName } from '@bangladeshi/bangladesh-address/build/src'
 
 export type PoolCategory =
     | 'Kirana / Grocery'
@@ -50,14 +51,11 @@ export const CATEGORY_EMOJI: Record<PoolCategory, string> = {
     'Other': '📦',
 }
 
-export type Division =
-    | 'Dhaka' | 'Chattogram' | 'Rajshahi' | 'Khulna'
-    | 'Barishal' | 'Sylhet' | 'Rangpur' | 'Mymensingh'
+// Package's DivisionName enum is the source of truth for spelling —
+// never hardcode division names elsewhere, to avoid silent filter mismatches.
+export type Division = DivisionName
 
-export const DIVISIONS: Division[] = [
-    'Dhaka', 'Chattogram', 'Rajshahi', 'Khulna',
-    'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh',
-]
+export const DIVISIONS: Division[] = allDivision() as DivisionName[]
 
 export const UNITS = ['pcs', 'dozen', 'kg', 'bag', 'carton', 'box', 'liter', 'ream', 'gross', 'other']
 

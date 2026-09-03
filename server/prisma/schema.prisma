@@ -124,6 +124,8 @@ model User {
   pushSubscriptions   PushSubscription[]
   wholesalePools      WholesalePool[]
   poolParticipations  PoolParticipant[]
+  courseProviders       CourseProvider[]
+  courseProviderBranch   CourseProviderBranch?
 }
 model Campaign {
   id              String           @id @default(cuid())
@@ -621,6 +623,83 @@ enum CourseStatus {
   CLOSED
 }
 
+enum CourseProviderInstitutionType {
+  GOVERNMENT_PROJECT
+  NGO
+  PRIVATE_COMPANY
+  UNIVERSITY_CLUB
+  INTERNATIONAL_ORG
+}
+
+enum CourseProviderStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model CourseProvider {
+  id                  String                        @id @default(cuid())
+  institutionName     String
+  institutionType     CourseProviderInstitutionType
+  logo                String?
+  website             String?
+  facebookPage        String?
+  headquartersAddress String
+
+  headquartersDivision String
+  headquartersDistrict String
+  headquartersUpazila  String
+
+  registrationNumber String
+  legalDocumentUrl   String
+
+  contactPersonName String
+  designation       String
+  officialEmail     String
+  mobileNumber      String
+  nidNumber         String
+
+  status    CourseProviderStatus @default(PENDING)
+  adminNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  branches CourseProviderBranch[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model CourseProviderBranch {
+  id        String  @id @default(cuid())
+  name      String
+  address   String
+  division  String
+  district  String
+  upazila   String
+  isMain    Boolean @default(false)
+  isBlocked Boolean @default(false)
+
+  createdAt  DateTime       @default(now())
+  providerId String
+  provider   CourseProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  loginUserId String @unique
+  loginUser   User   @relation(fields: [loginUserId], references: [id], onDelete: Cascade)
+
+  courses Course[]
+
+  @@index([providerId])
+  @@index([division])
+  @@index([district])
+  @@index([upazila])
+}
+
 model Course {
   id             String       @id @default(cuid())
   title          String
@@ -642,10 +721,10 @@ model Course {
   status         CourseStatus @default(OPEN)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branchId String
+  branch   CourseProviderBranch @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId])
+  @@index([branchId])
   @@index([skillCategory])
   @@index([mode])
   @@index([division])

@@ -7,17 +7,16 @@ import Footer from '@/components/layout/Footer'
 import Input from '@/components/ui/input'
 import Select from '@/components/ui/select'
 import Textarea from '@/components/ui/textarea'
+import LocationSelect from '@/components/common/LocationSelect'
 import { useAuth } from '@/lib/AuthContext'
 import {
     createCourse, getMyPostableOrgs, COURSE_CATEGORIES, COURSE_MODES, MODE_LABEL,
 } from '@/lib/courseApi'
 import type { CourseCategory, CourseMode, PostableOrg } from '@/lib/courseApi'
-import { DIVISIONS } from '@/lib/growTogetherApi'
 import { Megaphone, Loader2, ShieldAlert } from 'lucide-react'
 
 const CATEGORY_OPTIONS = COURSE_CATEGORIES.map((v) => ({ label: v, value: v }))
 const MODE_OPTIONS = COURSE_MODES.map((v) => ({ label: MODE_LABEL[v], value: v }))
-const DIVISION_OPTIONS = DIVISIONS.map((v) => ({ label: v, value: v }))
 
 export default function PostCoursePage() {
     const router = useRouter()
@@ -226,30 +225,15 @@ export default function PostCoursePage() {
                                     value={venue}
                                     onChange={(e) => setVenue(e.target.value)}
                                 />
-                                <div className="grid sm:grid-cols-3 gap-4">
-                                    <Select
-                                        label="Division"
-                                        required
-                                        placeholder="Select division"
-                                        options={DIVISION_OPTIONS}
-                                        value={division}
-                                        onChange={(e) => setDivision(e.target.value)}
-                                    />
-                                    <Input
-                                        label="District"
-                                        required
-                                        placeholder="e.g. Dhaka"
-                                        value={district}
-                                        onChange={(e) => setDistrict(e.target.value)}
-                                    />
-                                    <Input
-                                        label="Upazila / Thana"
-                                        required
-                                        placeholder="e.g. Mirpur"
-                                        value={upazila}
-                                        onChange={(e) => setUpazila(e.target.value)}
-                                    />
-                                </div>
+                                <LocationSelect
+                                    division={division}
+                                    district={district}
+                                    upazila={upazila}
+                                    onDivisionChange={setDivision}
+                                    onDistrictChange={setDistrict}
+                                    onUpazilaChange={setUpazila}
+                                    required
+                                />
                             </>
                         )}
 
