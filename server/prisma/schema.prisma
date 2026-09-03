@@ -437,7 +437,6 @@ model Organization {
   representative OrgRepresentative?
   requests       VolunteerRequest[]
     updates        OrgUpdate[]
-  courses        Course[]
   verificationLogs OrgVerificationLog[]
 
   @@index([ownerId])
