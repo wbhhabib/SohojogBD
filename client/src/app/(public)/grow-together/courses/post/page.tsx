@@ -229,7 +229,7 @@ export default function PostCoursePage() {
                                 <div className="grid sm:grid-cols-3 gap-4">
                                     <Select
                                         label="Division"
-                                        required={mode !== 'ONLINE'}
+                                        required
                                         placeholder="Select division"
                                         options={DIVISION_OPTIONS}
                                         value={division}
@@ -237,14 +237,14 @@ export default function PostCoursePage() {
                                     />
                                     <Input
                                         label="District"
-                                        required={mode !== 'ONLINE'}
+                                        required
                                         placeholder="e.g. Dhaka"
                                         value={district}
                                         onChange={(e) => setDistrict(e.target.value)}
                                     />
                                     <Input
                                         label="Upazila / Thana"
-                                        required={mode !== 'ONLINE'}
+                                        required
                                         placeholder="e.g. Mirpur"
                                         value={upazila}
                                         onChange={(e) => setUpazila(e.target.value)}
