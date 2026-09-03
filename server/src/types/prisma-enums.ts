@@ -35,6 +35,7 @@ export const NotifType = {
   MILESTONE: 'MILESTONE',
   COMMENT: 'COMMENT',
   SYSTEM: 'SYSTEM',
+  EVENT_REGISTRATION: 'EVENT_REGISTRATION',
 } as const
 export type NotifType = (typeof NotifType)[keyof typeof NotifType]
 

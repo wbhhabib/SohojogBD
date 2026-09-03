@@ -298,10 +298,13 @@ export const updateVerificationStatusSchema = z
 
 // ── Volunteer requests / org updates (unchanged from before) ──────────────
 
+export const AVAILABILITY_OPTIONS = ['WEEKDAY', 'WEEKEND', 'FULL_TIME'] as const
+
 export const createVolunteerRequestSchema = z.object({
     message: z.string().max(500).optional(),
+    interestAreas: z.array(z.enum(AREAS_OF_WORK)).max(10).default([]),
+    availability: z.enum(AVAILABILITY_OPTIONS).optional(),
 })
-
 export const updateVolunteerRequestSchema = z.object({
     status: z.enum(['ACCEPTED', 'REJECTED']),
 })
@@ -310,11 +313,27 @@ export const createOrgUpdateSchema = z.object({
     title: z.string().min(3).max(150),
     content: z.string().min(10).max(2000),
     images: z.array(z.string()).max(5).default([]),
-    eventDate: z.coerce.date().optional(),
-    place: z.string().max(150).optional(),
-    division: z.string().max(50).optional(),
-    district: z.string().max(50).optional(),
-    upazila: z.string().max(50).optional(),
+    eventDate: z.coerce.date({ required_error: 'Event date & time is required' }),
+    place: z.string().min(1, 'Place is required').max(150),
+    division: z.string().min(1, 'Division is required').max(50),
+    district: z.string().min(1, 'District is required').max(50),
+    upazila: z.string().min(1, 'Upazila is required').max(50),
+    capacity: z.coerce.number().int().min(1).optional(),
+})
+
+// ── Event registrations ─────────────────────────────────────────────────
+
+export const createEventRegistrationSchema = z.object({
+    note: z.string().max(300).optional(),
+    fullName: z.string().max(150).optional(),
+    phone: z.string().max(30).optional(),
+    guardianPhone: z.string().max(30).optional(),
+    message: z.string().max(500).optional(),
+})
+
+export const respondEventRegistrationSchema = z.object({
+    status: z.enum(['ACCEPTED', 'REJECTED']),
+    message: z.string().max(500).optional(),
 })
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -325,3 +344,5 @@ export type UpdateVerificationStatusInput = z.infer<typeof updateVerificationSta
 export type CreateVolunteerRequestInput = z.infer<typeof createVolunteerRequestSchema>
 export type UpdateVolunteerRequestInput = z.infer<typeof updateVolunteerRequestSchema>
 export type CreateOrgUpdateInput = z.infer<typeof createOrgUpdateSchema>
+export type CreateEventRegistrationInput = z.infer<typeof createEventRegistrationSchema>
+export type RespondEventRegistrationInput = z.infer<typeof respondEventRegistrationSchema>

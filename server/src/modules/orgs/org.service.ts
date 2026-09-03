@@ -783,7 +783,7 @@ export const getEventById = async (id: string) => {
     const update = await prisma.orgUpdate.findUnique({
         where: { id },
         include: {
-            organization: { select: { id: true, name: true, slug: true, logo: true, phone: true } },
+            organization: { select: { id: true, name: true, slug: true, logo: true, contactPhone: true } },
         },
     })
     if (!update) throw createHttpError('Event not found', 404)

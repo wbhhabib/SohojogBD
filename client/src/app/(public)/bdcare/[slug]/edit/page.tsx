@@ -408,7 +408,7 @@ export default function EditOrgPage() {
                                 <Input label="Please specify" required value={orgTypeOther} onChange={(e) => setOrgTypeOther(e.target.value)} />
                             )}
                             <div className="grid sm:grid-cols-2 gap-4">
-                                <Input label="Established Year" type="number" value={establishedYear} onChange={(e) => setEstablishedYear(e.target.value)} />
+                                <Input label="Established Year" type="number" min="1900" max={new Date().getFullYear()} placeholder="e.g. 2020" value={establishedYear} onChange={(e) => setEstablishedYear(e.target.value)} />
                                 <Input label="Contact Number" required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
                             </div>
                             <div className="grid sm:grid-cols-2 gap-4">

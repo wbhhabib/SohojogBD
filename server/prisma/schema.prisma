@@ -40,7 +40,9 @@ enum NotifType {
   MILESTONE
   COMMENT
   SYSTEM
+  EVENT_REGISTRATION
 }
+
 
 enum VerificationStatus {
   NOT_SUBMITTED
@@ -118,6 +120,7 @@ model User {
   plantClaims      PlantClaim[]
   organizations    Organization[]
   volunteerRequests VolunteerRequest[]
+  eventRegistrations EventRegistration[]
   orgVerificationLogs OrgVerificationLog[] @relation("OrgVerificationAdmin")
   sosRequests         SOSRequest[]
   sosResponses        SOSResponse[]
@@ -531,6 +534,8 @@ model OrgVerificationLog {
 model VolunteerRequest {
   id             String                 @id @default(cuid())
   message        String?
+  interestAreas  String[]               @default([])
+  availability   String?
   status         VolunteerRequestStatus @default(PENDING)
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
@@ -549,17 +554,40 @@ model OrgUpdate {
   title          String
   content        String       @db.Text
   images         String[]
-  eventDate      DateTime?
-  place          String?
-  division       String?
-  district       String?
-  upazila        String?
+  eventDate      DateTime
+  place          String
+  division       String
+  district       String
+  upazila        String
+  capacity       Int?
   createdAt      DateTime     @default(now())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  registrations  EventRegistration[]
 
   @@index([organizationId])
   @@index([division, district])
+}
+
+model EventRegistration {
+  id            String                 @id @default(cuid())
+  status        VolunteerRequestStatus @default(PENDING)
+  fullName      String?
+  phone         String?
+  guardianPhone String?
+  message       String?
+  note          String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  userId        String
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId       String
+  event         OrgUpdate              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
 }
 
 enum SOSStatus {
