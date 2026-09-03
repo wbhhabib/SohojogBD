@@ -10,13 +10,14 @@ const router = Router()
 // ── Public ────────────────────────────────────────────────────────────────
 router.get('/', courseController.getAllCourses)
 
-// ── Org's own course list (must come before /:slug) ─────────────────────
-router.get('/org/:organizationId', courseController.getOrgCourses)
+// ── Signed-in user's own courses / postable branches — before /:slug ────
+router.get('/my', authenticate, courseController.getMyCourses)
+router.get('/my-branches', authenticate, courseController.getMyPostableBranches)
 
 // ── Create ───────────────────────────────────────────────────────────────
 router.post('/', authenticate, validate(createCourseSchema), courseController.createCourse)
 
-// ── Manage (org owner / admin only) ─────────────────────────────────────
+// ── Manage (branch's own login, provider owner, or admin) ────────────────
 router.post('/:id/close', authenticate, courseController.closeCourse)
 router.post('/:id/reopen', authenticate, courseController.reopenCourse)
 

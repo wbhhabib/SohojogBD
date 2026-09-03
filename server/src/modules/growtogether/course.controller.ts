@@ -16,9 +16,14 @@ export const getCourseBySlug = asyncHandler(async (req, res) => {
     sendSuccess(res, course, 'Course fetched successfully')
 })
 
-export const getOrgCourses = asyncHandler(async (req, res) => {
-    const courses = await courseService.getOrgCourses(req.params.organizationId)
-    sendSuccess(res, courses, "Organization's courses fetched successfully")
+export const getMyCourses = asyncHandler(async (req, res) => {
+    const courses = await courseService.getMyCourses(req.user!.id)
+    sendSuccess(res, courses, 'Your courses fetched successfully')
+})
+
+export const getMyPostableBranches = asyncHandler(async (req, res) => {
+    const branches = await courseService.getMyPostableBranches(req.user!.id)
+    sendSuccess(res, branches, 'Postable branches fetched successfully')
 })
 
 export const createCourse = asyncHandler(async (req, res) => {

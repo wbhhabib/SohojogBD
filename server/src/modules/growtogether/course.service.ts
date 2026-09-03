@@ -2,6 +2,7 @@ import { CourseStatus, CourseMode, Role } from '../../types/prisma-enums'
 import { prisma } from '../../config/database'
 import { generateUniqueSlug } from '../../utils/slug'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
+import { getAccessibleBranchIds } from '../course-provider/provider.service'
 import { CreateCourseInput } from './course.schema'
 
 const createHttpError = (message: string, statusCode: number) => {
@@ -19,21 +20,26 @@ const COURSE_SELECT = {
     mode: true,
     duration: true,
     eligibility: true,
+    venue: true,
     division: true,
     district: true,
     upazila: true,
-    startDate: true,
     isOngoing: true,
+    applicationDeadline: true,
     seatsAvailable: true,
     contactPhone: true,
     contactEmail: true,
     applyLink: true,
+    images: true,
     status: true,
     createdAt: true,
     updatedAt: true,
-    organizationId: true,
-    organization: {
-        select: { id: true, name: true, slug: true, logo: true, category: true, status: true },
+    branchId: true,
+    branch: {
+        select: {
+            id: true, name: true, division: true, district: true, upazila: true,
+            provider: { select: { id: true, institutionName: true, logo: true, status: true } },
+        },
     },
 } as const
 
@@ -43,8 +49,8 @@ interface CourseWhereInput {
     division?: string
     district?: string
     upazila?: string
-    organizationId?: string
     status?: CourseStatus
+    branchId?: string | { in: string[] }
     OR?: Array<{
         title?: { contains: string; mode: 'insensitive' }
         description?: { contains: string; mode: 'insensitive' }
@@ -110,21 +116,48 @@ export const getCourseBySlug = async (slug: string) => {
     return course
 }
 
-export const getOrgCourses = async (organizationId: string) => {
+// All courses across every branch the signed-in user can access — their own
+// branch if they're a branch login, or every branch of every provider they
+// own if they're a provider owner.
+export const getMyCourses = async (userId: string) => {
+    const { branchIds } = await getAccessibleBranchIds(userId)
+    if (branchIds.length === 0) return []
+
     const courses = await prisma.course.findMany({
-        where: { organizationId },
+        where: { branchId: { in: branchIds } },
         select: COURSE_SELECT,
         orderBy: { createdAt: 'desc' },
     })
     return courses
 }
 
+// The branch(es) this user is allowed to post a course under — a branch
+// login only ever sees their own branch; a provider owner sees every
+// (non-blocked) branch across every provider they own.
+export const getMyPostableBranches = async (userId: string) => {
+    const { branchIds } = await getAccessibleBranchIds(userId)
+    if (branchIds.length === 0) return []
+
+    const branches = await prisma.courseProviderBranch.findMany({
+        where: { id: { in: branchIds }, isBlocked: false },
+        select: {
+            id: true, name: true, division: true, district: true, upazila: true,
+            provider: { select: { id: true, institutionName: true, logo: true } },
+        },
+        orderBy: { name: 'asc' },
+    })
+    return branches
+}
+
 export const createCourse = async (userId: string, data: CreateCourseInput) => {
-    const org = await prisma.organization.findUnique({ where: { id: data.organizationId } })
-    if (!org) throw createHttpError('Organization not found', 404)
-    if (org.ownerId !== userId) {
-        throw createHttpError('Only the organization owner can post a course for it', 403)
+    const { branchIds } = await getAccessibleBranchIds(userId)
+    if (!branchIds.includes(data.branchId)) {
+        throw createHttpError('You do not have permission to post a course under this branch', 403)
     }
+
+    const branch = await prisma.courseProviderBranch.findUnique({ where: { id: data.branchId } })
+    if (!branch) throw createHttpError('Branch not found', 404)
+    if (branch.isBlocked) throw createHttpError('This branch is currently blocked', 403)
 
     const existingSlugs = await prisma.course
         .findMany({ select: { slug: true } })
@@ -140,18 +173,20 @@ export const createCourse = async (userId: string, data: CreateCourseInput) => {
             mode: data.mode,
             duration: data.duration,
             eligibility: data.eligibility,
+            venue: data.venue,
             division: data.division,
             district: data.district,
             upazila: data.upazila,
-            startDate: data.startDate,
             isOngoing: data.isOngoing,
+            applicationDeadline: data.applicationDeadline,
             seatsAvailable: data.seatsAvailable,
-            contactPhone: data.contactPhone,
+            contactPhone: data.contactPhone || null,
             contactEmail: data.contactEmail || null,
             applyLink: data.applyLink || null,
+            images: [],
             slug,
             status: CourseStatus.OPEN,
-            organizationId: data.organizationId,
+            branchId: data.branchId,
         },
         select: COURSE_SELECT,
     })
@@ -160,12 +195,13 @@ export const createCourse = async (userId: string, data: CreateCourseInput) => {
 }
 
 const assertCanManage = async (courseId: string, userId: string, userRole: string) => {
-    const course = await prisma.course.findUnique({
-        where: { id: courseId },
-        include: { organization: true },
-    })
+    const course = await prisma.course.findUnique({ where: { id: courseId } })
     if (!course) throw createHttpError('Course not found', 404)
-    if (userRole !== Role.ADMIN && course.organization.ownerId !== userId) {
+
+    if (userRole === Role.ADMIN) return course
+
+    const { branchIds } = await getAccessibleBranchIds(userId)
+    if (!branchIds.includes(course.branchId)) {
         throw createHttpError('Access denied', 403)
     }
     return course

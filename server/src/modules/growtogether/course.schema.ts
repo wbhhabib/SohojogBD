@@ -2,15 +2,16 @@ import { z } from 'zod'
 
 export const SKILL_CATEGORIES = [
     'Sewing & Tailoring',
-    'Computer & IT Basics',
+    'Computer & ICT Basics',
     'Freelancing & Digital Marketing',
-    'Handicrafts',
+    'Graphic Design',
+    'Electrical & House Wiring',
+    'Refrigeration & AC',
+    'Driving',
     'Agriculture & Livestock',
-    'Language Learning',
-    'Cooking & Food Processing',
-    'Beautician & Salon',
-    'Electrical & Technical Trade',
-    'Entrepreneurship & Business',
+    'Handicrafts',
+    'Beauty & Caregiving',
+    'Language Training',
     'Other',
 ] as const
 
@@ -18,7 +19,7 @@ export const COURSE_MODES = ['ONLINE', 'OFFLINE', 'HYBRID'] as const
 
 export const createCourseSchema = z
     .object({
-        organizationId: z.string().min(1, 'organizationId is required'),
+        branchId: z.string().min(1, 'branchId is required'),
         title: z.string().min(5).max(150),
         description: z.string().min(20).max(2000),
         skillCategory: z.enum(SKILL_CATEGORIES, {
@@ -29,18 +30,19 @@ export const createCourseSchema = z
         }),
         duration: z.string().min(2).max(60),
         eligibility: z.string().max(300).optional(),
+        venue: z.string().max(150).optional(),
         division: z.string().max(80).optional(),
         district: z.string().max(80).optional(),
         upazila: z.string().max(80).optional(),
-        startDate: z.coerce.date().optional(),
         isOngoing: z.coerce.boolean().default(false),
+        applicationDeadline: z.coerce.date().optional(),
         seatsAvailable: z.coerce.number().int().min(1).optional(),
-        contactPhone: z.string().min(6).max(30),
+        contactPhone: z.string().max(30).optional(),
         contactEmail: z.string().email().optional().or(z.literal('')),
         applyLink: z.string().url().optional().or(z.literal('')),
     })
-    .refine((data) => data.mode === 'ONLINE' || !!data.division, {
-        message: 'Division is required for offline/hybrid courses',
+    .refine((data) => data.mode === 'ONLINE' || (!!data.division && !!data.district && !!data.upazila), {
+        message: 'Division, district, and upazila are required for offline/hybrid courses',
         path: ['division'],
     })
 
