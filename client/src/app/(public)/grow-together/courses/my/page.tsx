@@ -6,7 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import CourseGrid from '@/components/growtogether/CourseGrid'
 import { useAuth } from '@/lib/AuthContext'
-import { getMyOrgCourses, closeCourse } from '@/lib/courseApi'
+import { getMyCourses, closeCourse } from '@/lib/courseApi'
 import type { Course } from '@/lib/courseApi'
 import { Megaphone, GraduationCap, XCircle } from 'lucide-react'
 
@@ -20,7 +20,7 @@ export default function MyCoursesPage() {
     const fetchCourses = useCallback(async () => {
         if (!user) return
         setLoading(true)
-        const res = await getMyOrgCourses()
+        const res = await getMyCourses()
         if (res.success) setCourses(res.data)
         setLoading(false)
     }, [user])
@@ -57,10 +57,10 @@ export default function MyCoursesPage() {
                             <div>
                                 <h1 className="text-xl md:text-2xl font-bold text-gray-900"
                                     style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-                                    My Organization&apos;s Courses
+                                    My Courses
                                 </h1>
                                 <p className="text-sm text-gray-500">
-                                    Courses posted by all organizations you own — {openCourses.length} currently open.
+                                    Courses posted across every branch you manage — {openCourses.length} currently open.
                                 </p>
                             </div>
                         </div>

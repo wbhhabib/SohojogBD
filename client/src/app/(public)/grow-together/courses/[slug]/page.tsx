@@ -115,16 +115,17 @@ export default function CourseDetailPage() {
                         <div className="md:col-span-2 space-y-4">
                             <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6">
                                 <div className="flex items-center gap-3 mb-4 pb-4 border-b border-emerald-50">
-                                    {course.organization.logo ? (
-                                        <img src={course.organization.logo} alt={course.organization.name} className="w-10 h-10 rounded-full object-cover" />
+                                    {course.branch.provider.logo ? (
+                                        <img src={course.branch.provider.logo} alt={course.branch.provider.institutionName} className="w-10 h-10 rounded-full object-cover" />
                                     ) : (
                                         <span className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-emerald-50 text-emerald-700">
-                                            {course.organization.name.charAt(0).toUpperCase()}
+                                            {course.branch.provider.institutionName.charAt(0).toUpperCase()}
                                         </span>
                                     )}
                                     <div>
                                         <p className="text-xs text-gray-400">Offered by</p>
-                                        <p className="text-sm font-semibold text-gray-900">{course.organization.name}</p>
+                                        <p className="text-sm font-semibold text-gray-900">{course.branch.provider.institutionName}</p>
+                                        <p className="text-xs text-gray-400">{course.branch.name} · {course.branch.upazila}, {course.branch.district}</p>
                                     </div>
                                 </div>
 
@@ -160,22 +161,22 @@ export default function CourseDetailPage() {
                                                 Apply / Register
                                             </a>
                                         )}
-                                        {(course.contactPhone || course.organization.contactPhone) && (
+                                        {course.contactPhone && (
 
-                                            <a href={`tel:${course.contactPhone || course.organization.contactPhone}`}
+                                            <a href={`tel:${course.contactPhone}`}
                                                 className="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-xl border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
                                             >
                                                 <Phone size={14} />
-                                                {course.contactPhone || course.organization.contactPhone}
+                                                {course.contactPhone}
                                             </a>
                                         )}
-                                        {(course.contactEmail || course.organization.contactEmail) && (
+                                        {course.contactEmail && (
 
-                                            <a href={`mailto:${course.contactEmail || course.organization.contactEmail}`}
+                                            <a href={`mailto:${course.contactEmail}`}
                                                 className="w-full inline-flex items-center justify-center gap-2 text-xs font-medium py-1.5 text-gray-500 hover:text-emerald-600"
                                             >
                                                 <Mail size={13} />
-                                                {course.contactEmail || course.organization.contactEmail}
+                                                {course.contactEmail}
                                             </a>
                                         )}
                                     </div>

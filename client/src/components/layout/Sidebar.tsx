@@ -19,6 +19,7 @@ import {
   Sparkles,
   Handshake,
   ShieldCheck,
+  GraduationCap,
 } from 'lucide-react'
 
 interface SidebarUser {
@@ -57,6 +58,7 @@ const adminNav: NavItem[] = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
   { label: 'Organizations', href: '/admin/organizations', icon: Handshake },
+  { label: 'Course Providers', href: '/admin/course-providers', icon: GraduationCap },
   { label: 'Verifications', href: '/admin/verifications', icon: ShieldCheck },
   { label: 'Donations', href: '/admin/donations', icon: HandCoins },
   { label: 'Reports', href: '/admin/reports', icon: FileText },

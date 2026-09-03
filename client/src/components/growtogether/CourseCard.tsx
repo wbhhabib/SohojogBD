@@ -45,14 +45,14 @@ export default function CourseCard({ course }: CourseCardProps) {
 
             <div className="flex flex-col gap-2.5 p-4 flex-1">
                 <div className="flex items-center gap-2">
-                    {course.organization.logo ? (
-                        <img src={course.organization.logo} alt={course.organization.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                    {course.branch.provider.logo ? (
+                        <img src={course.branch.provider.logo} alt={course.branch.provider.institutionName} className="w-6 h-6 rounded-full object-cover shrink-0" />
                     ) : (
                         <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-50 text-emerald-700 shrink-0">
-                            {course.organization.name.charAt(0).toUpperCase()}
+                            {course.branch.provider.institutionName.charAt(0).toUpperCase()}
                         </span>
                     )}
-                    <span className="text-xs font-medium text-gray-500 truncate">{course.organization.name}</span>
+                    <span className="text-xs font-medium text-gray-500 truncate">{course.branch.provider.institutionName}</span>
                 </div>
 
                 <h3 className="font-semibold text-gray-900 text-[15px] leading-snug line-clamp-2">

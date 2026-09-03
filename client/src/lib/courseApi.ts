@@ -5,6 +5,11 @@
 // server/src/modules/growtogether/course.*). Same conventions as
 // growTogetherApi.ts (Wholesale Pooling): simple { success, data } shape,
 // pure helper functions, api.ts under the hood.
+//
+// Courses now belong to a CourseProviderBranch (not an Organization) — see
+// server/src/modules/course-provider/. A signed-in user can post under any
+// branch getMyPostableBranches() returns for them (their own branch if
+// they're a branch login, or every branch they own as a provider owner).
 // ─────────────────────────────────────────────────────────────────────────
 
 import { api } from '@/lib/api'
@@ -64,14 +69,20 @@ export const MODE_LABEL: Record<CourseMode, string> = {
 
 export type CourseStatus = 'OPEN' | 'CLOSED'
 
-export interface CourseOrg {
+export interface CourseProviderInfo {
+    id: string
+    institutionName: string
+    logo?: string | null
+    status?: string
+}
+
+export interface CourseBranch {
     id: string
     name: string
-    slug: string
-    logo?: string | null
-    contactPhone: string
-    contactEmail?: string | null
-    status: string
+    division: string
+    district: string
+    upazila: string
+    provider: CourseProviderInfo
 }
 
 export interface Course {
@@ -87,7 +98,6 @@ export interface Course {
     division?: string | null
     district?: string | null
     upazila?: string | null
-    startDate?: string | null
     isOngoing: boolean
     applicationDeadline?: string | null
     seatsAvailable?: number | null
@@ -97,8 +107,8 @@ export interface Course {
     images: string[]
     status: CourseStatus
     createdAt: string
-    organizationId: string
-    organization: CourseOrg
+    branchId: string
+    branch: CourseBranch
 }
 
 export interface ApiResponse<T> {
@@ -107,10 +117,18 @@ export interface ApiResponse<T> {
     data: T
 }
 
-export interface PostableOrg {
+// A branch the signed-in user is allowed to post a course under.
+export interface PostableBranch {
     id: string
     name: string
-    logo?: string | null
+    division: string
+    district: string
+    upazila: string
+    provider: {
+        id: string
+        institutionName: string
+        logo?: string | null
+    }
 }
 
 // ── helpers ────────────────────────────────────────────────────────────
@@ -167,18 +185,18 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<Course 
     return toSimple(res)
 }
 
-export async function getMyOrgCourses(): Promise<ApiResponse<Course[]>> {
+export async function getMyCourses(): Promise<ApiResponse<Course[]>> {
     const res = await api.get<Course[]>('/grow-together/courses/my')
     return { success: res.success, message: res.message, data: res.data ?? [] }
 }
 
-export async function getMyPostableOrgs(): Promise<ApiResponse<PostableOrg[]>> {
-    const res = await api.get<PostableOrg[]>('/grow-together/courses/my-orgs')
+export async function getMyPostableBranches(): Promise<ApiResponse<PostableBranch[]>> {
+    const res = await api.get<PostableBranch[]>('/grow-together/courses/my-branches')
     return { success: res.success, message: res.message, data: res.data ?? [] }
 }
 
 export interface CreateCoursePayload {
-    organizationId: string
+    branchId: string
     title: string
     description: string
     skillCategory: CourseCategory
@@ -189,7 +207,6 @@ export interface CreateCoursePayload {
     division?: string
     district?: string
     upazila?: string
-    startDate?: string
     isOngoing: boolean
     applicationDeadline?: string
     seatsAvailable?: number
@@ -205,5 +222,10 @@ export async function createCourse(payload: CreateCoursePayload): Promise<ApiRes
 
 export async function closeCourse(courseId: string): Promise<ApiResponse<null>> {
     const res = await api.post<null>(`/grow-together/courses/${courseId}/close`)
+    return { success: res.success, message: res.message, data: null }
+}
+
+export async function reopenCourse(courseId: string): Promise<ApiResponse<null>> {
+    const res = await api.post<null>(`/grow-together/courses/${courseId}/reopen`)
     return { success: res.success, message: res.message, data: null }
 }

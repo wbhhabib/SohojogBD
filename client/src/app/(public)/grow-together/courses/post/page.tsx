@@ -10,9 +10,9 @@ import Textarea from '@/components/ui/textarea'
 import LocationSelect from '@/components/common/LocationSelect'
 import { useAuth } from '@/lib/AuthContext'
 import {
-    createCourse, getMyPostableOrgs, COURSE_CATEGORIES, COURSE_MODES, MODE_LABEL,
+    createCourse, getMyPostableBranches, COURSE_CATEGORIES, COURSE_MODES, MODE_LABEL,
 } from '@/lib/courseApi'
-import type { CourseCategory, CourseMode, PostableOrg } from '@/lib/courseApi'
+import type { CourseCategory, CourseMode, PostableBranch } from '@/lib/courseApi'
 import { Megaphone, Loader2, ShieldAlert } from 'lucide-react'
 
 const CATEGORY_OPTIONS = COURSE_CATEGORIES.map((v) => ({ label: v, value: v }))
@@ -22,10 +22,10 @@ export default function PostCoursePage() {
     const router = useRouter()
     const { user, ready } = useAuth()
 
-    const [orgs, setOrgs] = useState<PostableOrg[]>([])
-    const [orgsLoading, setOrgsLoading] = useState(true)
+    const [branches, setBranches] = useState<PostableBranch[]>([])
+    const [branchesLoading, setBranchesLoading] = useState(true)
 
-    const [organizationId, setOrganizationId] = useState('')
+    const [branchId, setBranchId] = useState('')
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [skillCategory, setSkillCategory] = useState<CourseCategory | ''>('')
@@ -53,9 +53,15 @@ export default function PostCoursePage() {
 
     useEffect(() => {
         if (!user) return
-        getMyPostableOrgs().then((res) => {
-            if (res.success) setOrgs(res.data)
-            setOrgsLoading(false)
+        getMyPostableBranches().then((res) => {
+            if (res.success) {
+                setBranches(res.data)
+                // Only one branch to post under (the common case — a branch
+                // login, or a provider owner with just their Main Branch) →
+                // auto-select it so the picker doesn't add friction.
+                if (res.data.length === 1) setBranchId(res.data[0].id)
+            }
+            setBranchesLoading(false)
         })
     }, [user])
 
@@ -63,7 +69,7 @@ export default function PostCoursePage() {
         e.preventDefault()
         setError('')
 
-        if (!organizationId) return setError('Please select an organization')
+        if (!branchId) return setError('Please select which branch is posting this course')
         if (!skillCategory) return setError('Please select a skill category')
         if (!mode) return setError('Please select a mode')
         if (mode !== 'ONLINE' && (!division || !district.trim() || !upazila.trim())) {
@@ -73,7 +79,7 @@ export default function PostCoursePage() {
 
         setSubmitting(true)
         const res = await createCourse({
-            organizationId,
+            branchId,
             title,
             description,
             skillCategory,
@@ -101,9 +107,9 @@ export default function PostCoursePage() {
         router.push(`/grow-together/courses/${res.data.slug}`)
     }
 
-    if (!ready || !user || orgsLoading) return null
+    if (!ready || !user || branchesLoading) return null
 
-    if (orgs.length === 0) {
+    if (branches.length === 0) {
         return (
             <>
                 <Navbar />
@@ -112,18 +118,18 @@ export default function PostCoursePage() {
                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-emerald-50">
                             <ShieldAlert size={22} className="text-emerald-600" />
                         </div>
-                        <h1 className="text-lg font-bold text-gray-900 mb-2">Approved organization needed</h1>
+                        <h1 className="text-lg font-bold text-gray-900 mb-2">Approved course provider needed</h1>
                         <p className="text-sm text-gray-500 mb-6">
-                            Only verified &amp; approved organizations can post free courses, to keep listings
-                            trustworthy. Register your organization first — once it&apos;s approved you can post
-                            courses here.
+                            Only approved course providers (and their branches) can post free courses, to keep
+                            listings trustworthy. Register your institution first — once it&apos;s approved you can
+                            post courses here.
                         </p>
 
-                        <a href="/bdcare/create"
+                        <a href="/grow-together/courses/provider/register"
                             className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl transition-all"
                             style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
                         >
-                            Register an Organization
+                            Register as a Course Provider
                         </a>
                     </div>
                 </main>
@@ -153,14 +159,19 @@ export default function PostCoursePage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6 space-y-5">
-                        <Select
-                            label="Posting as (organization)"
-                            required
-                            placeholder="Select your organization"
-                            options={orgs.map((o) => ({ label: o.name, value: o.id }))}
-                            value={organizationId}
-                            onChange={(e) => setOrganizationId(e.target.value)}
-                        />
+                        {branches.length > 1 && (
+                            <Select
+                                label="Posting as (branch)"
+                                required
+                                placeholder="Select which branch is posting"
+                                options={branches.map((b) => ({
+                                    label: `${b.provider.institutionName} — ${b.name}`,
+                                    value: b.id,
+                                }))}
+                                value={branchId}
+                                onChange={(e) => setBranchId(e.target.value)}
+                            />
+                        )}
 
                         <Input
                             label="Course title"
@@ -275,14 +286,14 @@ export default function PostCoursePage() {
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Input
                                 label="Contact phone (optional)"
-                                placeholder="Leave blank to use organization's"
+                                placeholder="e.g. 01XXXXXXXXX"
                                 value={contactPhone}
                                 onChange={(e) => setContactPhone(e.target.value)}
                             />
                             <Input
                                 label="Contact email (optional)"
                                 type="email"
-                                placeholder="Leave blank to use organization's"
+                                placeholder="e.g. courses@institute.org"
                                 value={contactEmail}
                                 onChange={(e) => setContactEmail(e.target.value)}
                             />
