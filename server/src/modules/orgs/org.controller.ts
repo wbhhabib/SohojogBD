@@ -210,6 +210,11 @@ export const getEventRegistrations = asyncHandler(async (req, res) => {
     sendPaginated(res, registrations, meta, 'Event registrations fetched successfully')
 })
 
+export const getMyEventRegistrationStatus = asyncHandler(async (req, res) => {
+    const result = await orgService.getMyEventRegistrationStatus(req.params.eventId, req.user!.id)
+    sendSuccess(res, result, 'Registration status fetched successfully')
+})
+
 export const respondToEventRegistration = asyncHandler(async (req, res) => {
     const registration = await orgService.respondToEventRegistration(
         req.params.registrationId,

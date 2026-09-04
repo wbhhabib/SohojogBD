@@ -14,6 +14,7 @@ import { Handshake, ShieldCheck, Users2 } from 'lucide-react'
 import DocUpload from '@/components/org/DocUpload'
 import PhotosUpload from '@/components/org/PhotosUpload'
 import LocationSelect from '@/components/common/LocationSelect'
+import { AREAS_OF_WORK } from '@/lib/bdcareConstants'
 
 // ── Constants mirrored from server/src/modules/orgs/org.schema.ts ─────────
 const REGISTERED_ORG_TYPES = [
@@ -26,17 +27,6 @@ const TEAM_ORG_TYPES = [
     'Student Volunteer Organization', 'Area-Based Volunteer Group', 'Other',
 ]
 const INSTITUTION_ORG_TYPES = ['School Volunteer Group', 'College Volunteer Group', 'University Volunteer Group']
-const AREAS_OF_WORK = [
-    'Education', 'Climate Change & Environment', 'Youth Development', 'Women & Girls Empowerment',
-    'Healthcare', 'Blood Donation', 'Disaster Response & Relief', 'Food Support',
-    'Agriculture & Farmer Support', 'Animal Welfare', 'Child Welfare', 'Disability Support',
-    'Community Development', 'Human Rights', 'Good Governance & Civic Engagement',
-    'Technology & Digital Inclusion', 'Employment & Skill Development', 'Poverty Alleviation',
-    'Tree Plantation & Conservation', 'Cleanliness & Waste Management', 'Research & Knowledge',
-    'Sports', 'Culture & Arts', 'Humanitarian Aid', 'Safety & Public Awareness',
-    'Mental Health & Well-being', 'Rural Development', 'Urban Development',
-    'Awareness & Advocacy', 'Sustainable Development', 'Other',
-]
 const REGISTRATION_AUTHORITIES = [
     'Department of Social Services (DSS)', 'NGO Affairs Bureau (NGOAB)', 'RJSC', 'Other Government Authority',
 ]

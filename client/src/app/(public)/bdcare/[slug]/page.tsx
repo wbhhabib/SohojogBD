@@ -13,6 +13,8 @@ import type { Organization, OrgUpdate } from '@/lib/api'
 import { verificationApi } from '@/lib/verificationApi'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
+import BasicProfileFields from '@/components/shared/BasicProfileFields'
+import { AREAS_OF_WORK, AVAILABILITY_OPTIONS } from '@/lib/bdcareConstants'
 import {
     MapPin, Phone, Mail, Globe, Facebook, ArrowLeft, Handshake, Send,
     CheckCircle2, Megaphone, BadgeCheck, Clock, AlertCircle, XCircle, Ban,
@@ -66,6 +68,8 @@ export default function OrgDetailPage() {
     const [notFoundState, setNotFoundState] = useState(false)
     const [message, setMessage] = useState('')
     const [submitting, setSubmitting] = useState(false)
+    const [interestAreas, setInterestAreas] = useState<string[]>([])
+    const [availability, setAvailability] = useState('')
     const [requestSent, setRequestSent] = useState(false)
     const [error, setError] = useState('')
 
@@ -76,6 +80,7 @@ export default function OrgDetailPage() {
     const [postPlace, setPostPlace] = useState('')
     const [postDivision, setPostDivision] = useState('')
     const [postDistrict, setPostDistrict] = useState('')
+    const [postUpazila, setPostUpazila] = useState('')
     const [posting, setPosting] = useState(false)
 
     const fetchOrg = useCallback(async () => {
@@ -87,6 +92,9 @@ export default function OrgDetailPage() {
             return
         }
         setOrg(res.data)
+        setPostDivision(res.data.division ?? '')
+        setPostDistrict(res.data.district ?? '')
+        setPostUpazila(res.data.upazila ?? '')
         if (res.data.status === 'APPROVED') {
             const updatesRes = await orgApi.getUpdates(res.data.id)
             if (updatesRes.success) setUpdates(updatesRes.data)
@@ -113,6 +121,8 @@ export default function OrgDetailPage() {
 
         const res = await orgApi.sendVolunteerRequest(org!.id, {
             message: message.trim() || undefined,
+            interestAreas,
+            availability: availability || undefined,
         })
         if (res.success) {
             setRequestSent(true)
@@ -138,10 +148,11 @@ export default function OrgDetailPage() {
             title: postTitle,
             content: postContent,
             images: imageUrl ? [imageUrl] : [],
-            eventDate: postEventDate || undefined,
-            place: postPlace || undefined,
-            division: postDivision || undefined,
-            district: postDistrict || undefined,
+            eventDate: postEventDate,
+            place: postPlace,
+            division: postDivision,
+            district: postDistrict,
+            upazila: postUpazila,
         })
         if (res.success && res.data) {
             setUpdates((prev) => [res.data!, ...prev])
@@ -149,9 +160,7 @@ export default function OrgDetailPage() {
             setPostContent('')
             setPostImage(null)
             setPostEventDate('')
-            setPostPlace('')
-            setPostDivision('')
-            setPostDistrict('')
+            // division/district/upazila reset করবে না — org-এর নিজের এলাকা দিয়ে prefill থাকুক পরের event-এর জন্যও
         }
         setPosting(false)
     }
@@ -308,7 +317,7 @@ export default function OrgDetailPage() {
                                 <form onSubmit={handlePostUpdate} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-3">
                                     <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                                         <Megaphone size={15} className="text-sky-500" />
-                                        Post an update
+                                        Create Event
                                     </h2>
                                     {!isApproved && (
                                         <p className="text-xs text-gray-400">Updates will be visible once your organization is approved.</p>
@@ -340,40 +349,51 @@ export default function OrgDetailPage() {
                                     </div>
                                     <Input
                                         type="datetime-local"
-                                        placeholder="Event date & time (optional)"
+                                        placeholder="Event date & time"
+                                        required
                                         disabled={!isApproved}
                                         value={postEventDate}
                                         onChange={(e) => setPostEventDate(e.target.value)}
                                     />
                                     <Input
-                                        placeholder="Place (optional)"
+                                        placeholder="Place"
+                                        required
                                         disabled={!isApproved}
                                         value={postPlace}
                                         onChange={(e) => setPostPlace(e.target.value)}
                                     />
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Division (optional)"
+                                            placeholder="Division"
+                                            required
                                             disabled={!isApproved}
                                             value={postDivision}
                                             onChange={(e) => setPostDivision(e.target.value)}
                                         />
                                         <Input
-                                            placeholder="District (optional)"
+                                            placeholder="District"
+                                            required
                                             disabled={!isApproved}
                                             value={postDistrict}
                                             onChange={(e) => setPostDistrict(e.target.value)}
                                         />
+                                        <Input
+                                            placeholder="Upazila"
+                                            required
+                                            disabled={!isApproved}
+                                            value={postUpazila}
+                                            onChange={(e) => setPostUpazila(e.target.value)}
+                                        />
                                     </div>
                                     <Button type="submit" variant="primary" isLoading={posting} disabled={!isApproved}>
-                                        Post Update
+                                        Create Event
                                     </Button>
                                 </form>
                             )}
 
                             {isApproved && (
                                 <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                                    <h2 className="text-sm font-bold text-gray-900 mb-4">Updates</h2>
+                                    <h2 className="text-sm font-bold text-gray-900 mb-4">Events</h2>
                                     {updates.length === 0 ? (
                                         <p className="text-sm text-gray-400">No updates posted yet.</p>
                                     ) : (
@@ -418,6 +438,42 @@ export default function OrgDetailPage() {
                                             <Handshake size={15} className="text-sky-500" />
                                             Volunteer with this organization
                                         </h2>
+                                        <BasicProfileFields />
+
+                                        <div>
+                                            <label className="text-xs font-medium text-gray-600 mb-1.5 block">Areas of interest (optional)</label>
+                                            <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto">
+                                                {AREAS_OF_WORK.map((area) => (
+                                                    <label key={area} className="flex items-center gap-1.5 text-xs text-gray-700">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={interestAreas.includes(area)}
+                                                            onChange={(e) => {
+                                                                setInterestAreas((prev) =>
+                                                                    e.target.checked ? [...prev, area] : prev.filter((a) => a !== area)
+                                                                )
+                                                            }}
+                                                        />
+                                                        {area}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs font-medium text-gray-600 mb-1.5 block">Availability (optional)</label>
+                                            <select
+                                                value={availability}
+                                                onChange={(e) => setAvailability(e.target.value)}
+                                                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                                            >
+                                                <option value="">Select...</option>
+                                                {AVAILABILITY_OPTIONS.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
                                         <Textarea
                                             label="Message (optional)"
                                             placeholder="Tell them why you'd like to join…"

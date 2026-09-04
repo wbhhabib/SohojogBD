@@ -39,18 +39,14 @@ export default function EventCard({ event }: { event: OrgUpdate }) {
                 </p>
             </div>
             <div className="p-3 space-y-1">
-                {dateLabel && (
-                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                        <Calendar size={12} />
-                        {dateLabel}
-                    </p>
-                )}
-                {event.place && (
-                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                        <MapPin size={12} />
-                        {event.place}
-                    </p>
-                )}
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                    <Calendar size={12} />
+                    {dateLabel}
+                </p>
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                    <MapPin size={12} />
+                    {event.place}
+                </p>
             </div>
         </Link>
     )

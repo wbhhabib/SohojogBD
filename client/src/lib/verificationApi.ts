@@ -16,6 +16,7 @@ export type ActionType =
     | 'SOS_RESPOND'
 
 export interface VerificationProfile {
+    name: string | null
     phone: string | null
     address: string | null
     dateOfBirth: string | null

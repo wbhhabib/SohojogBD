@@ -10,10 +10,10 @@ import Button from '@/components/ui/button'
 import EmptyState from '@/components/common/EmptyState'
 import Skeleton from '@/components/ui/skeleton'
 import { orgApi } from '@/lib/api'
-import type { Organization, VolunteerRequest } from '@/lib/api'
+import type { Organization, VolunteerRequest, OrgUpdate, EventRegistration } from '@/lib/api'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
-import { Handshake, Plus, MapPin, Check, X, Trash2 } from 'lucide-react'
+import { Handshake, Plus, MapPin, Check, X, Trash2, Calendar } from 'lucide-react'
 
 const statusVariant: Record<string, 'success' | 'warning' | 'default' | 'info' | 'danger'> = {
     PENDING: 'warning', ACCEPTED: 'success', REJECTED: 'danger', CANCELLED: 'default',
@@ -29,10 +29,99 @@ const orgStatusLabel: Record<string, string> = {
     APPROVED: 'Approved', REJECTED: 'Rejected', SUSPENDED: 'Suspended', EXPIRED: 'Expired',
 }
 
+function EventRegistrationsPanel({ event }: { event: OrgUpdate }) {
+    const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [registrations, setRegistrations] = useState<EventRegistration[]>([])
+    const [respondingMessage, setRespondingMessage] = useState<Record<string, string>>({})
+
+    const load = async () => {
+        setLoading(true)
+        const res = await orgApi.getEventRegistrations(event.id, 'limit=50')
+        if (res.success) setRegistrations(res.data)
+        setLoading(false)
+    }
+
+    const toggle = async () => {
+        if (!open) await load()
+        setOpen((v) => !v)
+    }
+
+    const respond = async (regId: string, status: 'ACCEPTED' | 'REJECTED') => {
+        const res = await orgApi.respondToEventRegistration(regId, status, respondingMessage[regId]?.trim() || undefined)
+        if (!res.success) alert(res.message ?? 'Could not update this registration.')
+        await load()
+    }
+
+    return (
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+            <button onClick={toggle} className="w-full flex items-center justify-between text-left">
+                <span className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                    <Calendar size={12} /> {event.title}
+                </span>
+                <span className="text-xs text-sky-600 font-semibold">{open ? 'Hide' : 'Event Registrations'}</span>
+            </button>
+
+            {open && (
+                <div className="mt-3 space-y-2">
+                    {loading ? (
+                        <Skeleton className="h-10 w-full" />
+                    ) : registrations.length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-2">No registrations yet.</p>
+                    ) : (
+                        registrations.map((r) => (
+                            <div key={r.id} className="bg-white rounded-lg border border-gray-200 p-3 space-y-1.5">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
+                                            {r.fullName}
+                                            <Badge variant={r.isRegisteredVolunteer ? 'success' : 'info'} className="text-[10px]">
+                                                {r.isRegisteredVolunteer ? 'Registered Volunteer' : 'General User'}
+                                            </Badge>
+                                        </p>
+                                        {r.phone && <p className="text-xs text-gray-500">📞 {r.phone}</p>}
+                                        {r.guardianPhone && <p className="text-xs text-gray-500">Guardian: {r.guardianPhone}</p>}
+                                        {r.message && <p className="text-xs text-gray-500 mt-0.5">{r.message}</p>}
+                                        <p className="text-[11px] text-gray-400 mt-1">{timeAgo(r.createdAt)}</p>
+                                    </div>
+                                    <Badge variant={statusVariant[r.status]} className="capitalize shrink-0">{r.status.toLowerCase()}</Badge>
+                                </div>
+                                {r.status === 'PENDING' && (
+                                    <div className="space-y-1.5 pt-1.5 border-t border-gray-100">
+                                        <input
+                                            type="text"
+                                            placeholder="Custom message (optional)"
+                                            value={respondingMessage[r.id] ?? ''}
+                                            onChange={(e) => setRespondingMessage((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                                            className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => respond(r.id, 'ACCEPTED')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 text-xs font-semibold">
+                                                <Check size={13} /> Approve
+                                            </button>
+                                            <button onClick={() => respond(r.id, 'REJECTED')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold">
+                                                <X size={13} /> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}
+
 function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) {
     const [open, setOpen] = useState(false)
     const [requests, setRequests] = useState<VolunteerRequest[]>([])
     const [loadingRequests, setLoadingRequests] = useState(false)
+
+    const [eventsOpen, setEventsOpen] = useState(false)
+    const [events, setEvents] = useState<OrgUpdate[]>([])
+    const [loadingEvents, setLoadingEvents] = useState(false)
 
     const toggle = async () => {
         if (!open) {
@@ -42,6 +131,16 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
             setLoadingRequests(false)
         }
         setOpen((v) => !v)
+    }
+
+    const toggleEvents = async () => {
+        if (!eventsOpen) {
+            setLoadingEvents(true)
+            const res = await orgApi.getUpdates(org.id, 'limit=50')
+            if (res.success) setEvents(res.data)
+            setLoadingEvents(false)
+        }
+        setEventsOpen((v) => !v)
     }
 
     const respond = async (requestId: string, status: 'ACCEPTED' | 'REJECTED') => {
@@ -77,10 +176,25 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
                     </p>
                 </div>
                 <Badge variant={orgStatusVariant[org.status]}>{orgStatusLabel[org.status] ?? org.status}</Badge>
+                <button onClick={toggleEvents} className="text-xs font-semibold text-emerald-600 hover:underline">
+                    {eventsOpen ? 'Hide events' : `Events (${org._count?.updates ?? 0})`}
+                </button>
                 <button onClick={toggle} className="text-xs font-semibold text-sky-600 hover:underline">
                     {open ? 'Hide requests' : `Requests (${org._count?.requests ?? 0})`}
                 </button>
             </div>
+
+            {eventsOpen && (
+                <div className="border-t border-gray-100 bg-gray-50/60 p-4 space-y-2">
+                    {loadingEvents ? (
+                        <Skeleton className="h-12 w-full" />
+                    ) : events.length > 0 ? (
+                        events.map((ev) => <EventRegistrationsPanel key={ev.id} event={ev} />)
+                    ) : (
+                        <p className="text-xs text-gray-400 text-center py-2">No events posted yet.</p>
+                    )}
+                </div>
+            )}
 
             {open && (
                 <div className="border-t border-gray-100 bg-gray-50/60 p-4 space-y-3">

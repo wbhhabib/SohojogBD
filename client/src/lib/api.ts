@@ -206,6 +206,8 @@ export interface OrgVerificationLog {
 export interface VolunteerRequest {
   id: string
   message?: string | null
+  interestAreas: string[]
+  availability?: string | null
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
   createdAt: string
   volunteer?: Pick<UserProfile, 'id' | 'name' | 'avatar' | 'email'> & { phone?: string | null }
@@ -217,14 +219,32 @@ export interface OrgUpdate {
   title: string
   content: string
   images: string[]
-  eventDate?: string | null
-  place?: string | null
-  division?: string | null
-  district?: string | null
-  upazila?: string | null
+  eventDate: string
+  place: string
+  division: string
+  district: string
+  upazila: string
+  capacity?: number | null
   createdAt: string
   organizationId: string
-  organization?: { id: string; name: string; slug: string; logo?: string | null; contactPhone?: string | null }
+  organization?: { id: string; name: string; slug: string; logo?: string | null; contactPhone?: string | null; ownerId?: string }
+}
+
+export interface EventRegistration {
+  id: string
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
+  createdAt: string
+  isRegisteredVolunteer: boolean
+  fullName?: string | null
+  phone?: string | null
+  guardianPhone?: string | null
+  message?: string | null
+}
+
+export interface MyEventRegistrationStatus {
+  alreadyRegistered: boolean
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | null
+  isRegisteredVolunteer: boolean
 }
 
 export interface AnalyzedPlant {
@@ -312,10 +332,20 @@ async function request<T>(
 
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}))
+    const errors = errData?.errors as { field: string; message: string }[] | undefined
+    // Backend sends a generic 'Validation failed' plus a per-field errors array on
+    // Zod validation errors. Every caller across the app just reads `message`, so
+    // fold the specific field messages into it here instead of the generic text —
+    // fixing this once fixes every form's error display at once.
+    const message =
+      errors && errors.length > 0
+        ? errors.map((e) => e.message).join(' ')
+        : errData?.message ?? `Request failed with status ${res.status}`
     return {
       success: false,
-      message: errData?.message ?? `Request failed with status ${res.status}`,
+      message,
       data: errData as T,
+      errors,
     }
   }
 
@@ -604,6 +634,18 @@ export const orgApi = {
   },
   deleteUpdate(updateId: string) {
     return api.delete(`/orgs/updates/${updateId}`)
+  },
+  createEventRegistration(eventId: string, payload: Record<string, unknown>) {
+    return api.post<EventRegistration>(`/orgs/updates/${eventId}/registrations`, payload)
+  },
+  getEventRegistrations(eventId: string, query = '') {
+    return api.get<EventRegistration[]>(`/orgs/updates/${eventId}/registrations${query ? `?${query}` : ''}`)
+  },
+  getMyEventRegistrationStatus(eventId: string) {
+    return api.get<MyEventRegistrationStatus>(`/orgs/updates/${eventId}/registrations/me`)
+  },
+  respondToEventRegistration(registrationId: string, status: 'ACCEPTED' | 'REJECTED', message?: string) {
+    return api.patch<EventRegistration>(`/orgs/registrations/${registrationId}`, { status, message })
   },
   // ── Verification document upload ──────────────────────────────────────
   uploadDocument(file: File) {

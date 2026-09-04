@@ -80,6 +80,8 @@ router.post(
     orgController.createEventRegistration
 )
 router.get('/updates/:eventId/registrations', authenticate, orgController.getEventRegistrations)
+router.get('/updates/:eventId/registrations/me', authenticate, orgController.getMyEventRegistrationStatus)
+
 router.patch(
     '/registrations/:registrationId',
     authenticate,

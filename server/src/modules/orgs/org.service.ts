@@ -786,12 +786,13 @@ export const getEventById = async (id: string) => {
     const update = await prisma.orgUpdate.findUnique({
         where: { id },
         include: {
-            organization: { select: { id: true, name: true, slug: true, logo: true, contactPhone: true } },
+            organization: { select: { id: true, name: true, slug: true, logo: true, contactPhone: true, ownerId: true } },
         },
     })
     if (!update) throw createHttpError('Event not found', 404)
     return update
 }
+
 export const deleteOrgUpdate = async (updateId: string, ownerId: string) => {
     const update = await prisma.orgUpdate.findUnique({
         where: { id: updateId },
@@ -872,6 +873,31 @@ export const createEventRegistration = async (
 
     return registration
 }
+
+export const getMyEventRegistrationStatus = async (eventId: string, userId: string) => {
+    const event = await prisma.orgUpdate.findUnique({ where: { id: eventId } })
+    if (!event) throw createHttpError('Event not found', 404)
+
+    const [registration, acceptedVolunteer] = await Promise.all([
+        prisma.eventRegistration.findUnique({
+            where: { userId_eventId: { userId, eventId } },
+        }),
+        prisma.volunteerRequest.findFirst({
+            where: {
+                organizationId: event.organizationId,
+                volunteerId: userId,
+                status: VolunteerRequestStatus.ACCEPTED,
+            },
+        }),
+    ])
+
+    return {
+        alreadyRegistered: !!registration,
+        status: registration?.status ?? null,
+        isRegisteredVolunteer: !!acceptedVolunteer,
+    }
+}
+
 
 export const getEventRegistrations = async (
     eventId: string,
