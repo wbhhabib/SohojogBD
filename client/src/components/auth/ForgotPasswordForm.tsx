@@ -26,7 +26,8 @@ export default function ForgotPasswordForm() {
         setSentEmail(email)
         setSubmitted(true)
       } else {
-        alert(data.message)
+        const detailed = Array.isArray(data.errors) ? data.errors.map((e: { message: string }) => e.message).join(' ') : ''
+        alert(detailed || data.message)
       }
     } catch (err) {
       alert('Something went wrong. Please try again.')

@@ -14,6 +14,7 @@ interface TextareaProps {
   name?: string
   required?: boolean
   rows?: number
+  maxLength?: number
 }
 
 export function Textarea({
@@ -27,6 +28,7 @@ export function Textarea({
   name,
   required = false,
   rows = 4,
+  maxLength,
 }: TextareaProps) {
   return (
     <div className="flex flex-col gap-1">
@@ -44,6 +46,7 @@ export function Textarea({
         placeholder={placeholder}
         required={required}
         rows={rows}
+        maxLength={maxLength}
         className={`
           border rounded-lg px-3 py-2 w-full text-sm text-slate-900
           placeholder:text-slate-400 resize-y
@@ -54,6 +57,9 @@ export function Textarea({
           ${className}
         `}
       />
+      {maxLength && typeof value === 'string' && (
+        <p className="text-[11px] text-gray-400 text-right">{value.length}/{maxLength}</p>
+      )}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   )

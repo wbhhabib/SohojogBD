@@ -46,7 +46,8 @@ export default function ResetPasswordForm() {
       if (data.success) {
         setSuccess(true)
       } else {
-        alert(data.message)
+        const detailed = Array.isArray(data.errors) ? data.errors.map((e: { message: string }) => e.message).join(' ') : ''
+        alert(detailed || data.message)
       }
     } catch (err) {
       alert('Something went wrong. Please try again.')
@@ -108,9 +109,8 @@ export default function ResetPasswordForm() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
             required
-            className={`border rounded-lg px-3 py-2 w-full text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10 ${
-              confirmPassword && confirmPassword !== password ? 'border-red-400' : 'border-gray-200'
-            }`}
+            className={`border rounded-lg px-3 py-2 w-full text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10 ${confirmPassword && confirmPassword !== password ? 'border-red-400' : 'border-gray-200'
+              }`}
           />
           <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
             {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}

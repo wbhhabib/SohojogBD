@@ -314,6 +314,7 @@ export default function EventDetailPage() {
                                         value={note}
                                         onChange={(e) => setNote(e.target.value)}
                                         rows={2}
+                                        maxLength={300}
                                     />
                                     {error && <p className="text-xs text-red-600">{error}</p>}
                                     <Button variant="primary" className="w-full" isLoading={submitting} onClick={handleRegister}>
@@ -325,7 +326,7 @@ export default function EventDetailPage() {
                                     <Input label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
                                     <Input label="Phone Number" required placeholder="01XXXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} />
                                     <Input label="Guardian/Emergency Contact Phone (optional)" placeholder="01XXXXXXXXX" value={guardianPhone} onChange={(e) => setGuardianPhone(e.target.value)} />
-                                    <Textarea label="Message (optional)" placeholder="Anything the organizer should know?" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} />
+                                    <Textarea label="Message (optional)" placeholder="Anything the organizer should know?" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} maxLength={500} />
                                     {error && <p className="text-xs text-red-600">{error}</p>}
                                     <Button variant="primary" className="w-full" isLoading={submitting} onClick={handleRegister} disabled={!fullName.trim() || !phone.trim()}>
                                         <Send size={15} /> Join Event
