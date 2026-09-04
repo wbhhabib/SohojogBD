@@ -758,6 +758,8 @@ export const getEventsFeed = async (query: {
     division?: string
     district?: string
     upazila?: string
+    category?: string
+    areaOfWork?: string
 }) => {
     const { skip, take, page, limit } = getPagination(query)
 
@@ -765,6 +767,23 @@ export const getEventsFeed = async (query: {
     if (query.division) where.division = query.division
     if (query.district) where.district = query.district
     if (query.upazila) where.upazila = query.upazila
+
+    // Category (Registered/Team) আর Area of Work — দুটোই OrgUpdate-এর নিজের
+    // ফিল্ড না, organization relation-এর মাধ্যমে filter করতে হয়।
+    const organizationFilter: Record<string, unknown> = {}
+    if (
+        query.category &&
+        typeof query.category === 'string' &&
+        (Object.values(OrgCategory) as string[]).includes(query.category)
+    ) {
+        organizationFilter.category = query.category as OrgCategory
+    }
+    if (query.areaOfWork && typeof query.areaOfWork === 'string') {
+        organizationFilter.areasOfWork = { some: { area: query.areaOfWork } }
+    }
+    if (Object.keys(organizationFilter).length > 0) {
+        where.organization = organizationFilter
+    }
 
     const [updates, total] = await Promise.all([
         prisma.orgUpdate.findMany({

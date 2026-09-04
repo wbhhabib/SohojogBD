@@ -16,7 +16,6 @@ const ORG_CATEGORIES = [
     'Education', 'Health', 'Disaster Relief', 'Environment',
     'Animal Welfare', 'Community', 'Poverty', 'Youth Development', 'Other',
 ]
-const DIVISIONS = ['Dhaka', 'Chattogram', 'Rajshahi', 'Khulna', 'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh']
 
 const CATEGORY_ICONS: Record<string, string> = {
     All: '🌟', Education: '🎓', Health: '🏥', 'Disaster Relief': '🆘', Environment: '🌿',
@@ -42,11 +41,16 @@ export default function BDCarePage() {
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [total, setTotal] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
+    const [showFilters, setShowFilters] = useState(false)
+
     const [events, setEvents] = useState<OrgUpdate[]>([])
     const [eventsLoading, setEventsLoading] = useState(false)
+    const [eventCategory, setEventCategory] = useState('All')
+    const [eventOrgType, setEventOrgType] = useState('')
     const [eventDivision, setEventDivision] = useState('')
     const [eventDistrict, setEventDistrict] = useState('')
-    const [showFilters, setShowFilters] = useState(false)
+    const [eventUpazila, setEventUpazila] = useState('')
+    const [showEventFilters, setShowEventFilters] = useState(false)
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -76,8 +80,11 @@ export default function BDCarePage() {
         setEventsLoading(true)
         const params = new URLSearchParams()
         params.set('limit', '9')
+        if (eventCategory !== 'All') params.set('areaOfWork', eventCategory)
+        if (eventOrgType) params.set('category', eventOrgType)
         if (eventDivision) params.set('division', eventDivision)
-        if (eventDistrict.trim()) params.set('district', eventDistrict.trim())
+        if (eventDistrict) params.set('district', eventDistrict)
+        if (eventUpazila) params.set('upazila', eventUpazila)
 
         orgApi.getEventsFeed(params.toString())
             .then((res) => {
@@ -85,7 +92,7 @@ export default function BDCarePage() {
             })
             .catch(() => { })
             .finally(() => setEventsLoading(false))
-    }, [eventDivision, eventDistrict])
+    }, [eventCategory, eventOrgType, eventDivision, eventDistrict, eventUpazila])
 
     useEffect(() => { fetchEvents() }, [fetchEvents])
 
@@ -106,6 +113,22 @@ export default function BDCarePage() {
         orgType !== '',
         orgDivision !== '',
         orgDistrict !== '',
+    ].filter(Boolean).length
+
+    const handleEventCategory = (val: string) => setEventCategory(val)
+    const handleEventOrgType = (val: string) => setEventOrgType(val)
+    const clearEventFilters = () => {
+        setEventCategory('All')
+        setEventOrgType('')
+        setEventDivision('')
+        setEventDistrict('')
+        setEventUpazila('')
+    }
+    const activeEventFilterCount = [
+        eventCategory !== 'All',
+        eventOrgType !== '',
+        eventDivision !== '',
+        eventDistrict !== '',
     ].filter(Boolean).length
 
     return (
@@ -310,26 +333,108 @@ export default function BDCarePage() {
                 <section className="max-w-7xl mx-auto px-4 mt-6 mb-10 pt-8 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                         <h2 className="text-lg font-bold text-slate-900">Regular Events</h2>
-                        <div className="flex items-center gap-2">
-                            <select
-                                value={eventDivision}
-                                onChange={(e) => setEventDivision(e.target.value)}
-                                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5"
-                            >
-                                <option value="">All Divisions</option>
-                                {DIVISIONS.map((d) => (
-                                    <option key={d} value={d}>{d}</option>
-                                ))}
-                            </select>
-                            <input
-                                type="text"
-                                placeholder="District"
-                                value={eventDistrict}
-                                onChange={(e) => setEventDistrict(e.target.value)}
-                                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 w-32"
-                            />
-                        </div>
+                        <button
+                            onClick={() => setShowEventFilters(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:border-sky-300 hover:text-sky-600 transition-all"
+                        >
+                            <SlidersHorizontal size={15} />
+                            Filters
+                            {activeEventFilterCount > 0 && (
+                                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-sky-600 text-white text-[11px] font-bold">
+                                    {activeEventFilterCount}
+                                </span>
+                            )}
+                        </button>
                     </div>
+
+                    {showEventFilters && (
+                        <div
+                            className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/40"
+                            onClick={() => setShowEventFilters(false)}
+                        >
+                            <div
+                                className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto p-6"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-lg font-bold text-slate-900">Search filters</h3>
+                                    <button onClick={() => setShowEventFilters(false)} className="text-gray-400 hover:text-gray-600">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">
+                                            Category
+                                        </h4>
+                                        <div className="flex flex-col gap-2.5">
+                                            {['All', ...ORG_CATEGORIES].map((cat) => (
+                                                <button
+                                                    key={cat}
+                                                    onClick={() => handleEventCategory(cat)}
+                                                    className={`text-left text-sm flex items-center gap-1.5 ${cat === eventCategory ? 'font-bold text-sky-600' : 'text-gray-600 hover:text-sky-600'
+                                                        }`}
+                                                >
+                                                    <span>{CATEGORY_ICONS[cat] ?? '📌'}</span>
+                                                    {cat}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">
+                                            Type
+                                        </h4>
+                                        <div className="flex flex-col gap-2.5">
+                                            {ORG_TYPE_FILTERS.map((opt) => (
+                                                <button
+                                                    key={opt.value || 'all-types'}
+                                                    onClick={() => handleEventOrgType(opt.value)}
+                                                    className={`text-left text-sm ${opt.value === eventOrgType ? 'font-bold text-sky-600' : 'text-gray-600 hover:text-sky-600'
+                                                        }`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">
+                                            Location
+                                        </h4>
+                                        <LocationSelect
+                                            layout="stacked"
+                                            division={eventDivision}
+                                            district={eventDistrict}
+                                            upazila={eventUpazila}
+                                            onDivisionChange={setEventDivision}
+                                            onDistrictChange={setEventDistrict}
+                                            onUpazilaChange={setEventUpazila}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                    <button
+                                        onClick={clearEventFilters}
+                                        className="text-sm font-semibold text-gray-500 hover:text-red-600"
+                                    >
+                                        Clear all filters
+                                    </button>
+                                    <button
+                                        onClick={() => setShowEventFilters(false)}
+                                        className="text-sm font-bold text-white px-5 py-2 rounded-lg"
+                                        style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)' }}
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {eventsLoading ? (
                         <p className="text-sm text-slate-400">Loading…</p>

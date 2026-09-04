@@ -9,19 +9,20 @@ interface NotificationItemProps {
 }
 
 const TYPE_ICONS: Record<string, string> = {
-  donation:  '💰',
-  milestone: '🎯',
-  comment:   '💬',
-  system:    '🔔',
+  DONATION: '💰',
+  MILESTONE: '🎯',
+  COMMENT: '💬',
+  SYSTEM: '🔔',
+  EVENT_REGISTRATION: '📅',
 }
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
-  const mins  = Math.floor(diff / 60000)
+  const mins = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
-  const days  = Math.floor(diff / 86400000)
-  if (mins < 1)   return 'just now'
-  if (mins < 60)  return `${mins}m ago`
+  const days = Math.floor(diff / 86400000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
   if (hours < 24) return `${hours}h ago`
   return `${days}d ago`
 }
@@ -32,12 +33,11 @@ export default function NotificationItem({ notification, onRead }: NotificationI
   return (
     <button
       onClick={() => onRead(id)}
-      className={`w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
-        isRead ? 'bg-white' : 'bg-blue-50'
-      }`}
+      className={`w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${isRead ? 'bg-white' : 'bg-blue-50'
+        }`}
     >
       <div className="shrink-0 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-base mt-0.5">
-        {TYPE_ICONS[type]}
+        {TYPE_ICONS[type?.toUpperCase()] ?? '🔔'}
       </div>
 
       <div className="flex-1 min-w-0">

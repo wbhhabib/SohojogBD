@@ -28,13 +28,18 @@ const statusVariant: Record<string, 'success' | 'warning' | 'default' | 'info' |
     PENDING: 'warning', ACCEPTED: 'success', REJECTED: 'danger', CANCELLED: 'default',
 }
 
+// Pending সবার আগে, তারপর Accepted, তারপর Rejected/Cancelled — এই ক্রমেই দেখানো হবে
+const STATUS_ORDER: Record<string, number> = { PENDING: 0, ACCEPTED: 1, REJECTED: 2, CANCELLED: 3 }
+const VISIBLE_REGISTRATIONS_COUNT = 3
+
 // Owner-only inline registrations manager — shown right on the event page
 // instead of a "Join" form, so the org doesn't have to hop over to /bdcare/my.
 function EventOwnerPanel({ eventId }: { eventId: string }) {
     const [loading, setLoading] = useState(true)
     const [registrations, setRegistrations] = useState<EventRegistration[]>([])
     const [respondingMessage, setRespondingMessage] = useState<Record<string, string>>({})
-
+    const [showAllRegistrations, setShowAllRegistrations] = useState(false)
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REJECTED'>('ALL')
     const load = useCallback(async () => {
         setLoading(true)
         const res = await orgApi.getEventRegistrations(eventId, 'limit=100')
@@ -54,6 +59,20 @@ function EventOwnerPanel({ eventId }: { eventId: string }) {
     const acceptedCount = registrations.filter((r) => r.status === 'ACCEPTED').length
     const rejectedCount = registrations.filter((r) => r.status === 'REJECTED').length
 
+    const sortedRegistrations = [...registrations].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status])
+    const filteredRegistrations = statusFilter === 'ALL'
+        ? sortedRegistrations
+        : sortedRegistrations.filter((r) => r.status === statusFilter)
+    const visibleRegistrations = showAllRegistrations
+        ? filteredRegistrations
+        : filteredRegistrations.slice(0, VISIBLE_REGISTRATIONS_COUNT)
+    const hasMoreRegistrations = filteredRegistrations.length > VISIBLE_REGISTRATIONS_COUNT
+
+    const handleFilterChange = (status: 'ALL' | 'PENDING' | 'ACCEPTED' | 'REJECTED') => {
+        setStatusFilter(status)
+        setShowAllRegistrations(false)
+    }
+
     return (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -62,10 +81,19 @@ function EventOwnerPanel({ eventId }: { eventId: string }) {
                     Event Registrations {!loading && `(${registrations.length})`}
                 </h2>
                 {!loading && registrations.length > 0 && (
-                    <div className="flex items-center gap-1.5">
-                        <Badge variant="warning">{pendingCount} Pending</Badge>
-                        <Badge variant="success">{acceptedCount} Accepted</Badge>
-                        <Badge variant="danger">{rejectedCount} Rejected</Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <button onClick={() => handleFilterChange('ALL')} className={statusFilter === 'ALL' ? 'ring-2 ring-offset-1 ring-slate-400 rounded-full' : ''}>
+                            <Badge variant="default">{registrations.length} All</Badge>
+                        </button>
+                        <button onClick={() => handleFilterChange('PENDING')} className={statusFilter === 'PENDING' ? 'ring-2 ring-offset-1 ring-amber-400 rounded-full' : ''}>
+                            <Badge variant="warning">{pendingCount} Pending</Badge>
+                        </button>
+                        <button onClick={() => handleFilterChange('ACCEPTED')} className={statusFilter === 'ACCEPTED' ? 'ring-2 ring-offset-1 ring-emerald-400 rounded-full' : ''}>
+                            <Badge variant="success">{acceptedCount} Accepted</Badge>
+                        </button>
+                        <button onClick={() => handleFilterChange('REJECTED')} className={statusFilter === 'REJECTED' ? 'ring-2 ring-offset-1 ring-red-400 rounded-full' : ''}>
+                            <Badge variant="danger">{rejectedCount} Rejected</Badge>
+                        </button>
                     </div>
                 )}
             </div>
@@ -76,9 +104,11 @@ function EventOwnerPanel({ eventId }: { eventId: string }) {
                 </div>
             ) : registrations.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-4">No one has registered for this event yet.</p>
+            ) : filteredRegistrations.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No registrations match this filter.</p>
             ) : (
-                <div className="space-y-2">
-                    {registrations.map((r) => (
+                <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                    {visibleRegistrations.map((r) => (
                         <div key={r.id} className="bg-gray-50 rounded-xl border border-gray-200 p-3 space-y-1.5">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
@@ -90,7 +120,7 @@ function EventOwnerPanel({ eventId }: { eventId: string }) {
                                     </p>
                                     {r.phone && <p className="text-xs text-gray-500">📞 {r.phone}</p>}
                                     {r.guardianPhone && <p className="text-xs text-gray-500">Guardian: {r.guardianPhone}</p>}
-                                    {r.message && <p className="text-xs text-gray-500 mt-0.5">{r.message}</p>}
+                                    {r.message && <p className="text-xs text-gray-500 mt-0.5 break-words">{r.message}</p>}
                                     <p className="text-[11px] text-gray-400 mt-1">{timeAgo(r.createdAt)}</p>
                                 </div>
                                 <Badge variant={statusVariant[r.status]} className="capitalize shrink-0">{r.status.toLowerCase()}</Badge>
@@ -116,6 +146,14 @@ function EventOwnerPanel({ eventId }: { eventId: string }) {
                             )}
                         </div>
                     ))}
+                    {hasMoreRegistrations && (
+                        <button
+                            onClick={() => setShowAllRegistrations((prev) => !prev)}
+                            className="w-full text-center text-xs font-semibold text-sky-600 hover:text-sky-700 py-2"
+                        >
+                            {showAllRegistrations ? 'Show less' : `See all (${filteredRegistrations.length})`}
+                        </button>
+                    )}
                 </div>
             )}
         </div>

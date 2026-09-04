@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { X, Heart, LayoutDashboard, LogOut, User } from 'lucide-react'
 import Button from '@/components/ui/button'
+import NotificationBell from '@/components/notification/NotificationBell'
 import { useAuth } from '@/lib/AuthContext'
 
 interface MobileMenuProps {
@@ -83,12 +84,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </span>
               </div>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
               <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
                 {role}
               </span>
             </div>
+            <NotificationBell userId={user.id} />
           </div>
         )}
         <nav className="px-4 py-5 space-y-1">

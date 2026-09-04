@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Calendar, MapPin, Building2 } from 'lucide-react'
+import { Calendar, Clock, MapPin, Building2 } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { OrgUpdate } from '@/lib/api'
 
@@ -9,9 +9,16 @@ function formatEventDate(dateStr?: string | null) {
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+function formatEventTime(dateStr?: string | null) {
+    if (!dateStr) return null
+    const d = new Date(dateStr)
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+}
+
 export default function EventCard({ event }: { event: OrgUpdate }) {
     const cover = event.images?.[0]
     const dateLabel = formatEventDate(event.eventDate)
+    const timeLabel = formatEventTime(event.eventDate)
 
     return (
         <Link
@@ -39,10 +46,18 @@ export default function EventCard({ event }: { event: OrgUpdate }) {
                 </p>
             </div>
             <div className="p-3 space-y-1">
-                <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                    <Calendar size={12} />
-                    {dateLabel}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <Calendar size={12} />
+                        {dateLabel}
+                    </p>
+                    {timeLabel && (
+                        <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                            <Clock size={12} />
+                            {timeLabel}
+                        </p>
+                    )}
+                </div>
                 <p className="text-xs text-slate-500 flex items-center gap-1.5">
                     <MapPin size={12} />
                     {event.place}
