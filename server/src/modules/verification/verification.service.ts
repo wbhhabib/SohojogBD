@@ -14,6 +14,7 @@ const createHttpError = (message: string, statusCode: number) => {
 }
 
 const SELECT_ALL_CHECKABLE = {
+    name: true,
     phone: true,
     address: true,
     dateOfBirth: true,

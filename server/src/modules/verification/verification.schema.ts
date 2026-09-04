@@ -3,6 +3,7 @@ import { z } from 'zod'
 // User progressive-ভাবে info জমা দেবে — তাই সবকিছু optional।
 // যেটুকু পাঠাবে সেটুকুই merge হবে, বাকি field আগেরটাই থেকে যাবে।
 export const submitVerificationSchema = z.object({
+    name: z.string().min(2).max(50).optional(),
     phone: z
         .string()
         .regex(/^01[3-9]\d{8}$/, 'Invalid BD phone number')

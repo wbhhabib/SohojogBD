@@ -14,6 +14,8 @@ import {
     createVolunteerRequestSchema,
     updateVolunteerRequestSchema,
     createOrgUpdateSchema,
+    createEventRegistrationSchema,
+    respondEventRegistrationSchema,
 } from './org.schema'
 
 const router = Router()
@@ -69,6 +71,21 @@ router.get('/:id/updates', orgController.getOrgUpdates)
 router.get('/updates/feed', orgController.getEventsFeed)
 router.get('/updates/feed/:id', orgController.getEventById)
 router.post('/updates/upload-image', authenticate, uploadSingle, orgController.uploadUpdateImage)
+
+// ── Event registrations ───────────────────────────────────────────────────
+router.post(
+    '/updates/:eventId/registrations',
+    authenticate,
+    validate(createEventRegistrationSchema),
+    orgController.createEventRegistration
+)
+router.get('/updates/:eventId/registrations', authenticate, orgController.getEventRegistrations)
+router.patch(
+    '/registrations/:registrationId',
+    authenticate,
+    validate(respondEventRegistrationSchema),
+    orgController.respondToEventRegistration
+)
 
 // ── Public: single org by slug ────────────────────────────────────────────
 router.get('/:slug', optionalAuthenticate, orgController.getOrgBySlug)

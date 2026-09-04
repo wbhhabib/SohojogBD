@@ -189,3 +189,33 @@ export const deleteOrgUpdate = asyncHandler(async (req, res) => {
     const result = await orgService.deleteOrgUpdate(req.params.updateId, req.user!.id)
     sendSuccess(res, null, result.message)
 })
+
+// ── Event registrations (Part 3 & 4) ────────────────────────────────────
+
+export const createEventRegistration = asyncHandler(async (req, res) => {
+    const registration = await orgService.createEventRegistration(
+        req.params.eventId,
+        req.user!.id,
+        req.body
+    )
+    sendSuccess(res, registration, 'Registered for the event', 201)
+})
+
+export const getEventRegistrations = asyncHandler(async (req, res) => {
+    const { registrations, meta } = await orgService.getEventRegistrations(
+        req.params.eventId,
+        req.user!.id,
+        req.query
+    )
+    sendPaginated(res, registrations, meta, 'Event registrations fetched successfully')
+})
+
+export const respondToEventRegistration = asyncHandler(async (req, res) => {
+    const registration = await orgService.respondToEventRegistration(
+        req.params.registrationId,
+        req.user!.id,
+        req.body.status,
+        req.body.message
+    )
+    sendSuccess(res, registration, 'Registration updated successfully')
+})

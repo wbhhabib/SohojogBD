@@ -8,6 +8,7 @@ import {
     UpdateVerificationStatusInput,
     CreateVolunteerRequestInput,
     CreateOrgUpdateInput,
+    CreateEventRegistrationInput,
 } from './org.schema'
 
 const createHttpError = (message: string, statusCode: number) => {
@@ -572,6 +573,8 @@ export const createVolunteerRequest = async (
             organizationId,
             volunteerId,
             message: data.message,
+            interestAreas: data.interestAreas ?? [],
+            availability: data.availability,
             status: VolunteerRequestStatus.PENDING,
         },
     })
@@ -800,4 +803,153 @@ export const deleteOrgUpdate = async (updateId: string, ownerId: string) => {
 
     await prisma.orgUpdate.delete({ where: { id: updateId } })
     return { message: 'Update deleted successfully' }
+}
+
+// ── Event Registrations (Part 3 & 4) ────────────────────────────────────
+// Path A (Registered Volunteer — ACCEPTED VolunteerRequest আছে এই org-এ):
+//   fullName/phone/guardianPhone কখনোই এই row-তে সেভ হয় না — সবসময় null
+//   থাকবে, পড়ার সময় User relation থেকে live আনা হয়। শুধু optional `note`।
+// Path B (General User): fullName/phone/guardianPhone/message সরাসরি এই
+//   row-তে সেভ হয়। fullName === null মানেই Path A — এটাই দুই path আলাদা
+//   করার signal, আলাদা কোনো "path" কলাম রাখা হয়নি ইচ্ছাকৃতভাবে।
+
+export const createEventRegistration = async (
+    eventId: string,
+    userId: string,
+    data: CreateEventRegistrationInput
+) => {
+    const event = await prisma.orgUpdate.findUnique({
+        where: { id: eventId },
+        include: { organization: true },
+    })
+    if (!event) throw createHttpError('Event not found', 404)
+
+    const existing = await prisma.eventRegistration.findUnique({
+        where: { userId_eventId: { userId, eventId } },
+    })
+    if (existing) throw createHttpError('You have already registered for this event', 400)
+
+    const acceptedVolunteer = await prisma.volunteerRequest.findFirst({
+        where: {
+            organizationId: event.organizationId,
+            volunteerId: userId,
+            status: VolunteerRequestStatus.ACCEPTED,
+        },
+    })
+    const isRegisteredVolunteer = !!acceptedVolunteer
+
+    if (!isRegisteredVolunteer) {
+        if (!data.fullName?.trim() || !data.phone?.trim()) {
+            throw createHttpError('Full name and phone are required', 400)
+        }
+    }
+
+    const registration = await prisma.eventRegistration.create({
+        data: isRegisteredVolunteer
+            ? {
+                eventId,
+                userId,
+                note: data.note,
+            }
+            : {
+                eventId,
+                userId,
+                fullName: data.fullName,
+                phone: data.phone,
+                guardianPhone: data.guardianPhone,
+                message: data.message,
+            },
+    })
+
+    await prisma.notification.create({
+        data: {
+            type: 'EVENT_REGISTRATION',
+            title: 'New event registration',
+            message: `Someone registered for "${event.title}"`,
+            userId: event.organization.ownerId,
+        },
+    })
+
+    return registration
+}
+
+export const getEventRegistrations = async (
+    eventId: string,
+    ownerId: string,
+    query: { page?: unknown; limit?: unknown }
+) => {
+    const event = await prisma.orgUpdate.findUnique({
+        where: { id: eventId },
+        include: { organization: true },
+    })
+    if (!event) throw createHttpError('Event not found', 404)
+    if (event.organization.ownerId !== ownerId) throw createHttpError('Access denied', 403)
+
+    const { skip, take, page, limit } = getPagination(query)
+
+    const [registrations, total] = await Promise.all([
+        prisma.eventRegistration.findMany({
+            where: { eventId },
+            skip,
+            take,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: { select: { id: true, name: true, phone: true, emergencyContactPhone: true, avatar: true } },
+            },
+        }),
+        prisma.eventRegistration.count({ where: { eventId } }),
+    ])
+
+    const shaped = registrations.map((r) => {
+        const isRegisteredVolunteer = r.fullName === null
+        return {
+            id: r.id,
+            status: r.status,
+            createdAt: r.createdAt,
+            isRegisteredVolunteer,
+            fullName: isRegisteredVolunteer ? r.user.name : r.fullName,
+            phone: isRegisteredVolunteer ? r.user.phone : r.phone,
+            guardianPhone: isRegisteredVolunteer ? r.user.emergencyContactPhone : r.guardianPhone,
+            message: isRegisteredVolunteer ? r.note : r.message,
+        }
+    })
+
+    return { registrations: shaped, meta: getPaginationMeta(total, page, limit) }
+}
+
+export const respondToEventRegistration = async (
+    registrationId: string,
+    ownerId: string,
+    status: 'ACCEPTED' | 'REJECTED',
+    message?: string
+) => {
+    const registration = await prisma.eventRegistration.findUnique({
+        where: { id: registrationId },
+        include: { event: { include: { organization: true } } },
+    })
+
+    if (!registration) throw createHttpError('Registration not found', 404)
+    if (registration.event.organization.ownerId !== ownerId) throw createHttpError('Access denied', 403)
+    if (registration.status !== VolunteerRequestStatus.PENDING) {
+        throw createHttpError('This registration has already been handled', 400)
+    }
+
+    const updated = await prisma.eventRegistration.update({
+        where: { id: registrationId },
+        data: { status: status as VolunteerRequestStatus },
+    })
+
+    const defaultMessage =
+        status === 'ACCEPTED' ? 'তোমার registration approve হয়েছে' : 'দুঃখিত, এবার হচ্ছে না'
+
+    await prisma.notification.create({
+        data: {
+            type: 'EVENT_REGISTRATION',
+            title: status === 'ACCEPTED' ? 'Registration approved!' : 'Registration update',
+            message: message?.trim() || `"${registration.event.title}" — ${defaultMessage}`,
+            userId: registration.userId,
+        },
+    })
+
+    return updated
 }
