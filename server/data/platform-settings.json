@@ -1,8 +1,8 @@
 {
-  "siteName": "FundRaise",
-  "siteDescription": "A trusted crowdfunding platform connecting donors with meaningful causes across Bangladesh.",
-  "contactEmail": "support@fundraise.com.bd",
-  "supportPhone": "+880 1800-FUNDRAISE",
+  "siteName": "SohojogBD",
+  "siteDescription": "A trusted social support platform connecting peoples with meaningful causes across Bangladesh.",
+  "contactEmail": "support@sohojogbd.com.bd",
+  "supportPhone": "+880 1800-SOHOJOG",
   "allowRegistrations": true,
   "allowCampaignCreation": true,
   "emailVerificationRequired": true,

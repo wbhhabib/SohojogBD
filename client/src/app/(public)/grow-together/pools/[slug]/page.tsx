@@ -4,21 +4,15 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import Badge from '@/components/ui/badge'
-import PoolMeter from '@/components/growtogether/PoolMeter'
 import { useAuth } from '@/lib/AuthContext'
 import { verificationApi } from '@/lib/verificationApi'
-import { formatBDT } from '@/lib/utils'
-import {
-    getPoolBySlug, joinPool, cancelPool, leavePool,
-    CATEGORY_EMOJI, daysLeft, savingsPct,
-} from '@/lib/growTogetherApi'
+import { getPoolBySlug, joinPool, cancelPool, leavePool, CATEGORY_EMOJI } from '@/lib/growTogetherApi'
 import type { WholesalePool } from '@/lib/growTogetherApi'
 import {
-    ArrowLeft, MapPin, Phone, User, Package, CalendarClock,
-    CheckCircle2, MessageCircle, Users, Loader2, XCircle,
+    ArrowLeft, MapPin, Phone, User, Package,
+    CheckCircle2, MessageCircle, Users, Loader2, XCircle, Lock, Facebook,
 } from 'lucide-react'
 
 export default function PoolDetailPage() {
@@ -30,7 +24,6 @@ export default function PoolDetailPage() {
     const [pool, setPool] = useState<WholesalePool | null>(null)
     const [loading, setLoading] = useState(true)
     const [notFoundState, setNotFoundState] = useState(false)
-    const [quantity, setQuantity] = useState('')
     const [note, setNote] = useState('')
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -53,12 +46,10 @@ export default function PoolDetailPage() {
         const draft = sessionStorage.getItem(`draft:pool-join:${slug}`)
         if (draft) {
             const parsed = JSON.parse(draft)
-            setQuantity(parsed.quantity ?? '')
             setNote(parsed.note ?? '')
             sessionStorage.removeItem(`draft:pool-join:${slug}`)
         }
     }, [slug])
-
 
     if (loading) {
         return (
@@ -88,13 +79,12 @@ export default function PoolDetailPage() {
     }
 
     const isOwner = user?.id === pool.ownerId
-    const myEntry = pool.participants.find((p) => p.participant.id === user?.id)
-    const hasJoined = !!myEntry
+    const hasJoined = pool.participants.some((p) => p.participant.id === user?.id)
     const isOpen = pool.status === 'OPEN'
     const canJoin = isOpen && !isOwner && !hasJoined
-    const left = daysLeft(pool.deadline)
-    const savings = savingsPct(pool)
     const emoji = CATEGORY_EMOJI[pool.category] ?? '📦'
+    // contact info null মানে backend already এটা লুকিয়ে পাঠিয়েছে (owner না, verified না)
+    const contactHidden = !isOwner && pool.contactPhone === null && pool.groupLink === null
 
     const handleJoin = async () => {
         if (!user) {
@@ -102,21 +92,16 @@ export default function PoolDetailPage() {
             return
         }
         setError('')
-        const qty = Number(quantity)
-        if (!qty || qty < pool.minJoinQuantity) {
-            setError(`Please enter at least ${pool.minJoinQuantity} ${pool.unit}`)
-            return
-        }
 
         const check = await verificationApi.checkReadiness('WHOLESALE_JOIN')
         if (check.success && check.data && !check.data.ready) {
-            sessionStorage.setItem(`draft:pool-join:${slug}`, JSON.stringify({ quantity, note }))
+            sessionStorage.setItem(`draft:pool-join:${slug}`, JSON.stringify({ note }))
             router.push(`/verification/core?action=WHOLESALE_JOIN&redirect=${encodeURIComponent(`/grow-together/pools/${slug}`)}`)
             return
         }
 
         setSubmitting(true)
-        const res = await joinPool(pool.id, { quantity: qty, note: note.trim() || undefined }, { id: user.id, name: user.name, avatar: user.avatar })
+        const res = await joinPool(pool.id, { note: note.trim() || undefined }, { id: user.id, name: user.name, avatar: user.avatar })
         if (res.success && res.data) {
             setPool(res.data)
         } else {
@@ -161,7 +146,7 @@ export default function PoolDetailPage() {
                                     </span>
                                     {pool.status !== 'OPEN' && (
                                         <Badge variant="default" className="capitalize">
-                                            {pool.status.replace('_', ' ').toLowerCase()}
+                                            {pool.status.toLowerCase()}
                                         </Badge>
                                     )}
                                 </div>
@@ -172,28 +157,33 @@ export default function PoolDetailPage() {
                                 <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
                                     {pool.description}
                                 </p>
+                                <div className="flex flex-col gap-2 text-sm mt-4 pt-4 border-t border-amber-50 text-gray-600">
+                                    <span className="flex items-center gap-2"><MapPin size={14} className="text-amber-600" /> {pool.location}, {pool.upazila}, {pool.district}, {pool.division}</span>
+                                    <span className="flex items-center gap-2"><Package size={14} className="text-amber-600" /> Unit: {pool.unit}</span>
+                                    <span className="flex items-center gap-2"><User size={14} className="text-amber-600" /> Started by {pool.owner.name}</span>
+                                </div>
                             </div>
 
                             <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
                                 <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <Users size={15} className="text-amber-600" />
-                                    Who&apos;s in ({pool.participants.length})
+                                    Who&apos;s interested ({pool.participants.length})
                                 </h2>
                                 {pool.participants.length === 0 ? (
                                     <p className="text-sm text-gray-400">No one has joined yet — be the first!</p>
                                 ) : (
                                     <div className="space-y-2.5">
                                         {pool.participants.map((pt) => (
-                                            <div key={pt.id} className="flex items-center justify-between text-sm">
+                                            <div key={pt.id} className="flex flex-col text-sm">
                                                 <span className="flex items-center gap-2 text-gray-800">
                                                     <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-amber-50 text-amber-700">
                                                         {pt.participant.name.charAt(0).toUpperCase()}
                                                     </span>
                                                     {pt.participant.name}
                                                 </span>
-                                                <span className="tabular-nums font-medium text-gray-500">
-                                                    {pt.quantity} {pool.unit}
-                                                </span>
+                                                {pt.note && (
+                                                    <span className="text-xs text-gray-400 pl-9">{pt.note}</span>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -201,43 +191,13 @@ export default function PoolDetailPage() {
                             </div>
                         </div>
 
-                        {/* ── right: pool meter + join box ── */}
+                        {/* ── right: join box ── */}
                         <div className="md:col-span-2 space-y-4">
                             <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
-                                <div className="flex items-end justify-between mb-1">
-                                    <div>
-                                        <p className="text-[10px] uppercase tracking-wide font-semibold text-amber-600">Pool price</p>
-                                        <p className="text-2xl font-bold tabular-nums text-gray-900">
-                                            {formatBDT(pool.pricePerUnit)}<span className="text-sm font-medium text-gray-400">/{pool.unit}</span>
-                                        </p>
-                                    </div>
-                                    {savings !== null && (
-                                        <span className="text-xs font-bold px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                            ↓ {savings}% vs retail
-                                        </span>
-                                    )}
-                                </div>
-                                {pool.marketPricePerUnit && (
-                                    <p className="text-xs mb-3 text-gray-400">
-                                        Usual retail price: <span className="line-through">{formatBDT(pool.marketPricePerUnit)}</span>
-                                    </p>
-                                )}
-
-                                <div className="my-4">
-                                    <PoolMeter pool={pool} />
-                                </div>
-
-                                <div className="flex flex-col gap-2 text-sm mb-4 text-gray-600">
-                                    <span className="flex items-center gap-2"><MapPin size={14} className="text-amber-600" /> {pool.location}, {pool.upazila}, {pool.district}, {pool.division}</span>
-                                    <span className="flex items-center gap-2"><Package size={14} className="text-amber-600" /> Min. {pool.minJoinQuantity} {pool.unit} per person</span>
-                                    <span className="flex items-center gap-2"><CalendarClock size={14} className="text-amber-600" /> {left > 0 ? `${left} day${left !== 1 ? 's' : ''} left` : 'Deadline passed'}</span>
-                                    <span className="flex items-center gap-2"><User size={14} className="text-amber-600" /> Started by {pool.owner.name}</span>
-                                </div>
-
                                 {isOwner ? (
                                     <div className="space-y-2">
                                         <div className="rounded-xl p-3 text-sm bg-amber-50 text-amber-700">
-                                            This is your pool. You&apos;ll see who joins right here.
+                                            This is your pool. You&apos;ll see who&apos;s interested right here.
                                         </div>
                                         {isOpen && (
                                             <button
@@ -254,28 +214,12 @@ export default function PoolDetailPage() {
                                     <div className="rounded-xl p-3 text-sm bg-gray-50 text-gray-500">
                                         This pool is no longer accepting new joins.
                                     </div>
-                                ) : hasJoined && myEntry ? (
+                                ) : hasJoined ? (
                                     <div className="space-y-3">
                                         <div className="rounded-xl p-4 flex items-start gap-2 text-sm bg-emerald-50 text-emerald-700 border border-emerald-100">
                                             <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-                                            <span>You&apos;re in for <strong>{myEntry.quantity} {pool.unit}</strong>. Join the group to coordinate sizes, payment, and pickup.</span>
+                                            <span>You&apos;re in. Join the group to coordinate quantity, sizes, payment, and pickup.</span>
                                         </div>
-                                        {pool.groupLink ? (
-
-                                            <a href={pool.groupLink}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="w-full inline-flex items-center justify-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl transition-all"
-                                                style={{ background: '#25D366' }}
-                                            >
-                                                <MessageCircle size={15} />
-                                                Open WhatsApp Group
-                                            </a>
-                                        ) : (
-                                            <div className="rounded-xl p-3 text-xs bg-amber-50 text-amber-700">
-                                                No group link yet — reach the pool starter directly at {pool.contactPhone}.
-                                            </div>
-                                        )}
                                         <button
                                             onClick={handleLeave}
                                             disabled={actionBusy}
@@ -286,16 +230,9 @@ export default function PoolDetailPage() {
                                     </div>
                                 ) : canJoin ? (
                                     <div className="space-y-3">
-                                        <Input
-                                            label={`How much can you take? (min. ${pool.minJoinQuantity} ${pool.unit})`}
-                                            type="number"
-                                            min={pool.minJoinQuantity}
-                                            value={quantity}
-                                            onChange={(e) => setQuantity(e.target.value)}
-                                        />
                                         <Textarea
                                             label="Note to the pool starter (optional)"
-                                            placeholder="e.g. I mostly need size M and L…"
+                                            placeholder="e.g. I work with the same product, interested to join…"
                                             value={note}
                                             onChange={(e) => setNote(e.target.value)}
                                             rows={3}
@@ -308,7 +245,7 @@ export default function PoolDetailPage() {
                                             style={{ background: 'linear-gradient(135deg, #d97706, #f97316)' }}
                                         >
                                             {submitting && <Loader2 size={15} className="animate-spin" />}
-                                            Commit My Quantity
+                                            I&apos;m Interested
                                         </button>
                                         {!user && (
                                             <p className="text-xs text-center text-gray-400">You&apos;ll need to log in first.</p>
@@ -316,17 +253,53 @@ export default function PoolDetailPage() {
                                     </div>
                                 ) : null}
 
-                                {pool.contactPhone && (isOwner || hasJoined) && (
-                                    <div className="mt-3 pt-3 flex items-center gap-2 text-sm border-t border-dashed border-amber-100 text-gray-600">
-                                        <Phone size={13} className="text-amber-600" />
-                                        {pool.contactPhone}
-                                    </div>
-                                )}
+                                <div className="mt-4 pt-4 border-t border-dashed border-amber-100">
+                                    {contactHidden ? (
+                                        <div className="rounded-xl p-3 flex items-start gap-2 text-xs bg-gray-50 text-gray-500">
+                                            <Lock size={13} className="mt-0.5 shrink-0" />
+                                            <span>
+                                                Contact info and group links are only visible to verified users.{' '}
+                                                <a href="/verification/core" className="font-semibold text-amber-600 hover:underline">Get verified</a>
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2 text-sm text-gray-600">
+                                            {pool.contactPhone && (
+                                                <span className="flex items-center gap-2">
+                                                    <Phone size={13} className="text-amber-600" />
+                                                    {pool.contactPhone}
+                                                </span>
+                                            )}
+                                            {pool.groupLink && (
+                                                <a href={pool.groupLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full inline-flex items-center justify-center gap-2 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all"
+                                                    style={{ background: '#25D366' }}
+                                                >
+                                                    <MessageCircle size={15} />
+                                                    Open WhatsApp Group
+                                                </a>
+                                            )}
+                                            {pool.facebookLink && (
+                                                <a href={pool.facebookLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full inline-flex items-center justify-center gap-2 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all"
+                                                    style={{ background: '#1877F2' }}
+                                                >
+                                                    <Facebook size={15} />
+                                                    Open Facebook Page
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="rounded-2xl p-4 text-xs flex items-start gap-2 bg-amber-50/60 border border-dashed border-amber-200 text-amber-700">
                                 <MessageCircle size={14} className="mt-0.5 shrink-0" />
-                                Once you commit, coordinate exact sizes, payment, and pickup details in the WhatsApp/Messenger group — not all details are managed on this page.
+                                Coordinate exact quantity, sizes, payment, and pickup in the WhatsApp/Messenger group — not all details are managed on this page.
                             </div>
                         </div>
                     </div>

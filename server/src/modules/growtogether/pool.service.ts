@@ -2,7 +2,7 @@ import { PoolStatus } from '../../types/prisma-enums'
 import { prisma } from '../../config/database'
 import { generateUniqueSlug } from '../../utils/slug'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
-import { checkCompleteness } from '../verification/verification.service'
+import { checkCompleteness, isUserVerified } from '../verification/verification.service'
 import { CreatePoolInput, JoinPoolInput } from './pool.schema'
 
 const createHttpError = (message: string, statusCode: number) => {
@@ -21,6 +21,16 @@ const ensureVerificationReady = async (userId: string) => {
         err.missingFields = missingFields
         throw err
     }
+
+    // ফিল্ড ভরা থাকলেও admin এখনো approve করেনি এমন অবস্থা এখানে ধরা হচ্ছে —
+    // শুধু ফর্ম জমা দেওয়া যথেষ্ট না, actual VERIFIED status লাগবে
+    const verified = await isUserVerified(userId)
+    if (!verified) {
+        throw createHttpError(
+            'Your verification is still pending admin approval. Please wait until it is approved before creating or joining a wholesale pool.',
+            403
+        )
+    }
 }
 
 const PERSON_SELECT = { id: true, name: true, avatar: true } as const
@@ -32,19 +42,15 @@ const POOL_SELECT = {
     description: true,
     category: true,
     unit: true,
-    targetQuantity: true,
-    minJoinQuantity: true,
-    pricePerUnit: true,
-    marketPricePerUnit: true,
     division: true,
     district: true,
     upazila: true,
     location: true,
     contactPhone: true,
     groupLink: true,
+    facebookLink: true,
     images: true,
     status: true,
-    deadline: true,
     createdAt: true,
     ownerId: true,
     owner: { select: PERSON_SELECT },
@@ -52,7 +58,6 @@ const POOL_SELECT = {
         orderBy: { createdAt: 'asc' as const },
         select: {
             id: true,
-            quantity: true,
             note: true,
             createdAt: true,
             participant: { select: PERSON_SELECT },
@@ -61,7 +66,7 @@ const POOL_SELECT = {
 } as const
 
 interface PoolWhereInput {
-    status?: { in: (typeof PoolStatus)[keyof typeof PoolStatus][] }
+    status?: PoolStatus
     category?: string
     division?: string
     district?: string
@@ -74,9 +79,6 @@ interface PoolWhereInput {
     }>
 }
 
-const joinedQuantity = (pool: { participants: { quantity: number }[] }) =>
-    pool.participants.reduce((sum, p) => sum + p.quantity, 0)
-
 export const getAllPools = async (query: {
     page?: unknown
     limit?: unknown
@@ -88,9 +90,7 @@ export const getAllPools = async (query: {
 }) => {
     const { skip, take, page, limit } = getPagination(query)
 
-    const where: PoolWhereInput = {
-        status: { in: [PoolStatus.OPEN, PoolStatus.TARGET_REACHED] },
-    }
+    const where: PoolWhereInput = { status: PoolStatus.OPEN }
 
     if (query.category && typeof query.category === 'string' && query.category !== 'All') {
         where.category = query.category
@@ -126,13 +126,20 @@ export const getAllPools = async (query: {
     return { pools, meta: getPaginationMeta(total, page, limit) }
 }
 
-export const getPoolBySlug = async (slug: string) => {
+// contact info (phone/whatsapp/facebook) শুধু owner অথবা admin-approved
+// VERIFIED viewer-কে দেখানো হয়; বাকি সবার জন্য null পাঠানো হয়
+export const getPoolBySlug = async (slug: string, viewerId?: string) => {
     const pool = await prisma.wholesalePool.findUnique({
         where: { slug },
         select: POOL_SELECT,
     })
     if (!pool) throw createHttpError('Pool not found', 404)
-    return pool
+
+    const isOwner = !!viewerId && viewerId === pool.ownerId
+    const verified = !isOwner && !!viewerId && (await isUserVerified(viewerId))
+    if (isOwner || verified) return pool
+
+    return { ...pool, contactPhone: null, groupLink: null, facebookLink: null }
 }
 
 export const getMyPools = async (ownerId: string, query: { page?: unknown; limit?: unknown }) => {
@@ -186,18 +193,14 @@ export const createPool = async (ownerId: string, data: CreatePoolInput) => {
             description: data.description,
             category: data.category,
             unit: data.unit,
-            targetQuantity: data.targetQuantity,
-            minJoinQuantity: data.minJoinQuantity,
-            pricePerUnit: data.pricePerUnit,
-            marketPricePerUnit: data.marketPricePerUnit,
             division: data.division,
             district: data.district,
             upazila: data.upazila,
             location: data.location,
             contactPhone: data.contactPhone,
-            groupLink: data.groupLink || null,
+            groupLink: data.groupLink,
+            facebookLink: data.facebookLink || null,
             images: Array.isArray(data.images) ? data.images : [],
-            deadline: data.deadline,
             slug,
             status: PoolStatus.OPEN,
             ownerId,
@@ -217,31 +220,19 @@ export const joinPool = async (poolId: string, userId: string, data: JoinPoolInp
     })
     if (!pool) throw createHttpError('Pool not found', 404)
     if (pool.ownerId === userId) throw createHttpError('You cannot join your own pool', 400)
-    if (pool.status !== PoolStatus.OPEN && pool.status !== PoolStatus.TARGET_REACHED) {
+    if (pool.status !== PoolStatus.OPEN) {
         throw createHttpError('This pool is no longer accepting participants', 400)
     }
     const alreadyIn = pool.participants.some((p: { participantId: string }) => p.participantId === userId)
     if (alreadyIn) throw createHttpError('You have already joined this pool', 400)
-    if (data.quantity < pool.minJoinQuantity) {
-        throw createHttpError(`Minimum join quantity is ${pool.minJoinQuantity}`, 400)
-    }
 
     await prisma.poolParticipant.create({
         data: {
             poolId,
             participantId: userId,
-            quantity: data.quantity,
             note: data.note,
         },
     })
-
-    const updatedTotal = joinedQuantity(pool) + data.quantity
-    if (updatedTotal >= pool.targetQuantity && pool.status === PoolStatus.OPEN) {
-        await prisma.wholesalePool.update({
-            where: { id: poolId },
-            data: { status: PoolStatus.TARGET_REACHED },
-        })
-    }
 
     await prisma.notification.create({
         data: {
@@ -266,14 +257,6 @@ export const leavePool = async (poolId: string, userId: string) => {
     if (!participation) throw createHttpError('You have not joined this pool', 400)
 
     await prisma.poolParticipant.delete({ where: { id: participation.id } })
-
-    const remainingQuantity = joinedQuantity(pool) - participation.quantity
-    if (pool.status === PoolStatus.TARGET_REACHED && remainingQuantity < pool.targetQuantity) {
-        await prisma.wholesalePool.update({
-            where: { id: poolId },
-            data: { status: PoolStatus.OPEN },
-        })
-    }
 
     return { message: 'You have left the pool' }
 }

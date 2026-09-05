@@ -26,6 +26,7 @@ export default function CoreInfoForm({ onSaved, submitLabel = 'Save' }: CoreInfo
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [status, setStatus] = useState<VerificationProfile['verificationStatus']>('NOT_SUBMITTED')
+    const [note, setNote] = useState<string | null>(null)
 
     const [phone, setPhone] = useState('')
     const [address, setAddress] = useState('')
@@ -45,6 +46,7 @@ export default function CoreInfoForm({ onSaved, submitLabel = 'Save' }: CoreInfo
             if (res.success && res.data) {
                 const p = res.data
                 setStatus(p.verificationStatus)
+                setNote(p.verificationNote ?? null)
                 setPhone(p.phone ?? '')
                 setAddress(p.address ?? '')
                 setDateOfBirth(p.dateOfBirth ? p.dateOfBirth.slice(0, 10) : '')
@@ -92,6 +94,7 @@ export default function CoreInfoForm({ onSaved, submitLabel = 'Save' }: CoreInfo
 
             if (res.success && res.data) {
                 setStatus(res.data.verificationStatus)
+                setNote(res.data.verificationNote ?? null)
                 onSaved?.(res.data)
             } else {
                 setError(res.message || 'Could not save. Please try again.')
@@ -121,6 +124,12 @@ export default function CoreInfoForm({ onSaved, submitLabel = 'Save' }: CoreInfo
                         <span className="ml-2 text-red-600 font-medium">Rejected — please resubmit</span>
                     )}
                 </p>
+                {status === 'REJECTED' && note && (
+                    <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                        <span className="font-semibold">Reason from admin: </span>
+                        {note}
+                    </p>
+                )}
             </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}

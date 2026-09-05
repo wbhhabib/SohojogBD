@@ -15,6 +15,8 @@ export interface UserProfile {
   address?: string | null
   bio?: string | null
   isVerified: boolean
+  // NID/profile verification status — email-verify (isVerified) থেকে আলাদা
+  verificationStatus?: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED'
   isBanned?: boolean
   createdAt: string
   updatedAt?: string

@@ -30,6 +30,8 @@ const USER_SELECT = {
   phone: true,
   address: true,
   isVerified: true,
+  // NID/profile verification status — email-verify (isVerified) থেকে আলাদা
+  verificationStatus: true,
   isBanned: true,
   createdAt: true,
   updatedAt: true,
@@ -44,6 +46,7 @@ const transformUser = (user: {
   phone: string | null
   address: string | null
   isVerified: boolean
+  verificationStatus: string
   isBanned: boolean
   createdAt: Date
   updatedAt: Date

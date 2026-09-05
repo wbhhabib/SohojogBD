@@ -9,6 +9,7 @@ import Select from '@/components/ui/select'
 import Textarea from '@/components/ui/textarea'
 import LocationSelect from '@/components/common/LocationSelect'
 import { useAuth } from '@/lib/AuthContext'
+import { verificationApi } from '@/lib/verificationApi'
 import { createPool, POOL_CATEGORIES, UNITS } from '@/lib/growTogetherApi'
 import type { PoolCategory, Division } from '@/lib/growTogetherApi'
 import { PackagePlus, Loader2 } from 'lucide-react'
@@ -16,10 +17,7 @@ import { PackagePlus, Loader2 } from 'lucide-react'
 const CATEGORY_OPTIONS = POOL_CATEGORIES.map((v) => ({ label: v, value: v }))
 const UNIT_OPTIONS = UNITS.map((v) => ({ label: v, value: v }))
 
-function minDateStr(daysFromNow: number) {
-    const d = new Date(Date.now() + daysFromNow * 24 * 60 * 60 * 1000)
-    return d.toISOString().slice(0, 10)
-}
+const DRAFT_KEY = 'draft:pool-create'
 
 export default function CreatePoolPage() {
     const router = useRouter()
@@ -29,17 +27,13 @@ export default function CreatePoolPage() {
     const [description, setDescription] = useState('')
     const [category, setCategory] = useState<PoolCategory | ''>('')
     const [unit, setUnit] = useState('')
-    const [targetQuantity, setTargetQuantity] = useState('')
-    const [minJoinQuantity, setMinJoinQuantity] = useState('1')
-    const [pricePerUnit, setPricePerUnit] = useState('')
-    const [marketPricePerUnit, setMarketPricePerUnit] = useState('')
     const [division, setDivision] = useState<Division | ''>('')
     const [district, setDistrict] = useState('')
     const [upazila, setUpazila] = useState('')
     const [location, setLocation] = useState('')
     const [contactPhone, setContactPhone] = useState('')
     const [groupLink, setGroupLink] = useState('')
-    const [deadline, setDeadline] = useState('')
+    const [facebookLink, setFacebookLink] = useState('')
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
 
@@ -48,6 +42,25 @@ export default function CreatePoolPage() {
             router.push('/auth/login?next=/grow-together/pools/create')
         }
     }, [ready, user, router])
+
+    useEffect(() => {
+        const draft = sessionStorage.getItem(DRAFT_KEY)
+        if (draft) {
+            const parsed = JSON.parse(draft)
+            setTitle(parsed.title ?? '')
+            setDescription(parsed.description ?? '')
+            setCategory(parsed.category ?? '')
+            setUnit(parsed.unit ?? '')
+            setDivision(parsed.division ?? '')
+            setDistrict(parsed.district ?? '')
+            setUpazila(parsed.upazila ?? '')
+            setLocation(parsed.location ?? '')
+            setContactPhone(parsed.contactPhone ?? '')
+            setGroupLink(parsed.groupLink ?? '')
+            setFacebookLink(parsed.facebookLink ?? '')
+            sessionStorage.removeItem(DRAFT_KEY)
+        }
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -58,9 +71,19 @@ export default function CreatePoolPage() {
         if (!division) return setError('Please select your area')
         if (!district.trim()) return setError('Please enter your district')
         if (!upazila.trim()) return setError('Please enter your upazila/thana')
-        if (!deadline) return setError('Please pick a deadline for the pool')
-        if (Number(targetQuantity) <= 0) return setError('Target quantity must be greater than 0')
-        if (Number(pricePerUnit) <= 0) return setError('Pool price must be greater than 0')
+        if (!groupLink.trim()) return setError('A WhatsApp/Messenger group link is required so interested people can reach you')
+
+        const draft = {
+            title, description, category, unit, division, district, upazila,
+            location, contactPhone, groupLink, facebookLink,
+        }
+
+        const check = await verificationApi.checkReadiness('WHOLESALE_JOIN')
+        if (check.success && check.data && !check.data.ready) {
+            sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+            router.push(`/verification/core?action=WHOLESALE_JOIN&redirect=${encodeURIComponent('/grow-together/pools/create')}`)
+            return
+        }
 
         setSubmitting(true)
         const res = await createPool(
@@ -69,17 +92,13 @@ export default function CreatePoolPage() {
                 description,
                 category,
                 unit,
-                targetQuantity: Number(targetQuantity),
-                minJoinQuantity: Number(minJoinQuantity) || 1,
-                pricePerUnit: Number(pricePerUnit),
-                marketPricePerUnit: marketPricePerUnit ? Number(marketPricePerUnit) : undefined,
                 division,
                 district: district.trim(),
                 upazila: upazila.trim(),
                 location,
                 contactPhone,
-                groupLink: groupLink || undefined,
-                deadline: new Date(deadline).toISOString(),
+                groupLink,
+                facebookLink: facebookLink || undefined,
             },
             { id: user!.id, name: user!.name, avatar: user!.avatar }
         )
@@ -107,10 +126,10 @@ export default function CreatePoolPage() {
                         <div>
                             <h1 className="text-xl md:text-2xl font-bold text-gray-900"
                                 style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-                                Start a Wholesale Pool
+                                Find Your Wholesale Group
                             </h1>
                             <p className="text-sm text-gray-500">
-                                Set a target quantity — once enough entrepreneurs join, everyone gets the wholesale rate.
+                                Tell other small-capital businessmen with the same interest what you work on — they&apos;ll find you and team up.
                             </p>
                         </div>
                     </div>
@@ -119,7 +138,7 @@ export default function CreatePoolPage() {
                         <Input
                             label="Product name"
                             required
-                            placeholder="e.g. Winter Jacket Wholesale Lot"
+                            placeholder="e.g. Winter Jacket Wholesale Group"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                         />
@@ -129,7 +148,7 @@ export default function CreatePoolPage() {
                             label="Description"
                             required
                             rows={4}
-                            placeholder="What's the deal — supplier, sizes/variants, why the group rate is good…"
+                            placeholder="What product do you work with, why are you looking for a wholesale group, and what kind of partners you're hoping to find…"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
@@ -153,54 +172,6 @@ export default function CreatePoolPage() {
                                 onChange={(e) => setUnit(e.target.value)}
                             />
                         </div>
-
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <Input
-                                label="Target quantity"
-                                type="number"
-                                min="1"
-                                required
-                                placeholder="e.g. 100"
-                                value={targetQuantity}
-                                onChange={(e) => setTargetQuantity(e.target.value)}
-                            />
-                            <Input
-                                label="Min. quantity per participant"
-                                type="number"
-                                min="1"
-                                value={minJoinQuantity}
-                                onChange={(e) => setMinJoinQuantity(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <Input
-                                label="Pool price per unit (৳)"
-                                type="number"
-                                min="1"
-                                required
-                                placeholder="e.g. 420"
-                                value={pricePerUnit}
-                                onChange={(e) => setPricePerUnit(e.target.value)}
-                            />
-                            <Input
-                                label="Usual retail price per unit (৳, optional)"
-                                type="number"
-                                min="0"
-                                placeholder="Shown as a savings badge"
-                                value={marketPricePerUnit}
-                                onChange={(e) => setMarketPricePerUnit(e.target.value)}
-                            />
-                        </div>
-
-                        <Input
-                            label="Deadline to reach the target"
-                            type="date"
-                            required
-                            min={minDateStr(1)}
-                            value={deadline}
-                            onChange={(e) => setDeadline(e.target.value)}
-                        />
 
                         <hr className="border-amber-100" />
 
@@ -230,13 +201,20 @@ export default function CreatePoolPage() {
                             onChange={(e) => setContactPhone(e.target.value)}
                         />
                         <Input
-                            label="WhatsApp / Messenger group link (optional)"
-                            placeholder="Paste an existing group link, or add one later"
+                            label="WhatsApp / Messenger group link"
+                            required
+                            placeholder="Interested people will use this to reach your group"
                             value={groupLink}
                             onChange={(e) => setGroupLink(e.target.value)}
                         />
+                        <Input
+                            label="Facebook page/group link (optional)"
+                            placeholder="Paste your Facebook page or group link"
+                            value={facebookLink}
+                            onChange={(e) => setFacebookLink(e.target.value)}
+                        />
                         <p className="text-xs -mt-3 text-gray-400">
-                            Interested entrepreneurs will commit a quantity here, then move to this group to work out sizes, payment, and pickup.
+                            Only verified users will be able to see your contact info and group links, and join your group.
                         </p>
 
                         {error && <p className="text-sm text-red-600">{error}</p>}

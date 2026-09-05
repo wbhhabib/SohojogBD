@@ -58,7 +58,6 @@ enum IdentityType {
 
 enum PoolStatus {
   OPEN
-  TARGET_REACHED
   CLOSED
   CANCELLED
 }
@@ -320,30 +319,26 @@ model PlantClaim {
 }
 
 model WholesalePool {
-  id                 String            @id @default(cuid())
-  title              String
-  slug               String            @unique
-  description        String
-  category           String
-  unit               String
-  targetQuantity     Int
-  minJoinQuantity    Int               @default(1)
-  pricePerUnit       Int
-  marketPricePerUnit Int?
-  division           String
-  district           String
-  upazila            String
-  location           String
-  contactPhone       String
-  groupLink          String?
-  images             String[]
-  status             PoolStatus        @default(OPEN)
-  deadline           DateTime
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  ownerId            String
-  owner              User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  participants       PoolParticipant[]
+  id            String            @id @default(cuid())
+  title         String
+  slug          String            @unique
+  description   String
+  category      String
+  unit          String
+  division      String
+  district      String
+  upazila       String
+  location      String
+  contactPhone  String
+  groupLink     String
+  facebookLink  String?
+  images        String[]
+  status        PoolStatus        @default(OPEN)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  ownerId       String
+  owner         User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  participants  PoolParticipant[]
 
   @@index([ownerId])
   @@index([status])
@@ -356,7 +351,6 @@ model WholesalePool {
 
 model PoolParticipant {
   id            String        @id @default(cuid())
-  quantity      Int
   note          String?
   createdAt     DateTime      @default(now())
   poolId        String

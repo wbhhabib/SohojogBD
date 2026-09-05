@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
 import * as poolController from './pool.controller'
-import { authenticate } from '../../middlewares/auth.middleware'
+import { authenticate, optionalAuthenticate } from '../../middlewares/auth.middleware'
 import { validate } from '../../middlewares/validate.middleware'
 import { createPoolSchema, joinPoolSchema } from './pool.schema'
 
@@ -22,7 +22,7 @@ router.post('/:id/join', authenticate, validate(joinPoolSchema), poolController.
 router.post('/:id/leave', authenticate, poolController.leavePool)
 router.post('/:id/cancel', authenticate, poolController.cancelPool)
 
-// ── Public: single pool by slug ─────────────────────────────────────────
-router.get('/:slug', poolController.getPoolBySlug)
+// ── Public: single pool by slug (optional auth — verified viewer পেলে contact info দেখাবে) ──
+router.get('/:slug', optionalAuthenticate, poolController.getPoolBySlug)
 
 export default router

@@ -12,7 +12,7 @@ export const getAllPools = asyncHandler(async (req, res) => {
 })
 
 export const getPoolBySlug = asyncHandler(async (req, res) => {
-    const pool = await poolService.getPoolBySlug(req.params.slug)
+    const pool = await poolService.getPoolBySlug(req.params.slug, req.user?.id)
     sendSuccess(res, pool, 'Pool fetched successfully')
 })
 

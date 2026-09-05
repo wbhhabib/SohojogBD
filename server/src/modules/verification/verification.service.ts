@@ -84,6 +84,16 @@ export const canRespondToSOS = async (
     return { allowed: true }
 }
 
+// pool/contact info-এর মতো sensitive জিনিস দেখানোর আগে admin-approved
+// VERIFIED status চেক করতে — GrowTogether wholesale pool-এ ব্যবহৃত
+export const isUserVerified = async (userId: string): Promise<boolean> => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { verificationStatus: true },
+    })
+    return user?.verificationStatus === 'VERIFIED'
+}
+
 // ── User: নিজের ভেরিফিকেশন তথ্য জমা দেওয়া ──────────────────────────
 export const submitVerification = async (userId: string, input: SubmitVerificationInput) => {
     // identity-সংক্রান্ত কিছু জমা দিলে সেটা admin review-র জন্য PENDING-এ যাবে।
@@ -156,6 +166,21 @@ export const reviewVerification = async (
             verificationNote: input.note ?? null,
         },
         select: { id: true, name: true, verificationStatus: true, verificationNote: true },
+    })
+
+    // ইউজারকে জানানো — approve/reject হলে যেন নিজে থেকে গিয়ে চেক করা না লাগে
+    await prisma.notification.create({
+        data: {
+            type: 'SYSTEM',
+            title: updated.verificationStatus === 'VERIFIED' ? 'Verification approved' : 'Verification update',
+            message:
+                updated.verificationStatus === 'VERIFIED'
+                    ? 'Your profile has been verified. You can now use all verification-gated features.'
+                    : updated.verificationStatus === 'REJECTED'
+                        ? `Your verification was rejected.${input.note ? ` Reason: ${input.note}` : ' Please resubmit your information.'}`
+                        : 'Your verification status has been updated.',
+            userId: targetUserId,
+        },
     })
 
     return updated

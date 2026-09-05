@@ -4,9 +4,7 @@
 // Talks to the real backend at /grow-together/pools (see
 // server/src/modules/growtogether/). Every export keeps the exact async
 // shape (`Promise<{ success, data }>`) that campaignApi / plantApi use in
-// lib/api.ts, and the same function names/signatures as the earlier
-// localStorage-backed version, so page.tsx / create/page.tsx /
-// [slug]/page.tsx / my/page.tsx don't need to change.
+// lib/api.ts.
 // ─────────────────────────────────────────────────────────────────────────
 
 import { api } from '@/lib/api'
@@ -59,7 +57,7 @@ export const DIVISIONS: Division[] = allDivision() as DivisionName[]
 
 export const UNITS = ['pcs', 'dozen', 'kg', 'bag', 'carton', 'box', 'liter', 'ream', 'gross', 'other']
 
-export type PoolStatus = 'OPEN' | 'TARGET_REACHED' | 'CLOSED' | 'CANCELLED'
+export type PoolStatus = 'OPEN' | 'CLOSED' | 'CANCELLED'
 
 export interface PoolPerson {
     id: string
@@ -70,8 +68,7 @@ export interface PoolPerson {
 export interface PoolParticipant {
     id: string
     participant: PoolPerson
-    quantity: number
-    note?: string
+    note?: string | null
     createdAt: string
 }
 
@@ -82,19 +79,16 @@ export interface WholesalePool {
     description: string
     category: PoolCategory
     unit: string
-    targetQuantity: number
-    minJoinQuantity: number
-    pricePerUnit: number
-    marketPricePerUnit?: number | null
     division: Division
     district: string
     upazila: string
     location: string
-    contactPhone: string
-    groupLink?: string | null
+    // owner অথবা verified viewer ছাড়া backend এই তিনটা null পাঠায়
+    contactPhone: string | null
+    groupLink: string | null
+    facebookLink: string | null
     images: string[]
     status: PoolStatus
-    deadline: string
     ownerId: string
     owner: PoolPerson
     participants: PoolParticipant[]
@@ -106,30 +100,6 @@ export interface ApiResponse<T> {
     message?: string
     data: T
 }
-
-// ── derived helpers (pure, unchanged) ────────────────────────────────────
-
-export function joinedQuantity(pool: WholesalePool): number {
-    return pool.participants.reduce((sum, p) => sum + p.quantity, 0)
-}
-
-export function progressPct(pool: WholesalePool): number {
-    if (pool.targetQuantity <= 0) return 0
-    return Math.min(100, Math.round((joinedQuantity(pool) / pool.targetQuantity) * 100))
-}
-
-export function savingsPct(pool: WholesalePool): number | null {
-    if (!pool.marketPricePerUnit || pool.marketPricePerUnit <= pool.pricePerUnit) return null
-    return Math.round(((pool.marketPricePerUnit - pool.pricePerUnit) / pool.marketPricePerUnit) * 100)
-}
-
-export function daysLeft(deadline: string): number {
-    const diff = new Date(deadline).getTime() - Date.now()
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-}
-
-// ── helpers to adapt lib/api.ts's ApiResponse (with meta/errors) to the
-//    simpler { success, data } shape this file has always exposed ────────
 
 function toSimple<T>(res: BaseApiResponse<T>): ApiResponse<T> {
     return { success: res.success, message: res.message, data: res.data }
@@ -143,8 +113,6 @@ function qs(params: Record<string, string | number | undefined>): string {
     const s = usp.toString()
     return s ? `?${s}` : ''
 }
-
-// ── public API ─────────────────────────────────────────────────────────
 
 export interface PoolFilters {
     search?: string
@@ -191,17 +159,13 @@ export interface CreatePoolPayload {
     description: string
     category: PoolCategory
     unit: string
-    targetQuantity: number
-    minJoinQuantity: number
-    pricePerUnit: number
-    marketPricePerUnit?: number
     division: Division
     district: string
     upazila: string
     location: string
     contactPhone: string
-    groupLink?: string
-    deadline: string
+    groupLink: string
+    facebookLink?: string
 }
 
 // `owner` is kept in the signature so callers don't need to change, but the
@@ -212,7 +176,6 @@ export async function createPool(payload: CreatePoolPayload, _owner: PoolPerson)
 }
 
 export interface JoinPoolPayload {
-    quantity: number
     note?: string
 }
 

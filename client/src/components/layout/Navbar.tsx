@@ -109,9 +109,39 @@ export default function Navbar() {
                           <div className="px-4 py-2.5 border-b border-gray-100">
                             <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
                             <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                            <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                              {role}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                {role}
+                              </span>
+                              {user.verificationStatus === 'VERIFIED' && (
+                                <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                  ✓ Verified
+                                </span>
+                              )}
+                              {user.verificationStatus === 'PENDING' && (
+                                <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                  Verification pending
+                                </span>
+                              )}
+                              {user.verificationStatus === 'REJECTED' && (
+                                <Link
+                                  href="/verification/core"
+                                  onClick={() => setDropdownOpen(false)}
+                                  className="inline-block text-[10px] font-semibold uppercase tracking-wide text-red-600 bg-red-50 px-2 py-0.5 rounded-full"
+                                >
+                                  Verification rejected
+                                </Link>
+                              )}
+                              {(!user.verificationStatus || user.verificationStatus === 'NOT_SUBMITTED') && (
+                                <Link
+                                  href="/verification/core"
+                                  onClick={() => setDropdownOpen(false)}
+                                  className="inline-block text-[10px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full"
+                                >
+                                  Not verified
+                                </Link>
+                              )}
+                            </div>
                           </div>
                           <Link
                             href={dashboardHref}
