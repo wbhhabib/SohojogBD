@@ -94,6 +94,33 @@ export const isUserVerified = async (userId: string): Promise<boolean> => {
     return user?.verificationStatus === 'VERIFIED'
 }
 
+// যেকোনো verification-gated action (campaign create, pool create/join, ইত্যাদি)
+// এর আগে একবারে চেক করার জন্য reusable helper — ফিল্ড ভরা আছে কিনা, এবং
+// admin actual approve করেছে কিনা (শুধু ফর্ম জমা দেওয়া যথেষ্ট না)
+export const ensureActionReady = async (
+    userId: string,
+    actionType: ActionType,
+    actionLabel: string,
+) => {
+    const { ready, missingFields } = await checkCompleteness(userId, actionType)
+    if (!ready) {
+        const err = createHttpError(
+            `Please complete your verification profile before ${actionLabel}`,
+            403
+        ) as Error & { missingFields?: string[] }
+        err.missingFields = missingFields
+        throw err
+    }
+
+    const verified = await isUserVerified(userId)
+    if (!verified) {
+        throw createHttpError(
+            `Your verification is still pending admin approval. Please wait until it is approved before ${actionLabel}.`,
+            403
+        )
+    }
+}
+
 // ── User: নিজের ভেরিফিকেশন তথ্য জমা দেওয়া ──────────────────────────
 export const submitVerification = async (userId: string, input: SubmitVerificationInput) => {
     // identity-সংক্রান্ত কিছু জমা দিলে সেটা admin review-র জন্য PENDING-এ যাবে।

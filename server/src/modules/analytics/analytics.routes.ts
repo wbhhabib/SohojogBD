@@ -16,10 +16,12 @@ router.use(authenticate);
 router.get('/platform/trend', authorize('ADMIN'), getAdminDonationTrendController);
 router.get('/platform', authorize('ADMIN'), getPlatformStatsController);
 
-router.get('/creator/trend', authorize('CREATOR'), getCreatorDonationTrendController);
-router.get('/creator', authorize('CREATOR'), getCreatorStatsController);
+// role-gate সরানো হয়েছে — controller নিজেই req.user.id দিয়ে scope করে,
+// "creator"/"donor" এখন role না, শুধু কে কী করেছে তার ভিত্তিতে
+router.get('/creator/trend', getCreatorDonationTrendController);
+router.get('/creator', getCreatorStatsController);
 
-router.get('/donor', authorize('DONOR'), getDonorStatsController);
+router.get('/donor', getDonorStatsController);
 
 router.get('/campaign/:id', authenticate, getCampaignLiveStatsController);
 

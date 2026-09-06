@@ -3,9 +3,9 @@ declare global {
     interface User {
       id: string
       email: string
-      role: 'DONOR' | 'CREATOR' | 'ADMIN'
+      role: 'USER' | 'ADMIN'
     }
   }
 }
 
-export {}
+export { }

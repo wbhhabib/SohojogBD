@@ -397,7 +397,7 @@ export const authApi = {
       { email, password, rememberMe }
     )
   },
-  register(payload: { name: string; email: string; password: string; role: string }) {
+  register(payload: { name: string; email: string; password: string }) {
     return api.post<{ message: string }>('/auth/register', payload)
   },
   logout() {

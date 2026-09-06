@@ -35,21 +35,20 @@ router.patch(
   campaignController.adminUpdateCampaign
 )
 
-// ── Donor: supported campaigns ─────────────────────────────────────────────────
+// ── Supported campaigns (নিজের donation history) ───────────────────────────────
 // NOTE: must be declared BEFORE /:slug so "supported" is not treated as a slug
+// role-gate লাগবে না — controller নিজেই req.user.id দিয়ে scope করে
 router.get(
   '/supported',
   authenticate,
-  authorize(Role.DONOR),
   campaignController.getSupportedCampaigns
 )
 
-// ── Creator: own campaigns ────────────────────────────────────────────────────
-// List all of creator's campaigns
+// ── নিজের campaign গুলো ────────────────────────────────────────────────────────
+// List all of my campaigns
 router.get(
   '/my',
   authenticate,
-  authorize(Role.CREATOR),
   campaignController.getMyCampaigns
 )
 
@@ -57,33 +56,30 @@ router.get(
 router.get(
   '/my/:id',
   authenticate,
-  authorize(Role.CREATOR),
   campaignController.getMyCampaignById
 )
 
-// Create campaign
+// Create campaign — role-gate সরানো হয়েছে, verification-gate service লেয়ারে আছে
 router.post(
   '/',
   authenticate,
-  authorize(Role.CREATOR),
   validate(createCampaignSchema),
   campaignController.createCampaign
 )
 
 // Update campaign (status toggle, field edits) — PATCH not PUT
+// ownership check service-এ আছে (creatorId মিলছে কিনা)
 router.patch(
   '/:id',
   authenticate,
-  authorize(Role.CREATOR),
   validate(updateCampaignSchema),
   campaignController.updateCampaign
 )
 
-// Upload cover image
+// Upload cover image — ownership check service-এ আছে
 router.post(
   '/:slug/cover',
   authenticate,
-  authorize(Role.CREATOR),
   uploadSingle,
   campaignController.uploadCover
 )
@@ -97,7 +93,6 @@ router.get(
 router.post(
   '/:id/updates',
   authenticate,
-  authorize(Role.CREATOR),
   validate(addCampaignUpdateSchema),
   campaignController.addCampaignUpdate
 )

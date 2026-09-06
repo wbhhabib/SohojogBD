@@ -26,7 +26,7 @@ export const authenticate = (
   req.user = {
     id: payload.id,
     email: payload.email,
-    role: payload.role as 'DONOR' | 'CREATOR' | 'ADMIN',
+    role: payload.role as 'USER' | 'ADMIN',
   }
 
   next()
@@ -61,7 +61,7 @@ export const optionalAuthenticate = (
     req.user = {
       id: payload.id,
       email: payload.email,
-      role: payload.role as 'DONOR' | 'CREATOR' | 'ADMIN',
+      role: payload.role as 'USER' | 'ADMIN',
     }
   }
 

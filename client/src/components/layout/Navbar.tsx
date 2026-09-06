@@ -21,13 +21,6 @@ const navLinks = [
   { label: 'Contact', href: '/contact' },
 ]
 
-
-const DASHBOARD_ROUTES: Record<string, string> = {
-  donor: '/dashboard/donor',
-  creator: '/dashboard/creator',
-  admin: '/dashboard/admin',
-}
-
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
@@ -35,8 +28,10 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const { user, logout } = useAuth()
 
-  const role = user?.role?.toLowerCase() as 'donor' | 'creator' | 'admin' | undefined
-  const dashboardHref = role ? DASHBOARD_ROUTES[role] ?? '/dashboard/donor' : '/dashboard/donor'
+  const role = user?.role?.toLowerCase() as 'user' | 'admin' | undefined
+  // role আর creator/donor আলাদা করে না — শুধু admin আলাদা dashboard/settings পায়
+  const dashboardHref = role === 'admin' ? '/dashboard/admin' : '/dashboard'
+  const settingsHref = role === 'admin' ? '/admin/settings' : '/donor/settings'
 
   const handleLogout = async () => {
     setDropdownOpen(false)
@@ -152,47 +147,13 @@ export default function Navbar() {
                             Dashboard
                           </Link>
                           <Link
-                            href={`/${role}/settings`}
+                            href={settingsHref}
                             onClick={() => setDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
                           >
                             <User size={15} className="text-slate-400" />
                             Profile Settings
                           </Link>
-                          <Link
-                            href="/plants/my"
-                            onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <Sprout size={15} className="text-slate-400" />
-                            My Plant Listings
-                          </Link>
-                          <Link
-                            href="/grow-together/pools/my"
-                            onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <Store size={15} className="text-slate-400" />
-                            My Wholesale Pools
-                          </Link>
-                          <Link
-                            href="/grow-together/courses/my"
-                            onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <GraduationCap size={15} className="text-slate-400" />
-                            My Courses
-                          </Link>
-                          {role === 'creator' && (
-                            <Link
-                              href="/creator/campaigns/create"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors font-medium"
-                            >
-                              <Heart size={15} className="text-emerald-500" />
-                              Start Campaign
-                            </Link>
-                          )}
 
                           <div className="border-t border-gray-100 mt-1 pt-1">
                             <button

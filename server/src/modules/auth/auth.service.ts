@@ -33,8 +33,8 @@ export const register = async (data: RegisterInput) => {
       name: data.name,
       email: data.email,
       password: hashed,
-      role: data.role,
       isVerified: true,
+      // role পাঠানো হচ্ছে না — schema-র @default(USER) নিজে থেকেই বসবে
     },
   })
 
@@ -218,4 +218,4 @@ export const issueTokens = async (userId: string) => {
   const refreshToken = signRefreshToken({ id: user.id })
 
   return { accessToken, refreshToken }
-}
+} 

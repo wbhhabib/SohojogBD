@@ -17,7 +17,9 @@ router.get('/campaign/:id', donationController.getCampaignDonations)
 router.get('/my', authenticate, donationController.getMyDonations)
 
 
-router.get('/creator', authenticate, authorize('CREATOR'), donationController.getCreatorDonations)
+// role-gate সরানো হয়েছে — controller নিজেই req.user.id দিয়ে scope করে
+// (যেকোনো verified ইউজার campaign owner হতে পারে, "creator" role আর নেই)
+router.get('/creator', authenticate, donationController.getCreatorDonations)
 
 
 router.get('/admin/all', authenticate, authorize('ADMIN'), donationController.getAllDonations)

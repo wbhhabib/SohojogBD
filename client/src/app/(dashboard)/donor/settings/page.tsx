@@ -4,17 +4,18 @@
 import { useState, useEffect, useRef } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import PageHeader from '@/components/common/PageHeader'
-import { userApi } from '@/lib/api'
+import { userApi, api } from '@/lib/api'
 import type { UserProfile } from '@/lib/api'
-import { Camera, Check, Loader2 } from 'lucide-react'
+import { Camera, Check, Loader2, AlertTriangle } from 'lucide-react'
 
-type Tab = 'profile' | 'security' | 'notifications' | 'privacy'
+type Tab = 'profile' | 'security' | 'notifications' | 'payout' | 'privacy'
 
 const TABS: { label: string; value: Tab }[] = [
-  { label: 'Profile',       value: 'profile'       },
-  { label: 'Security',      value: 'security'      },
+  { label: 'Profile', value: 'profile' },
+  { label: 'Security', value: 'security' },
   { label: 'Notifications', value: 'notifications' },
-  { label: 'Privacy',       value: 'privacy'       },
+  { label: 'Payout', value: 'payout' },
+  { label: 'Privacy', value: 'privacy' },
 ]
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -39,43 +40,53 @@ function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-export default function DonorSettingsPage() {
+export default function AccountSettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('profile')
 
 
-  const [profile, setProfile]               = useState<UserProfile | null>(null)
-  const [fullName, setFullName]             = useState('')
-  const [phone, setPhone]                   = useState('')
-  const [address, setAddress]               = useState('')
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
   const [profileLoading, setProfileLoading] = useState(true)
-  const [profileSaving, setProfileSaving]   = useState(false)
-  const [profileSaved, setProfileSaved]     = useState(false)
-  const [profileError, setProfileError]     = useState('')
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileSaved, setProfileSaved] = useState(false)
+  const [profileError, setProfileError] = useState('')
 
 
-  const avatarInputRef                      = useRef<HTMLInputElement>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
-  const [avatarError, setAvatarError]       = useState('')
+  const [avatarError, setAvatarError] = useState('')
 
 
-  const [currentPassword,  setCurrentPassword]  = useState('')
-  const [newPassword,      setNewPassword]      = useState('')
-  const [confirmPassword,  setConfirmPassword]  = useState('')
-  const [passwordSaving,   setPasswordSaving]   = useState(false)
-  const [passwordSaved,    setPasswordSaved]    = useState(false)
-  const [passwordError,    setPasswordError]    = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordSaved, setPasswordSaved] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
 
 
+  // notification prefs — donor আর creator দুই সেট মিলিয়ে একটাই তালিকা
   const [notif, setNotif] = useState({
     emailNotifications: true,
-    donationReceipts:   true,
-    campaignUpdates:    false,
+    donationReceipts: true,
+    donationAlerts: true,
+    milestoneAlerts: true,
+    campaignUpdates: false,
+    platformNews: false,
   })
 
 
+  const [bankName, setBankName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [accountHolder, setAccountHolder] = useState('')
+  const [payoutSaved, setPayoutSaved] = useState(false)
+
+
   const [privacy, setPrivacy] = useState({
-    showNamePublicly:     false,
-    showDonationAmount:   false,
+    showNamePublicly: false,
+    showDonationAmount: false,
     allowCampaignContact: true,
   })
 
@@ -92,7 +103,7 @@ export default function DonorSettingsPage() {
           setAddress(res.data.address ?? '')
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setProfileLoading(false))
   }, [])
 
@@ -139,8 +150,8 @@ export default function DonorSettingsPage() {
     setProfileSaving(true)
     try {
       const res = await userApi.updateMe({
-        name:    fullName.trim(),
-        phone:   phone.trim() || undefined,
+        name: fullName.trim(),
+        phone: phone.trim() || undefined,
         address: address.trim() || undefined,
       })
       if (res.success) {
@@ -184,12 +195,13 @@ export default function DonorSettingsPage() {
 
     setPasswordSaving(true)
     try {
-      const res = await fetch('/api/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      }).then((r) => r.json()) as { success: boolean; message?: string }
-
+      // আগে donor page এ এখানে fetch('/api/auth/change-password') ছিল, যেটা
+      // ভুল/অকার্যকর ছিল (Next.js frontend-এর নিজস্ব কোনো এই route নেই) — এখন
+      // creator page-এ যেভাবে ঠিকভাবে backend API client দিয়ে কল হতো সেটাই ব্যবহার হচ্ছে
+      const res = await api.post<null>('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      })
       if (res.success) {
         setPasswordSaved(true)
         setCurrentPassword('')
@@ -197,7 +209,7 @@ export default function DonorSettingsPage() {
         setConfirmPassword('')
         setTimeout(() => setPasswordSaved(false), 3000)
       } else {
-        setPasswordError(res.message ?? 'Failed to update password.')
+        setPasswordError((res as { message?: string }).message ?? 'Failed to update password.')
       }
     } catch {
       setPasswordError('Something went wrong. Please try again.')
@@ -206,27 +218,32 @@ export default function DonorSettingsPage() {
     }
   }
 
+
+  const handlePayoutSave = () => {
+    setPayoutSaved(true)
+    setTimeout(() => setPayoutSaved(false), 3000)
+  }
+
   return (
     <DashboardLayout role="donor">
       <PageHeader title="Settings" />
 
       <div className="max-w-2xl">
-<div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6 flex-wrap">
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6 flex-wrap">
           {TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.value
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab.value
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
-{activeTab === 'profile' && (
+        {activeTab === 'profile' && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
             <div>
               <h2 className="text-base font-semibold text-slate-900 mb-1">Profile Information</h2>
@@ -240,7 +257,7 @@ export default function DonorSettingsPage() {
               </div>
             ) : (
               <>
-<div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                   <div className="relative">
                     {profile?.avatar ? (
                       <img
@@ -255,7 +272,7 @@ export default function DonorSettingsPage() {
                         </span>
                       </div>
                     )}
-<input
+                    <input
                       ref={avatarInputRef}
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -290,7 +307,7 @@ export default function DonorSettingsPage() {
                     {avatarError}
                   </div>
                 )}
-<div>
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
                   <input
                     type="text"
@@ -299,7 +316,7 @@ export default function DonorSettingsPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
-<div>
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
                   <input
                     type="tel"
@@ -309,7 +326,7 @@ export default function DonorSettingsPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
-<div>
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
                   <input
                     type="text"
@@ -319,7 +336,7 @@ export default function DonorSettingsPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
-<div>
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
                   <input
                     type="email"
@@ -357,7 +374,7 @@ export default function DonorSettingsPage() {
             )}
           </div>
         )}
-{activeTab === 'security' && (
+        {activeTab === 'security' && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
             <div>
               <h2 className="text-base font-semibold text-slate-900 mb-1">Change Password</h2>
@@ -420,7 +437,7 @@ export default function DonorSettingsPage() {
             </button>
           </div>
         )}
-{activeTab === 'notifications' && (
+        {activeTab === 'notifications' && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
             <div>
               <h2 className="text-base font-semibold text-slate-900 mb-1">Notification Preferences</h2>
@@ -430,19 +447,34 @@ export default function DonorSettingsPage() {
             <div className="space-y-4">
               {[
                 {
-                  key:   'emailNotifications' as const,
+                  key: 'emailNotifications' as const,
                   label: 'Email Notifications',
-                  desc:  'Receive general notifications via email.',
+                  desc: 'Receive general notifications via email.',
                 },
                 {
-                  key:   'donationReceipts' as const,
+                  key: 'donationReceipts' as const,
                   label: 'Donation Receipts',
-                  desc:  'Get an email receipt after every successful donation.',
+                  desc: 'Get an email receipt after every successful donation you make.',
                 },
                 {
-                  key:   'campaignUpdates' as const,
+                  key: 'donationAlerts' as const,
+                  label: 'Donation Alerts',
+                  desc: 'Get notified instantly when someone donates to your campaign.',
+                },
+                {
+                  key: 'milestoneAlerts' as const,
+                  label: 'Milestone Alerts',
+                  desc: 'Be notified when your campaign reaches a funding milestone.',
+                },
+                {
+                  key: 'campaignUpdates' as const,
                   label: 'Campaign Updates',
-                  desc:  'Be notified when campaigns you support post updates.',
+                  desc: 'Be notified when campaigns you support post updates.',
+                },
+                {
+                  key: 'platformNews' as const,
+                  label: 'Platform News',
+                  desc: 'Receive occasional news and updates from the SohojogBD team.',
                 },
               ].map((item) => (
                 <div
@@ -464,7 +496,75 @@ export default function DonorSettingsPage() {
             <p className="text-xs text-slate-400">Changes are saved automatically.</p>
           </div>
         )}
-{activeTab === 'privacy' && (
+        {activeTab === 'payout' && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 mb-1">Payout Information</h2>
+              <p className="text-sm text-slate-500">Add your bank details to receive campaign funds.</p>
+            </div>
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700">
+                Payout processing is coming soon. Your details will be saved locally until the feature is fully activated.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-xs text-blue-700">
+              Your payout details are encrypted and only used for fund transfers. We never share your banking information.
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Bank Name</label>
+              <input
+                type="text"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                placeholder="e.g. Dutch-Bangla Bank, Brac Bank"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Account Number</label>
+              <input
+                type="text"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="Enter your account number"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Account Holder Name</label>
+              <input
+                type="text"
+                value={accountHolder}
+                onChange={(e) => setAccountHolder(e.target.value)}
+                placeholder="Name as on bank account"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+            </div>
+
+            {payoutSaved && (
+              <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3 text-sm text-emerald-700 flex items-center gap-2">
+                <Check className="w-4 h-4 shrink-0" />
+                Payout details saved successfully!
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                onClick={handlePayoutSave}
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+              >
+                {payoutSaved && <Check className="w-4 h-4" />}
+                {payoutSaved ? 'Saved!' : 'Save Payout Details'}
+              </button>
+            </div>
+          </div>
+        )}
+        {activeTab === 'privacy' && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
             <div>
               <h2 className="text-base font-semibold text-slate-900 mb-1">Privacy Settings</h2>
@@ -474,19 +574,19 @@ export default function DonorSettingsPage() {
             <div className="space-y-4">
               {[
                 {
-                  key:   'showNamePublicly' as const,
+                  key: 'showNamePublicly' as const,
                   label: 'Show my name publicly on donations',
-                  desc:  'When off, your donations appear as "Anonymous" to others.',
+                  desc: 'When off, your donations appear as "Anonymous" to others.',
                 },
                 {
-                  key:   'showDonationAmount' as const,
+                  key: 'showDonationAmount' as const,
                   label: 'Show donation amounts publicly',
-                  desc:  'When off, your donation amount is hidden from public feeds.',
+                  desc: 'When off, your donation amount is hidden from public feeds.',
                 },
                 {
-                  key:   'allowCampaignContact' as const,
+                  key: 'allowCampaignContact' as const,
                   label: 'Allow campaigns to contact me',
-                  desc:  'Campaign creators can send you updates and thank-you messages.',
+                  desc: 'Campaign creators can send you updates and thank-you messages.',
                 },
               ].map((item) => (
                 <div

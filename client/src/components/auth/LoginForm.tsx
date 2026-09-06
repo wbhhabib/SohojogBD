@@ -29,9 +29,8 @@ export default function LoginForm() {
       if (data.success) {
         const { user } = data.data
         const role = user.role.toLowerCase()
-        if (role === 'admin') window.location.href = '/dashboard/admin'
-        else if (role === 'creator') window.location.href = '/dashboard/creator'
-        else window.location.href = '/dashboard/donor'
+        // role আর creator/donor আলাদা করে না — শুধু admin আলাদা, বাকি সবাই একই dashboard
+        window.location.href = role === 'admin' ? '/dashboard/admin' : '/dashboard'
       } else {
         setError(data.message || 'Login failed. Please try again.')
       }

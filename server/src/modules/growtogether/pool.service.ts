@@ -2,7 +2,7 @@ import { PoolStatus } from '../../types/prisma-enums'
 import { prisma } from '../../config/database'
 import { generateUniqueSlug } from '../../utils/slug'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
-import { checkCompleteness, isUserVerified } from '../verification/verification.service'
+import { ensureActionReady } from '../verification/verification.service'
 import { CreatePoolInput, JoinPoolInput } from './pool.schema'
 
 const createHttpError = (message: string, statusCode: number) => {
@@ -11,27 +11,8 @@ const createHttpError = (message: string, statusCode: number) => {
     return err
 }
 
-const ensureVerificationReady = async (userId: string) => {
-    const { ready, missingFields } = await checkCompleteness(userId, 'WHOLESALE_JOIN')
-    if (!ready) {
-        const err = createHttpError(
-            'Please complete your verification profile before joining or creating a wholesale pool',
-            403
-        ) as Error & { missingFields?: string[] }
-        err.missingFields = missingFields
-        throw err
-    }
-
-    // ফিল্ড ভরা থাকলেও admin এখনো approve করেনি এমন অবস্থা এখানে ধরা হচ্ছে —
-    // শুধু ফর্ম জমা দেওয়া যথেষ্ট না, actual VERIFIED status লাগবে
-    const verified = await isUserVerified(userId)
-    if (!verified) {
-        throw createHttpError(
-            'Your verification is still pending admin approval. Please wait until it is approved before creating or joining a wholesale pool.',
-            403
-        )
-    }
-}
+const ensureVerificationReady = (userId: string) =>
+    ensureActionReady(userId, 'WHOLESALE_JOIN', 'creating or joining a wholesale pool')
 
 const PERSON_SELECT = { id: true, name: true, avatar: true } as const
 

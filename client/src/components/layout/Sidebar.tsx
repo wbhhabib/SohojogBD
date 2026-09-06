@@ -5,7 +5,6 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Heart,
   LayoutDashboard,
   Megaphone,
   HandCoins,
@@ -38,20 +37,23 @@ type NavItem = {
   icon: React.ElementType
 }
 
-const creatorNav: NavItem[] = [
-  { label: 'Overview', href: '/dashboard/creator', icon: LayoutDashboard },
+// donor/creator role আর আলাদা account-type না — তাই দুটো nav-ই এখন একই,
+// combined list (যেকোনো ইউজার campaign-ও চালাতে পারে, donate-ও করতে পারে)।
+// GrowTogether/Plants/BDCare-এর মতো বাকি module গুলোর নিজস্ব পুরো পেজ-শেল
+// (Navbar সহ) আছে, dashboard shell-এর ভেতরে জোর করে ঢোকালে ক্লিক করলেই পুরো
+// Sidebar হারিয়ে যায় — সেটা bad UX, তাই এখানে রাখা হচ্ছে না।
+const userNav: NavItem[] = [
+  { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { label: 'My Campaigns', href: '/creator/campaigns', icon: Megaphone },
-  { label: 'Donations', href: '/creator/donations', icon: HandCoins },
-  { label: 'Analytics', href: '/creator/analytics', icon: BarChart2 },
-  { label: 'Settings', href: '/creator/settings', icon: Settings },
-]
-
-const donorNav: NavItem[] = [
-  { label: 'Overview', href: '/dashboard/donor', icon: LayoutDashboard },
+  { label: 'Donations Received', href: '/creator/donations', icon: HandCoins },
   { label: 'My Donations', href: '/donor/donations', icon: HandCoins },
   { label: 'Supported Campaigns', href: '/donor/supported-campaigns', icon: BookOpen },
+  { label: 'Analytics', href: '/creator/analytics', icon: BarChart2 },
   { label: 'Settings', href: '/donor/settings', icon: Settings },
 ]
+
+const creatorNav: NavItem[] = userNav
+const donorNav: NavItem[] = userNav
 
 const adminNav: NavItem[] = [
   { label: 'Overview', href: '/dashboard/admin', icon: LayoutDashboard },
@@ -86,6 +88,8 @@ const roleAccentGroups = {
   admin: { text: 'text-rose-600', activeBg: 'bg-rose-50', activeBorder: 'border-rose-500', activeText: 'text-rose-700', hoverBg: 'hover:bg-rose-50/60' },
 }
 
+const OVERVIEW_HREFS = ['/dashboard', '/dashboard/creator', '/dashboard/donor', '/dashboard/admin']
+
 export default function Sidebar({ role, user: userProp }: SidebarProps) {
   const pathname = usePathname()
   const navItems = navMap[role]
@@ -99,21 +103,10 @@ export default function Sidebar({ role, user: userProp }: SidebarProps) {
 
   return (
     <aside className="w-64 h-full flex flex-col bg-white border-r border-stone-100 shadow-[2px_0_20px_rgba(0,0,0,0.04)]">
-      <div className="px-6 py-5 border-b border-stone-100">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-sm">
-            <Heart size={15} className="text-white fill-white" />
-          </div>
-          <div>
-            <span className="text-base font-bold text-stone-800 tracking-tight">SohojogBD</span>
-            <span className="block text-[10px] text-stone-400 font-medium -mt-0.5 tracking-wider uppercase">Platform</span>
-          </div>
-        </div>
-      </div>
-      <div className="px-4 pt-4 pb-2">
+      <div className="px-4 pt-5 pb-2">
         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${roleTagColors[role]}`}>
           <Sparkles size={10} />
-          {role === 'creator' ? 'Creator Portal' : role === 'donor' ? 'Donor Portal' : 'Admin Portal'}
+          {role === 'admin' ? 'Admin Portal' : 'My Dashboard'}
         </div>
       </div>
       <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
@@ -121,9 +114,7 @@ export default function Sidebar({ role, user: userProp }: SidebarProps) {
           const Icon = item.icon
           const isActive =
             pathname === item.href ||
-            (item.href !== '/dashboard/creator' &&
-              item.href !== '/dashboard/donor' &&
-              item.href !== '/dashboard/admin' &&
+            (!OVERVIEW_HREFS.includes(item.href) &&
               pathname.startsWith(item.href + '/'))
           const exactActive = pathname === item.href
           const active = isActive || exactActive

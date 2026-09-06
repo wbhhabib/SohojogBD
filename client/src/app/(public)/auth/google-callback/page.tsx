@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 'use client'
 
 import { useEffect } from 'react'
@@ -31,9 +24,8 @@ export default function GoogleCallbackPage() {
       .then((res) => {
         if (!res.success) throw new Error('getMe failed')
         const role = res.data.role.toLowerCase()
-        if (role === 'admin') window.location.href = '/dashboard/admin'
-        else if (role === 'creator') window.location.href = '/dashboard/creator'
-        else window.location.href = '/dashboard/donor'
+      
+        window.location.href = role === 'admin' ? '/dashboard/admin' : '/dashboard'
       })
       .catch(() => {
         window.location.href = '/auth/login?error=google_failed'

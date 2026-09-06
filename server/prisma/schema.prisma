@@ -8,8 +8,7 @@ datasource db {
 }
 
 enum Role {
-  DONOR
-  CREATOR
+  USER
   ADMIN
 }
 
@@ -67,7 +66,7 @@ model User {
   name             String
   email            String         @unique
   password         String
-  role             Role           @default(DONOR)
+  role             Role           @default(USER)
   avatar           String?
   phone            String?
   address          String?

@@ -24,18 +24,14 @@ const navLinks = [
   { label: 'Contact', href: '/contact' },
 ]
 
-const DASHBOARD_ROUTES: Record<string, string> = {
-  donor: '/dashboard/donor',
-  creator: '/dashboard/creator',
-  admin: '/dashboard/admin',
-}
-
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
 
-  const role = user?.role?.toLowerCase() as 'donor' | 'creator' | 'admin' | undefined
-  const dashboardHref = role ? DASHBOARD_ROUTES[role] ?? '/dashboard/donor' : '/dashboard/donor'
+  const role = user?.role?.toLowerCase() as 'user' | 'admin' | undefined
+  // role আর creator/donor আলাদা করে না — শুধু admin আলাদা dashboard/settings পায়
+  const dashboardHref = role === 'admin' ? '/dashboard/admin' : '/dashboard'
+  const settingsHref = role === 'admin' ? '/admin/settings' : '/donor/settings'
 
   const handleLogout = async () => {
     onClose()
@@ -122,12 +118,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 Dashboard
               </Link>
 
-              <Link href={`/${role}/settings`} onClick={onClose} className="flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-gray-50 transition-colors">
+              <Link href={settingsHref} onClick={onClose} className="flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-gray-50 transition-colors">
                 <User size={16} className="text-slate-400" />
                 Profile Settings
               </Link>
 
-              {role === 'creator' && (
+              {role !== 'admin' && (
                 <Link href="/creator/campaigns/create" onClick={onClose} className="flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition-colors">
                   <Heart size={16} className="text-emerald-500" />
                   Start Campaign

@@ -1,7 +1,7 @@
 import { Role, CampaignStatus, DonationStatus, PaymentStatus } from '../types/prisma-enums'
 
-export const toRole = (role: Role): 'donor' | 'creator' | 'admin' => {
-  return role.toLowerCase() as 'donor' | 'creator' | 'admin'
+export const toRole = (role: Role): 'user' | 'admin' => {
+  return role.toLowerCase() as 'user' | 'admin'
 }
 
 export const toCampaignStatus = (status: CampaignStatus): string => {

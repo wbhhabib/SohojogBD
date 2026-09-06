@@ -104,7 +104,7 @@ export const getAllUsers = async (query: {
 
   if (query.role && typeof query.role === 'string') {
     const roleUpper = query.role.toUpperCase()
-    if (['DONOR', 'CREATOR', 'ADMIN'].includes(roleUpper)) {
+    if (['USER', 'ADMIN'].includes(roleUpper)) {
       where.role = roleUpper as Role
     }
   }

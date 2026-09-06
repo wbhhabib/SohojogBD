@@ -18,7 +18,7 @@ function CancelContent() {
       flex items-center justify-center px-4 py-12 transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0'}`}>
 
       <div className="w-full max-w-md">
-<div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-8">
           <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4 shadow-sm">
             <Ban size={38} className="text-slate-500" strokeWidth={1.8} />
           </div>
@@ -27,7 +27,7 @@ function CancelContent() {
             You cancelled the payment. No amount has been charged.
           </p>
         </div>
-<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
 
           <div className="bg-slate-600 px-6 py-4 text-center">
             <p className="text-white font-semibold">Transaction Cancelled</p>
@@ -50,17 +50,17 @@ function CancelContent() {
               <span className="font-medium text-emerald-600">None — ৳0</span>
             </div>
             <div className="border-t border-dashed border-gray-200 pt-3.5 flex items-center justify-between text-xs text-slate-400">
-              <span>FundRaise BD</span>
+              <span>SohojogBD</span>
               <span>{new Date().toLocaleDateString('en-BD', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
             </div>
           </div>
         </div>
-<div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 mb-6 text-blue-700 text-sm text-center leading-relaxed">
+        <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 mb-6 text-blue-700 text-sm text-center leading-relaxed">
           আপনার donation-এর ইচ্ছা মূল্যবান। যখন প্রস্তুত, আবার চেষ্টা করুন।
           <br />
           <span className="text-blue-500 text-xs">Every contribution makes a difference.</span>
         </div>
-<div className="space-y-3">
+        <div className="space-y-3">
           <Link
             href="/campaigns"
             className="flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors text-sm"

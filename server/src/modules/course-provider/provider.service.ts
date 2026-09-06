@@ -245,6 +245,7 @@ export const createBranch = async (providerId: string, userId: string, userRole:
             email: data.loginEmail,
             password: hashedPassword,
             isVerified: true,
+            role: Role.USER, // explicit — আগে সেট না থাকায় silently DONOR হয়ে যাচ্ছিল
         },
     })
 

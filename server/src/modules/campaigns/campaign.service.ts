@@ -3,6 +3,7 @@ import { prisma } from '../../config/database'
 import { generateUniqueSlug } from '../../utils/slug'
 import { toCampaignStatus } from '../../utils/transform'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
+import { ensureActionReady } from '../verification/verification.service'
 import {
   CreateCampaignInput,
   UpdateCampaignInput,
@@ -256,6 +257,10 @@ export const createCampaign = async (
 ) => {
   const user = await prisma.user.findUnique({ where: { id: creatorId }, select: { id: true } })
   if (!user) throw createHttpError('Creator account not found', 404)
+
+  // role এর বদলে verification দিয়ে গেট করা হচ্ছে — যেকোনো verified ইউজার
+  // campaign খুলতে পারবে, আলাদা কোনো "Creator" role লাগবে না
+  await ensureActionReady(creatorId, 'CAMPAIGN_CREATE', 'creating a campaign')
 
   const existingSlugs = await prisma.campaign
     .findMany({ select: { slug: true } })

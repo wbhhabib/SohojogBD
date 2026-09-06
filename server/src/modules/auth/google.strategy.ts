@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import passport from 'passport'
 import { prisma } from '@/config/database'
 import { env } from '@/config/env'
@@ -19,9 +13,9 @@ if (!env.GOOGLE_CLIENT_ID) {
   passport.use(
     new GoogleStrategy(
       {
-        clientID:     env.GOOGLE_CLIENT_ID,
+        clientID: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
-        callbackURL:  `${env.SERVER_URL}/api/v1/auth/google/callback`,
+        callbackURL: `${env.SERVER_URL}/api/v1/auth/google/callback`,
       },
       async (_accessToken: string, _refreshToken: string, profile: any, done: Function) => {
         try {
@@ -40,11 +34,11 @@ if (!env.GOOGLE_CLIENT_ID) {
             },
             create: {
               email,
-              name:       profile.displayName || email.split('@')[0],
-              password:   '',
-              role:       'DONOR',
+              name: profile.displayName || email.split('@')[0],
+              password: '',
               isVerified: true,
-              avatar:     profile.photos?.[0]?.value ?? null,
+              avatar: profile.photos?.[0]?.value ?? null,
+              // role পাঠানো হচ্ছে না — schema-র @default(USER) নিজে থেকেই বসবে
             },
           })
 

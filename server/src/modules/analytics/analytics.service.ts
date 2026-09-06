@@ -35,8 +35,7 @@ export const getPlatformStats = async (): Promise<unknown> => {
 
   const [
     totalUsers,
-    totalCreators,
-    totalDonors,
+    verifiedUsers,
     totalCampaigns,
     activeCampaigns,
     completedCampaigns,
@@ -45,8 +44,9 @@ export const getPlatformStats = async (): Promise<unknown> => {
     topCategories,
   ] = await Promise.all([
     prisma.user.count(),
-    prisma.user.count({ where: { role: 'CREATOR' } }),
-    prisma.user.count({ where: { role: 'DONOR' } }),
+    // role আর creator/donor আলাদা করে না, তাই ওই breakdown-এর বদলে
+    // "কতজন verified" — এটাই এখন অর্থপূর্ণ ইউজার-কোয়ালিটি মেট্রিক
+    prisma.user.count({ where: { verificationStatus: 'VERIFIED' } }),
     prisma.campaign.count(),
     prisma.campaign.count({ where: { status: 'ACTIVE' } }),
     prisma.campaign.count({ where: { status: 'COMPLETED' } }),
@@ -69,7 +69,7 @@ export const getPlatformStats = async (): Promise<unknown> => {
   ]);
 
   return {
-    users: { total: totalUsers, creators: totalCreators, donors: totalDonors },
+    users: { total: totalUsers, verified: verifiedUsers },
     campaigns: {
       total: totalCampaigns,
       active: activeCampaigns,

@@ -8,7 +8,8 @@ export const registerSchema = z.object({
     .min(8)
     .regex(/[A-Z]/, 'Must have at least one uppercase letter')
     .regex(/[0-9]/, 'Must have at least one number'),
-  role: z.enum(['DONOR', 'CREATOR']),
+  // role আর ইউজার থেকে নেওয়া হয় না — সবাই USER হিসেবে সাইনআপ করে,
+  // ADMIN শুধু database/admin panel থেকে ম্যানুয়ালি সেট হয়
 })
 
 export const loginSchema = z.object({
