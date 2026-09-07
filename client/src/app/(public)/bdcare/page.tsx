@@ -38,6 +38,7 @@ export default function BDCarePage() {
     const [orgType, setOrgType] = useState('')
     const [orgDivision, setOrgDivision] = useState('')
     const [orgDistrict, setOrgDistrict] = useState('')
+    const [orgUpazila, setOrgUpazila] = useState('')
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [total, setTotal] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
@@ -64,6 +65,7 @@ export default function BDCarePage() {
         if (orgType) params.set('category', orgType)
         if (orgDivision) params.set('division', orgDivision)
         if (orgDistrict) params.set('district', orgDistrict)
+        if (orgUpazila) params.set('upazila', orgUpazila)
 
         orgApi.getAll(params.toString())
             .then((res) => {
@@ -74,7 +76,7 @@ export default function BDCarePage() {
             })
             .catch(() => { })
             .finally(() => setIsLoading(false))
-    }, [search, category, orgType, orgDivision, orgDistrict, page])
+    }, [search, category, orgType, orgDivision, orgDistrict, orgUpazila, page])
 
     const fetchEvents = useCallback(() => {
         setEventsLoading(true)
@@ -106,6 +108,7 @@ export default function BDCarePage() {
         setOrgType('')
         setOrgDivision('')
         setOrgDistrict('')
+        setOrgUpazila('')
         setPage(1)
     }
     const activeFilterCount = [
@@ -113,6 +116,7 @@ export default function BDCarePage() {
         orgType !== '',
         orgDivision !== '',
         orgDistrict !== '',
+        orgUpazila !== '',
     ].filter(Boolean).length
 
     const handleEventCategory = (val: string) => setEventCategory(val)
@@ -268,13 +272,14 @@ export default function BDCarePage() {
                                             Location
                                         </h4>
                                         <LocationSelect
+                                            allowAll
                                             layout="stacked"
                                             division={orgDivision}
                                             district={orgDistrict}
-                                            upazila=""
+                                            upazila={orgUpazila}
                                             onDivisionChange={setOrgDivision}
                                             onDistrictChange={setOrgDistrict}
-                                            onUpazilaChange={() => { }}
+                                            onUpazilaChange={setOrgUpazila}
                                         />
                                     </div>
                                 </div>
@@ -406,6 +411,7 @@ export default function BDCarePage() {
                                             Location
                                         </h4>
                                         <LocationSelect
+                                            allowAll
                                             layout="stacked"
                                             division={eventDivision}
                                             district={eventDistrict}

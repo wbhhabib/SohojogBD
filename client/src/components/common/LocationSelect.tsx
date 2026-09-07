@@ -13,6 +13,11 @@ interface LocationSelectProps {
     onUpazilaChange: (val: string) => void
     required?: boolean
     layout?: 'stacked' | 'inline'
+    // filter-এর জন্য — "All Division"/"All District"/"All Upazila" কে dropdown-এর
+    // নিজের একটা অপশন হিসেবে দেখায়, যাতে আলাদা "Clear filters" বাটন ছাড়াই সরাসরি
+    // dropdown থেকে আবার "সব" এ ফিরে যাওয়া যায়। Registration-এর মতো ফর্মে
+    // (required=true) এটা কখনো পাস করবে না, শুধু browse/filter পেজে ব্যবহার করবে।
+    allowAll?: boolean
 }
 
 // Package's DivisionName enum is the source of truth for spelling —
@@ -28,6 +33,7 @@ export default function LocationSelect({
     onUpazilaChange,
     required = false,
     layout = 'stacked',
+    allowAll = false,
 }: LocationSelectProps) {
     const districts = useMemo(() => {
         if (!division) return []
@@ -57,13 +63,25 @@ export default function LocationSelect({
 
     const wrapperClass = layout === 'inline' ? 'flex flex-wrap gap-3' : 'flex flex-col gap-3'
 
+    const divisionOptions = allowAll
+        ? [{ label: 'All Divisions', value: '' }, ...DIVISIONS.map((d) => ({ label: d, value: d }))]
+        : DIVISIONS.map((d) => ({ label: d, value: d }))
+
+    const districtOptions = allowAll
+        ? [{ label: 'All Districts', value: '' }, ...districts.map((d: string) => ({ label: d, value: d }))]
+        : districts.map((d: string) => ({ label: d, value: d }))
+
+    const upazilaOptions = allowAll
+        ? [{ label: 'All Upazilas', value: '' }, ...upazilas.map((u: string) => ({ label: u, value: u }))]
+        : upazilas.map((u: string) => ({ label: u, value: u }))
+
     return (
         <div className={wrapperClass}>
             <Select
                 label="Division"
                 required={required}
                 placeholder="Select division"
-                options={DIVISIONS.map((d) => ({ label: d, value: d }))}
+                options={divisionOptions}
                 value={division}
                 onChange={(e) => onDivisionChange(e.target.value)}
             />
@@ -71,7 +89,7 @@ export default function LocationSelect({
                 label="District"
                 required={required}
                 placeholder={division ? 'Select district' : 'Select division first'}
-                options={districts.map((d: string) => ({ label: d, value: d }))}
+                options={districtOptions}
                 value={district}
                 onChange={(e) => onDistrictChange(e.target.value)}
                 disabled={!division}
@@ -80,7 +98,7 @@ export default function LocationSelect({
                 label="Upazila"
                 required={required}
                 placeholder={district ? 'Select upazila' : 'Select district first'}
-                options={upazilas.map((u: string) => ({ label: u, value: u }))}
+                options={upazilaOptions}
                 value={upazila}
                 onChange={(e) => onUpazilaChange(e.target.value)}
                 disabled={!district}

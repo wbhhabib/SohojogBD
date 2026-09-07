@@ -108,17 +108,17 @@ export default function Navbar() {
                               <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                                 {role}
                               </span>
-                              {user.verificationStatus === 'VERIFIED' && (
+                              {role !== 'admin' && user.verificationStatus === 'VERIFIED' && (
                                 <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                                   ✓ Verified
                                 </span>
                               )}
-                              {user.verificationStatus === 'PENDING' && (
+                              {role !== 'admin' && user.verificationStatus === 'PENDING' && (
                                 <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                                   Verification pending
                                 </span>
                               )}
-                              {user.verificationStatus === 'REJECTED' && (
+                              {role !== 'admin' && user.verificationStatus === 'REJECTED' && (
                                 <Link
                                   href="/verification/core"
                                   onClick={() => setDropdownOpen(false)}
@@ -127,7 +127,7 @@ export default function Navbar() {
                                   Verification rejected
                                 </Link>
                               )}
-                              {(!user.verificationStatus || user.verificationStatus === 'NOT_SUBMITTED') && (
+                              {role !== 'admin' && (!user.verificationStatus || user.verificationStatus === 'NOT_SUBMITTED') && (
                                 <Link
                                   href="/verification/core"
                                   onClick={() => setDropdownOpen(false)}

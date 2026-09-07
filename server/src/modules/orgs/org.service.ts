@@ -90,6 +90,10 @@ interface OrgWhereInput {
     category?: OrgCategory
     status?: OrgVerificationStatus
     ownerId?: string
+    division?: string
+    district?: string
+    upazila?: string
+    areasOfWork?: { some: { area: string } }
     OR?: Array<{
         name?: { contains: string; mode: 'insensitive' }
         description?: { contains: string; mode: 'insensitive' }
@@ -104,6 +108,10 @@ export const getAllOrgs = async (query: {
     page?: unknown
     limit?: unknown
     category?: unknown
+    areaOfWork?: unknown
+    division?: unknown
+    district?: unknown
+    upazila?: unknown
     search?: unknown
 }) => {
     const { skip, take, page, limit } = getPagination(query)
@@ -117,6 +125,25 @@ export const getAllOrgs = async (query: {
         (Object.values(OrgCategory) as string[]).includes(query.category)
     ) {
         where.category = query.category as OrgCategory
+    }
+
+    // areaOfWork আসলে একটা related table (AreaOfWork[]), সরাসরি column না —
+    // তাই সাধারণ equality-এর বদলে relation filter (`some`) লাগে। আগে এটা
+    // পুরোপুরি বাদ পড়েছিল, তাই cause-filter বাটনগুলো কোনো প্রভাবই ফেলত না।
+    if (query.areaOfWork && typeof query.areaOfWork === 'string' && query.areaOfWork !== 'All') {
+        where.areasOfWork = { some: { area: query.areaOfWork } }
+    }
+
+    if (query.division && typeof query.division === 'string') {
+        where.division = query.division
+    }
+
+    if (query.district && typeof query.district === 'string') {
+        where.district = query.district
+    }
+
+    if (query.upazila && typeof query.upazila === 'string') {
+        where.upazila = query.upazila
     }
 
     if (query.search && typeof query.search === 'string') {

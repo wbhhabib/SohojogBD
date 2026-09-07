@@ -15,6 +15,7 @@ const createHttpError = (message: string, statusCode: number) => {
 interface UserWhereInput {
   role?: Role
   isBanned?: boolean
+  verificationStatus?: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED'
   OR?: Array<{
     name?: { contains: string; mode: 'insensitive' }
     email?: { contains: string; mode: 'insensitive' }
@@ -95,6 +96,7 @@ export const getAllUsers = async (query: {
   limit?: unknown
   role?: unknown
   isBanned?: unknown
+  verificationStatus?: unknown
   search?: unknown
   sort?: unknown
 }) => {
@@ -111,6 +113,13 @@ export const getAllUsers = async (query: {
 
   if (query.isBanned !== undefined) {
     where.isBanned = query.isBanned === 'true'
+  }
+
+  if (query.verificationStatus && typeof query.verificationStatus === 'string') {
+    const statusUpper = query.verificationStatus.toUpperCase()
+    if (['NOT_SUBMITTED', 'PENDING', 'VERIFIED', 'REJECTED'].includes(statusUpper)) {
+      where.verificationStatus = statusUpper as UserWhereInput['verificationStatus']
+    }
   }
 
   if (query.search && typeof query.search === 'string') {
