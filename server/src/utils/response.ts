@@ -23,11 +23,13 @@ export const sendSuccess = <T>(
 export const sendError = (
   res: Response,
   message: string,
-  statusCode = 400
+  statusCode = 400,
+  extra?: Record<string, unknown>
 ): Response => {
   return res.status(statusCode).json({
     success: false,
     message,
+    ...extra,
   })
 }
 

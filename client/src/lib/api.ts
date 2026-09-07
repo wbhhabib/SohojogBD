@@ -9,7 +9,7 @@ export interface UserProfile {
   id: string
   name: string
   email: string
-  role: 'DONOR' | 'CREATOR' | 'ADMIN'
+  role: 'USER' | 'ADMIN'
   avatar: string | null
   phone?: string | null
   address?: string | null
