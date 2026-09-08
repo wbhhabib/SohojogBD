@@ -3,7 +3,6 @@ import { prisma } from '@/config/database'
 import { hashPassword, comparePassword } from '@/utils/bcrypt'
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '@/utils/jwt'
 import { sendPasswordResetEmail } from '@/utils/email'
-import { toRole } from '@/utils/transform'
 import { RegisterInput, LoginInput } from './auth.schema'
 
 const createHttpError = (message: string, statusCode: number) => {
@@ -40,7 +39,6 @@ export const register = async (data: RegisterInput) => {
 
   return {
     ...omitPassword(user),
-    role: toRole(user.role),
   }
 }
 
@@ -91,7 +89,6 @@ export const login = async (data: LoginInput) => {
   return {
     user: {
       ...omitPassword(user),
-      role: toRole(user.role),
     },
     accessToken,
     refreshToken,
@@ -218,4 +215,4 @@ export const issueTokens = async (userId: string) => {
   const refreshToken = signRefreshToken({ id: user.id })
 
   return { accessToken, refreshToken }
-} 
+}

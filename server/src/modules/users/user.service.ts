@@ -53,7 +53,6 @@ const transformUser = (user: {
   updatedAt: Date
 }) => ({
   ...user,
-  role: toRole(user.role as Role),
 })
 
 export const getProfile = async (userId: string) => {
