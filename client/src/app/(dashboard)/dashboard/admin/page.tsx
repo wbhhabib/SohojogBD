@@ -13,8 +13,7 @@ import ErrorBoundary from '@/components/common/ErrorBoundary'
 
 const roleColors: Record<string, string> = {
   ADMIN: 'bg-rose-100 text-rose-700 border border-rose-200',
-  CREATOR: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  DONOR: 'bg-blue-100 text-blue-700 border border-blue-200',
+  USER: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
 }
 
 const statusColors: Record<string, string> = {
