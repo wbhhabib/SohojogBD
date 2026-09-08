@@ -7,7 +7,6 @@ export type ActionType =
     | 'CAMPAIGN_CREATE'
     | 'VOLUNTEER_REQUEST'
     | 'WHOLESALE_JOIN'
-    | 'COURSE_APPLY'
     | 'PLANT_CLAIM'
     | 'SOS_RESPOND' // sensitive: verification + বয়স দুটোই লাগবে, দেখো verification.service.ts
 
@@ -63,8 +62,9 @@ export const ACTION_REQUIRED_FIELDS: Record<ActionType, CheckableField[]> = {
 
     WHOLESALE_JOIN: [...CORE_FIELDS],
 
-    COURSE_APPLY: [...CORE_FIELDS, 'educationLevel', 'institution'],
-
+    // শুধু ছাত্ররাই plant claim করতে পারবে — isStudent/studentIdCard/institution
+    // ভরা থাকা বাধ্যতামূলক। এখানে শুধু "field ভরা আছে কিনা" চেক হয়; isStudent
+    // আসলেই true কিনা সেটা আলাদাভাবে plant.service.ts-এর createClaim()-এ চেক হয়
     PLANT_CLAIM: [...CORE_FIELDS, 'isStudent', 'studentIdCard', 'institution'],
 
     // SOS_RESPOND-এর জন্য field-completeness এখানে চেক হয় না —
@@ -79,7 +79,6 @@ export const ACTION_REQUIRES_ADMIN_APPROVAL: Record<ActionType, boolean> = {
     CAMPAIGN_CREATE: true,
     VOLUNTEER_REQUEST: false, // org সাথে সাথে দেখতে পাবে, communication শুরু করতে পারবে
     WHOLESALE_JOIN: false,
-    COURSE_APPLY: false,
     PLANT_CLAIM: true, // physically দেওয়ার আগে verify লাগবে
     SOS_RESPOND: true,
 }

@@ -11,15 +11,16 @@ import type { Campaign } from '@/lib/api'
 import { Search, SlidersHorizontal, Sparkles, Heart, Users, TrendingUp } from 'lucide-react'
 
 const CATEGORIES = [
-  'Education', 'Medical', 'Environment',
-  'Disaster Relief', 'Animal Welfare', 'Community',
+  'Education', 'Medical', 'Environment', 'Disaster Relief',
+  'Animal Welfare', 'Community', 'Poverty', 'Arts', 'Sports',
+  'Technology', 'Other',
 ]
 
 const SORT_OPTIONS = [
-  { value: 'newest',      label: '✨ Newest'      },
-  { value: 'most-funded', label: '🔥 Most Funded'  },
-  { value: 'ending-soon', label: '⏰ Ending Soon'  },
-  { value: 'most-donors', label: '❤️ Most Donors'  },
+  { value: 'newest', label: '✨ Newest' },
+  { value: 'most-funded', label: '🔥 Most Funded' },
+  { value: 'ending-soon', label: '⏰ Ending Soon' },
+  { value: 'most-donors', label: '❤️ Most Donors' },
 ]
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -31,13 +32,13 @@ const CATEGORY_ICONS: Record<string, string> = {
 const PAGE_SIZE = 6
 
 export default function CampaignsPage() {
-  const [search,   setSearch]   = useState('')
+  const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
-  const [sort,     setSort]     = useState('newest')
-  const [page,     setPage]     = useState(1)
-  const [campaigns,  setCampaigns]  = useState<Campaign[]>([])
-  const [total,      setTotal]      = useState(0)
-  const [isLoading,  setIsLoading]  = useState(false)
+  const [sort, setSort] = useState('newest')
+  const [page, setPage] = useState(1)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [total, setTotal] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -47,7 +48,7 @@ export default function CampaignsPage() {
     params.set('page', String(page))
     params.set('limit', String(PAGE_SIZE))
     params.set('status', 'active')
-    if (search.trim())      params.set('search',   search.trim())
+    if (search.trim()) params.set('search', search.trim())
     if (category !== 'All') params.set('category', category)
     params.set('sort', sort)
 
@@ -58,21 +59,21 @@ export default function CampaignsPage() {
           setTotal(res.meta?.total ?? res.data.length)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setIsLoading(false))
   }, [search, category, sort, page])
 
   useEffect(() => { fetchCampaigns() }, [fetchCampaigns])
 
-  const handleSearch   = (val: string) => { setSearch(val);   setPage(1) }
+  const handleSearch = (val: string) => { setSearch(val); setPage(1) }
   const handleCategory = (val: string) => { setCategory(val); setPage(1) }
-  const handleSort     = (val: string) => { setSort(val);     setPage(1) }
+  const handleSort = (val: string) => { setSort(val); setPage(1) }
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen" style={{ background: 'linear-gradient(180deg, #fff7f3 0%, #f9fafb 120px)' }}>
-<section className="relative overflow-hidden">
+        <section className="relative overflow-hidden">
           <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-20 blur-3xl pointer-events-none"
             style={{ background: 'radial-gradient(circle, #fca5a5, #fb923c)' }} />
           <div className="absolute -bottom-8 -left-8 w-56 h-56 rounded-full opacity-15 blur-3xl pointer-events-none"
@@ -100,9 +101,9 @@ export default function CampaignsPage() {
               </div>
               <div className="flex gap-4 shrink-0">
                 {[
-                  { icon: Heart,      label: 'Causes',  value: total > 0 ? `${total}+` : '…', color: 'text-rose-500',    bg: 'bg-rose-50'    },
-                  { icon: Users,      label: 'Donors',  value: '12K+',                          color: 'text-violet-500', bg: 'bg-violet-50'  },
-                  { icon: TrendingUp, label: 'Raised',  value: '৳4.2M',                         color: 'text-emerald-600',bg: 'bg-emerald-50' },
+                  { icon: Heart, label: 'Causes', value: total > 0 ? `${total}+` : '…', color: 'text-rose-500', bg: 'bg-rose-50' },
+                  { icon: Users, label: 'Donors', value: '12K+', color: 'text-violet-500', bg: 'bg-violet-50' },
+                  { icon: TrendingUp, label: 'Raised', value: '৳4.2M', color: 'text-emerald-600', bg: 'bg-emerald-50' },
                 ].map(({ icon: Icon, label, value, color, bg }) => (
                   <div key={label} className={`flex flex-col items-center ${bg} rounded-xl px-4 py-3 min-w-[72px]`}>
                     <Icon size={16} className={color} />
@@ -114,7 +115,7 @@ export default function CampaignsPage() {
             </div>
           </div>
         </section>
-<div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-rose-100/60 shadow-sm">
+        <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-rose-100/60 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 relative">
@@ -151,8 +152,8 @@ export default function CampaignsPage() {
             </div>
           </div>
         </div>
-<section className="max-w-7xl mx-auto px-4 py-8">
-<div className="mb-7">
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="mb-7">
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {['All', ...CATEGORIES].map((cat) => {
                 const isActive = cat === category
@@ -176,7 +177,7 @@ export default function CampaignsPage() {
               })}
             </div>
           </div>
-<div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5">
             <p className="text-sm text-gray-500">
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -215,7 +216,7 @@ export default function CampaignsPage() {
             </div>
           )}
         </section>
-<section className="max-w-7xl mx-auto px-4 pb-16">
+        <section className="max-w-7xl mx-auto px-4 pb-16">
           <div className="relative rounded-3xl overflow-hidden p-8 md:p-12 text-center"
             style={{ background: 'linear-gradient(135deg, #fff1f2 0%, #fef3c7 50%, #f0fdf4 100%)' }}>
             <div className="relative">

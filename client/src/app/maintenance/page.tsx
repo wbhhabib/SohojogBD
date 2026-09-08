@@ -17,7 +17,7 @@ export default function MaintenancePage() {
         const msg = json?.data?.maintenanceMessage
         if (msg) setMessage(msg)
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   return (
@@ -85,7 +85,7 @@ export default function MaintenancePage() {
               />
             </svg>
           </div>
-          <span className="text-sm font-semibold text-slate-700">FundRaise</span>
+          <span className="text-sm font-semibold text-slate-700">SohojogBD</span>
           <span className="text-slate-300">·</span>
           <span className="text-xs text-slate-400">Bangladesh&apos;s Trusted Platform</span>
         </div>

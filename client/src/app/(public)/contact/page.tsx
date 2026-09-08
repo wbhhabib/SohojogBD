@@ -10,7 +10,7 @@ const CONTACT_INFO = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'support@fundraise.com',
+    value: 'support@sohojogbd.com',
     sub: 'We reply within 24 hours',
   },
   {
@@ -50,9 +50,9 @@ const FAQS = [
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
-  const [loading, setLoading]   = useState(false)
+  const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [openFaq, setOpenFaq]   = useState<string | null>(null)
+  const [openFaq, setOpenFaq] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -76,7 +76,7 @@ export default function ContactPage() {
       <Navbar />
 
       <main className="min-h-screen bg-gray-50">
-<section className="bg-emerald-50 border-b border-emerald-100">
+        <section className="bg-emerald-50 border-b border-emerald-100">
           <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
               Get in Touch
@@ -87,9 +87,9 @@ export default function ContactPage() {
             </p>
           </div>
         </section>
-<section className="max-w-7xl mx-auto px-4 py-12">
+        <section className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex flex-col lg:flex-row gap-8">
-<div className="w-full lg:w-[60%]">
+            <div className="w-full lg:w-[60%]">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-7">
                 <h2 className="text-lg font-bold text-slate-900 mb-1">Send us a Message</h2>
                 <p className="text-sm text-slate-500 mb-6">
@@ -199,8 +199,8 @@ export default function ContactPage() {
                 )}
               </div>
             </div>
-<div className="w-full lg:w-[40%] flex flex-col gap-5">
-{CONTACT_INFO.map(({ icon: Icon, label, value, sub }) => (
+            <div className="w-full lg:w-[40%] flex flex-col gap-5">
+              {CONTACT_INFO.map(({ icon: Icon, label, value, sub }) => (
                 <div
                   key={label}
                   className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-start gap-4"
@@ -217,7 +217,7 @@ export default function ContactPage() {
                   </div>
                 </div>
               ))}
-<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                     <Clock className="w-4 h-4 text-emerald-600" />
@@ -227,8 +227,8 @@ export default function ContactPage() {
                 <div className="space-y-2">
                   {[
                     { day: 'Sunday – Thursday', hours: '9:00 AM – 6:00 PM' },
-                    { day: 'Friday',            hours: '10:00 AM – 1:00 PM' },
-                    { day: 'Saturday',          hours: 'Closed'             },
+                    { day: 'Friday', hours: '10:00 AM – 1:00 PM' },
+                    { day: 'Saturday', hours: 'Closed' },
                   ].map(({ day, hours }) => (
                     <div key={day} className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">{day}</span>
@@ -245,7 +245,7 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
-<section className="max-w-7xl mx-auto px-4 pb-16">
+        <section className="max-w-7xl mx-auto px-4 pb-16">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-7">
             <h2 className="text-lg font-bold text-slate-900 mb-1">
               Frequently Asked Questions
@@ -260,9 +260,8 @@ export default function ContactPage() {
                 return (
                   <div
                     key={faq.id}
-                    className={`rounded-xl border transition-colors ${
-                      isOpen ? 'border-emerald-200 bg-emerald-50/40' : 'border-gray-200 bg-white'
-                    }`}
+                    className={`rounded-xl border transition-colors ${isOpen ? 'border-emerald-200 bg-emerald-50/40' : 'border-gray-200 bg-white'
+                      }`}
                   >
                     <button
                       onClick={() => toggleFaq(faq.id)}

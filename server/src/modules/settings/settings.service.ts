@@ -17,11 +17,11 @@ export interface PlatformSettings {
 }
 
 const DEFAULTS: PlatformSettings = {
-  siteName: 'FundRaise',
+  siteName: 'SohojogBD',
   siteDescription:
     'A trusted crowdfunding platform connecting donors with meaningful causes across Bangladesh.',
-  contactEmail: 'support@fundraise.com.bd',
-  supportPhone: '+880 1800-FUNDRAISE',
+  contactEmail: 'support@sohojogbd.com',
+  supportPhone: '+880 1800-SOHOJOG',
   allowRegistrations: true,
   allowCampaignCreation: true,
   emailVerificationRequired: true,

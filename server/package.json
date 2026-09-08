@@ -1,7 +1,7 @@
 {
-  "name": "fundraising-platform-server",
+  "name": "sohojogbd-server",
   "version": "1.0.0",
-  "description": "Fundraising Platform Backend",
+  "description": "SohojogBD Backend",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon",

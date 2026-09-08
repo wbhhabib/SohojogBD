@@ -25,7 +25,7 @@ const sections = [
   },
   {
     title: 'Your Rights',
-    content: `You have the right to access, update, or delete your personal information at any time through your account settings. You may also opt out of marketing communications by clicking the unsubscribe link in any email we send. For any privacy-related requests, please contact us at privacy@fundraise.com.`,
+    content: `You have the right to access, update, or delete your personal information at any time through your account settings. You may also opt out of marketing communications by clicking the unsubscribe link in any email we send. For any privacy-related requests, please contact us at privacy@sohojogbd.com.`,
   },
   {
     title: 'Changes to This Policy',
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
             <h1 className="text-3xl font-bold text-slate-900 mb-3">Privacy Policy</h1>
             <p className="text-slate-500 text-sm">Effective date: January 1, 2024</p>
             <p className="text-slate-600 mt-4 leading-relaxed">
-              At FundRaise, we take your privacy seriously. This policy explains how we collect,
+              At SohojogBD, we take your privacy seriously. This policy explains how we collect,
               use, and protect your personal information when you use our platform.
             </p>
           </div>
@@ -63,8 +63,8 @@ export default function PrivacyPage() {
           <div className="mt-10 bg-emerald-50 border border-emerald-100 rounded-xl p-6 text-center">
             <p className="text-sm text-emerald-700">
               Questions about this policy? Contact us at{' '}
-              <a href="mailto:privacy@fundraise.com" className="font-medium underline hover:text-emerald-800">
-                privacy@fundraise.com
+              <a href="mailto:privacy@sohojogbd.com" className="font-medium underline hover:text-emerald-800">
+                privacy@sohojogbd.com
               </a>
             </p>
           </div>

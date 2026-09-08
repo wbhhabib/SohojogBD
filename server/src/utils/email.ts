@@ -33,10 +33,10 @@ export const sendVerificationEmail = async (
     await transporter.sendMail({
       from: env.FROM_EMAIL,
       to,
-      subject: 'Verify your email — FundRaise',
+      subject: 'Verify your email — SohojogBD',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Welcome to FundRaise, ${name}!</h2>
+          <h2>Welcome to SohojogBD, ${name}!</h2>
           <p>Please verify your email address by clicking the button below:</p>
           <a href="${link}" style="
             display: inline-block;
@@ -77,7 +77,7 @@ export const sendPasswordResetEmail = async (
     await transporter.sendMail({
       from: env.FROM_EMAIL,
       to,
-      subject: 'Reset your password — FundRaise',
+      subject: 'Reset your password — SohojogBD',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Reset Request</h2>
@@ -136,7 +136,7 @@ export const sendDonationConfirmation = async (
             <p style="margin: 4px 0;"><strong>Status:</strong> Completed</p>
           </div>
           <p>Your generosity makes a real difference. Thank you for supporting this cause!</p>
-          <p style="color: #6b7280; font-size: 14px;">— The FundRaise Team</p>
+          <p style="color: #6b7280; font-size: 14px;">— The SohojogBD Team</p>
         </div>
       `,
     })
@@ -175,7 +175,7 @@ export const sendDonationNotification = async (
             <p style="margin: 4px 0;"><strong>Amount Received:</strong> ${formattedAmount}</p>
           </div>
           <p>Keep up the great work and keep your supporters updated with campaign progress!</p>
-          <p style="color: #6b7280; font-size: 14px;">— The FundRaise Team</p>
+          <p style="color: #6b7280; font-size: 14px;">— The SohojogBD Team</p>
         </div>
       `,
     })

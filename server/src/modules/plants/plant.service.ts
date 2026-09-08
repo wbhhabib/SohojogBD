@@ -2,6 +2,7 @@ import { PlantListingStatus, PlantClaimStatus, Role } from '../../types/prisma-e
 import { prisma } from '../../config/database'
 import { generateUniqueSlug } from '../../utils/slug'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
+import { ensureActionReady } from '../verification/verification.service'
 import {
     CreatePlantListingInput,
     UpdatePlantListingInput,
@@ -229,6 +230,24 @@ export const createClaim = async (
     claimantId: string,
     data: CreatePlantClaimInput
 ) => {
+    // দুইজন অপরিচিত মানুষ সরাসরি দেখা করে গাছ হস্তান্তর করবে — একটা physical
+    // meetup, তাই campaign/pool-এর মতোই verification দরকার accountability-র জন্য
+    await ensureActionReady(claimantId, 'PLANT_CLAIM', 'requesting a plant')
+
+    // শুধু field ভরা থাকলেই যথেষ্ট না — isStudent আসলেই true কিনা সেটা
+    // আলাদাভাবে চেক করা হচ্ছে (কেউ isStudent: false রেখে দিলেও "field ভরা
+    // আছে" হিসেবে ধরা হতো, কিন্তু সে ছাত্র না) — শুধু ছাত্ররাই plant claim করতে পারবে
+    const claimant = await prisma.user.findUnique({
+        where: { id: claimantId },
+        select: { isStudent: true },
+    })
+    if (!claimant?.isStudent) {
+        throw createHttpError(
+            'Only students can request plants. Please update your verification profile to confirm your student status.',
+            403
+        )
+    }
+
     const listing = await prisma.plantListing.findUnique({ where: { id: listingId } })
 
     if (!listing) throw createHttpError('Plant listing not found', 404)

@@ -12,42 +12,42 @@ import { api } from '@/lib/api'
 type Tab = 'general' | 'features' | 'maintenance'
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'general',     label: 'General'     },
-  { key: 'features',    label: 'Features'    },
+  { key: 'general', label: 'General' },
+  { key: 'features', label: 'Features' },
   { key: 'maintenance', label: 'Maintenance' },
 ]
 
 interface PlatformSettings {
-  siteName:                  string
-  siteDescription:           string
-  contactEmail:              string
-  supportPhone:              string
-  allowRegistrations:        boolean
-  allowCampaignCreation:     boolean
+  siteName: string
+  siteDescription: string
+  contactEmail: string
+  supportPhone: string
+  allowRegistrations: boolean
+  allowCampaignCreation: boolean
   emailVerificationRequired: boolean
-  googleLoginEnabled:        boolean
-  maintenanceMode:           boolean
-  maintenanceMessage:        string
+  googleLoginEnabled: boolean
+  maintenanceMode: boolean
+  maintenanceMessage: string
 }
 
 const DEFAULTS: PlatformSettings = {
-  siteName:                  'FundRaise',
-  siteDescription:           'A trusted crowdfunding platform connecting donors with meaningful causes across Bangladesh.',
-  contactEmail:              'support@fundraise.com.bd',
-  supportPhone:              '+880 1800-FUNDRAISE',
-  allowRegistrations:        true,
-  allowCampaignCreation:     true,
+  siteName: 'SohojogBD',
+  siteDescription: 'A trusted crowdfunding platform connecting donors with meaningful causes across Bangladesh.',
+  contactEmail: 'support@sohojogbd.com',
+  supportPhone: '+880 1800-SOHOJOG',
+  allowRegistrations: true,
+  allowCampaignCreation: true,
   emailVerificationRequired: true,
-  googleLoginEnabled:        true,
-  maintenanceMode:           false,
-  maintenanceMessage:        'We are currently performing scheduled maintenance. We will be back shortly. Thank you for your patience.',
+  googleLoginEnabled: true,
+  maintenanceMode: false,
+  maintenanceMessage: 'We are currently performing scheduled maintenance. We will be back shortly. Thank you for your patience.',
 }
 
 interface ToggleProps {
-  checked:   boolean
-  onChange:  (v: boolean) => void
-  danger?:   boolean
-  id?:       string
+  checked: boolean
+  onChange: (v: boolean) => void
+  danger?: boolean
+  id?: string
   disabled?: boolean
 }
 
@@ -59,18 +59,16 @@ function Toggle({ checked, onChange, danger = false, id, disabled }: ToggleProps
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-        checked
-          ? danger
-            ? 'bg-red-500 focus:ring-red-400'
-            : 'bg-emerald-600 focus:ring-emerald-500'
-          : 'bg-gray-200 focus:ring-gray-300'
-      }`}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${checked
+        ? danger
+          ? 'bg-red-500 focus:ring-red-400'
+          : 'bg-emerald-600 focus:ring-emerald-500'
+        : 'bg-gray-200 focus:ring-gray-300'
+        }`}
     >
       <span
-        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`}
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ${checked ? 'translate-x-5' : 'translate-x-0'
+          }`}
       />
     </button>
   )
@@ -79,12 +77,12 @@ function Toggle({ checked, onChange, danger = false, id, disabled }: ToggleProps
 interface ToastState { visible: boolean; message: string; isError?: boolean }
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab]         = useState<Tab>('general')
-  const [toast, setToast]                 = useState<ToastState>({ visible: false, message: '' })
-  const [loading, setLoading]             = useState(true)
-  const [saving, setSaving]               = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>('general')
+  const [toast, setToast] = useState<ToastState>({ visible: false, message: '' })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const [settings, setSettings]           = useState<PlatformSettings>(DEFAULTS)
+  const [settings, setSettings] = useState<PlatformSettings>(DEFAULTS)
 
   // ── Load settings from backend on mount ──────────────────────────────────
   useEffect(() => {
@@ -92,7 +90,7 @@ export default function AdminSettingsPage() {
       .then((res) => {
         if (res.success && res.data) setSettings(res.data)
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [])
 
@@ -124,10 +122,10 @@ export default function AdminSettingsPage() {
   const handleSaveGeneral = () => {
     patch(
       {
-        siteName:        settings.siteName,
+        siteName: settings.siteName,
         siteDescription: settings.siteDescription,
-        contactEmail:    settings.contactEmail,
-        supportPhone:    settings.supportPhone,
+        contactEmail: settings.contactEmail,
+        supportPhone: settings.supportPhone,
       },
       'Platform settings saved successfully.'
     )
@@ -175,11 +173,10 @@ export default function AdminSettingsPage() {
       {/* Toast */}
       {toast.visible && (
         <div
-          className={`fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border rounded-xl shadow-md px-4 py-3 text-sm font-medium animate-fade-in max-w-sm ${
-            toast.isError
-              ? 'border-red-200 text-red-800'
-              : 'border-emerald-200 text-emerald-800'
-          }`}
+          className={`fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border rounded-xl shadow-md px-4 py-3 text-sm font-medium animate-fade-in max-w-sm ${toast.isError
+            ? 'border-red-200 text-red-800'
+            : 'border-emerald-200 text-emerald-800'
+            }`}
         >
           {toast.isError
             ? <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
@@ -199,11 +196,10 @@ export default function AdminSettingsPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
-              activeTab === tab.key
-                ? 'bg-white border border-b-white border-gray-200 text-emerald-700 -mb-px'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-gray-50'
-            }`}
+            className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${activeTab === tab.key
+              ? 'bg-white border border-b-white border-gray-200 text-emerald-700 -mb-px'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-gray-50'
+              }`}
           >
             {tab.label}
           </button>
@@ -278,27 +274,27 @@ export default function AdminSettingsPage() {
             {(
               [
                 {
-                  id:          'registrations' as const,
-                  key:         'allowRegistrations' as keyof PlatformSettings,
-                  label:       'Allow new registrations',
+                  id: 'registrations' as const,
+                  key: 'allowRegistrations' as keyof PlatformSettings,
+                  label: 'Allow new registrations',
                   description: 'Let new users sign up on the platform.',
                 },
                 {
-                  id:          'campaign-creation' as const,
-                  key:         'allowCampaignCreation' as keyof PlatformSettings,
-                  label:       'Allow campaign creation',
+                  id: 'campaign-creation' as const,
+                  key: 'allowCampaignCreation' as keyof PlatformSettings,
+                  label: 'Allow campaign creation',
                   description: 'Permit verified creators to launch new campaigns.',
                 },
                 {
-                  id:          'email-verification' as const,
-                  key:         'emailVerificationRequired' as keyof PlatformSettings,
-                  label:       'Email verification required',
+                  id: 'email-verification' as const,
+                  key: 'emailVerificationRequired' as keyof PlatformSettings,
+                  label: 'Email verification required',
                   description: 'Require users to verify their email before accessing features.',
                 },
                 {
-                  id:          'google-login' as const,
-                  key:         'googleLoginEnabled' as keyof PlatformSettings,
-                  label:       'Google login enabled',
+                  id: 'google-login' as const,
+                  key: 'googleLoginEnabled' as keyof PlatformSettings,
+                  label: 'Google login enabled',
                   description: 'Allow users to sign in using their Google account.',
                 },
               ]
@@ -335,17 +331,15 @@ export default function AdminSettingsPage() {
             </div>
 
             <div
-              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-colors ${
-                settings.maintenanceMode
-                  ? 'border-red-300 bg-red-50'
-                  : 'border-gray-200 bg-gray-50'
-              }`}
+              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-colors ${settings.maintenanceMode
+                ? 'border-red-300 bg-red-50'
+                : 'border-gray-200 bg-gray-50'
+                }`}
             >
               <div>
                 <p
-                  className={`text-sm font-bold ${
-                    settings.maintenanceMode ? 'text-red-700' : 'text-slate-800'
-                  }`}
+                  className={`text-sm font-bold ${settings.maintenanceMode ? 'text-red-700' : 'text-slate-800'
+                    }`}
                 >
                   Maintenance Mode
                 </p>
