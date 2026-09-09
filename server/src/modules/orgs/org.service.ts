@@ -72,7 +72,9 @@ const PUBLIC_SELECT = {
             // advisor contact + authorizationDocUrl stay private.
         },
     },
-    _count: { select: { requests: true, updates: true } },
+    // requests-এর count শুধু ACCEPTED ধরবে — এটাই পাবলিক কার্ডে "X volunteers" হিসেবে
+    // দেখানো হয়, তাই এখানে PENDING/REJECTED মিশে গেলে ভুল সংখ্যা দেখাবে।
+    _count: { select: { requests: { where: { status: VolunteerRequestStatus.ACCEPTED } }, updates: true } },
 } as const
 
 const OWNER_OR_ADMIN_SELECT = {
@@ -228,7 +230,19 @@ export const getMyOrgs = async (
         prisma.organization.count({ where: { ownerId } }),
     ])
 
-    return { orgs, meta: getPaginationMeta(total, page, limit) }
+    // owner dashboard-এ "Requests (N)" badge শুধু PENDING (এখনো accept/reject
+    // হয়নি) request-এর সংখ্যা দেখাবে — এটা _count.requests (ACCEPTED-only) থেকে
+    // আলাদা, তাই প্রতিটা org-এর জন্য আলাদাভাবে গুনে attach করা হচ্ছে।
+    const pendingCounts = await Promise.all(
+        orgs.map((org) =>
+            prisma.volunteerRequest.count({
+                where: { organizationId: org.id, status: VolunteerRequestStatus.PENDING },
+            })
+        )
+    )
+    const orgsWithPending = orgs.map((org, i) => ({ ...org, pendingRequestsCount: pendingCounts[i] }))
+
+    return { orgs: orgsWithPending, meta: getPaginationMeta(total, page, limit) }
 }
 
 export const createOrg = async (ownerId: string, data: CreateOrgInput) => {
@@ -621,7 +635,7 @@ export const createVolunteerRequest = async (
 export const getOrgRequests = async (
     organizationId: string,
     ownerId: string,
-    query: { page?: unknown; limit?: unknown }
+    query: { page?: unknown; limit?: unknown; status?: unknown }
 ) => {
     const org = await prisma.organization.findUnique({ where: { id: organizationId } })
 
@@ -630,9 +644,15 @@ export const getOrgRequests = async (
 
     const { skip, take, page, limit } = getPagination(query)
 
+    const statusFilter =
+        typeof query.status === 'string' &&
+            (Object.values(VolunteerRequestStatus) as string[]).includes(query.status)
+            ? (query.status as VolunteerRequestStatus)
+            : undefined
+
     const [requests, total] = await Promise.all([
         prisma.volunteerRequest.findMany({
-            where: { organizationId },
+            where: { organizationId, ...(statusFilter ? { status: statusFilter } : {}) },
             skip,
             take,
             orderBy: { createdAt: 'desc' },
@@ -644,7 +664,9 @@ export const getOrgRequests = async (
                 volunteer: { select: { id: true, name: true, avatar: true, phone: true, email: true } },
             },
         }),
-        prisma.volunteerRequest.count({ where: { organizationId } }),
+        prisma.volunteerRequest.count({
+            where: { organizationId, ...(statusFilter ? { status: statusFilter } : {}) },
+        }),
     ])
 
     return { requests, meta: getPaginationMeta(total, page, limit) }

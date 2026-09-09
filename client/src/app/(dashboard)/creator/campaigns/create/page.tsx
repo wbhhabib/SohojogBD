@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { verificationApi } from '@/lib/verificationApi'
+import { useAuth } from '@/lib/AuthContext'
 import { CheckCircle, ImageIcon, X } from 'lucide-react'
 
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -198,20 +199,43 @@ function SuccessScreen({ onViewCampaigns, onCreateAnother }: SuccessScreenProps)
 
 export default function CreateCampaignPage() {
   const router = useRouter()
+  const { user, ready } = useAuth()
   const [pageState, setPageState] = useState<'form' | 'cover-upload' | 'done'>('form')
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
   const [createdSlug, setCreatedSlug] = useState('')
   const [formData, setFormData] = useState<Partial<Campaign>>({})
-  useEffect(() => {
-    const draft = sessionStorage.getItem('draft:campaign-create')
-    if (draft) {
-      setFormData(JSON.parse(draft))
-      sessionStorage.removeItem('draft:campaign-create')
-    }
-  }, [])
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [visible, setVisible] = useState(true)
   const [error, setError] = useState('')
+
+  // Campaign ফর্ম দেখানোর আগেই verification চেক করা হচ্ছে — আগে ফর্মের শেষে
+  // (Publish করার সময়) চেক হতো, ফলে unverified ইউজার পুরো ৩-ধাপ ফর্ম ভরার
+  // পর verification পেজে পাঠানো হতো, আর verification submit করা মানেই তো
+  // সাথে সাথে VERIFIED হয় না (admin approve করা লাগে) — তাই ফিরে এসে আবার
+  // Publish করতে গেলে একই ব্লকে আটকে যেত। এখন থেকে ফর্মটাই দেখানো হবে না
+  // যতক্ষণ না ইউজার আসলেই verified।
+  useEffect(() => {
+    if (!ready) return
+
+    if (!user) {
+      setCheckingAccess(false)
+      return
+    }
+
+    verificationApi.checkReadiness('CAMPAIGN_CREATE').then((check) => {
+      const fieldsReady = !!(check.success && check.data && check.data.ready)
+      const isVerified = user.verificationStatus === 'VERIFIED'
+
+      if (!fieldsReady || !isVerified) {
+        router.replace(
+          `/verification/core?action=CAMPAIGN_CREATE&redirect=${encodeURIComponent('/creator/campaigns/create')}`,
+        )
+        return
+      }
+      setCheckingAccess(false)
+    })
+  }, [ready, user, router])
 
   const previewImages = useMemo(() => formData.images ?? [], [formData.images])
 
@@ -308,13 +332,12 @@ export default function CreateCampaignPage() {
         return
       }
 
-      // Profile-completeness guard
+      // এই পয়েন্টে ইউজার mount-এই verified হিসেবে confirm হয়ে গেছে, তাই এখানে
+      // আর আলাদা redirect/draft-save দরকার নেই — শুধু একটা শেষ safety-net
+      // চেক (কেউ যদি এই মুহূর্তে হঠাৎ unverified হয়ে যায়, খুবই বিরল কেস)
       const check = await verificationApi.checkReadiness('CAMPAIGN_CREATE')
       if (check.success && check.data && !check.data.ready) {
-        sessionStorage.setItem('draft:campaign-create', JSON.stringify(formData))
-        router.push(
-          `/verification/core?action=CAMPAIGN_CREATE&redirect=${encodeURIComponent('/creator/campaigns/create')}`,
-        )
+        setError('Your verification profile is incomplete. Please refresh and try again.')
         return
       }
 
@@ -361,6 +384,17 @@ export default function CreateCampaignPage() {
     setCreatedSlug('')
     setVisible(true)
     setError('')
+  }
+
+
+  if (checkingAccess) {
+    return (
+      <DashboardLayout role="creator">
+        <div className="flex items-center justify-center py-24">
+          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
+    )
   }
 
 

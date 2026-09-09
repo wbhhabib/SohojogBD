@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import CampaignGrid from '@/components/campaign/CampaignGrid'
@@ -228,12 +229,12 @@ export default function CampaignsPage() {
               <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
                 Start your fundraising campaign today and reach thousands of generous donors across Bangladesh.
               </p>
-              <a href="/auth/register"
+              <Link href="/creator/campaigns/create"
                 className="inline-flex items-center gap-2 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg shadow-rose-200 hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 style={{ background: 'linear-gradient(135deg, #f43f5e, #fb923c)' }}>
                 <Heart size={14} fill="white" />
                 Start a Campaign
-              </a>
+              </Link>
             </div>
           </div>
         </section>

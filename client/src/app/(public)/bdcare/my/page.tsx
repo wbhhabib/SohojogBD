@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -13,8 +14,7 @@ import { orgApi } from '@/lib/api'
 import type { Organization, VolunteerRequest, OrgUpdate, EventRegistration } from '@/lib/api'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
-import { Handshake, Plus, MapPin, Check, X, Trash2, Calendar } from 'lucide-react'
-
+import { Handshake, Plus, MapPin, Check, X, Trash2, Calendar, Users } from 'lucide-react'
 const statusVariant: Record<string, 'success' | 'warning' | 'default' | 'info' | 'danger'> = {
     PENDING: 'warning', ACCEPTED: 'success', REJECTED: 'danger', CANCELLED: 'default',
 }
@@ -119,6 +119,10 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
     const [requests, setRequests] = useState<VolunteerRequest[]>([])
     const [loadingRequests, setLoadingRequests] = useState(false)
 
+    const [volunteersOpen, setVolunteersOpen] = useState(false)
+    const [volunteers, setVolunteers] = useState<VolunteerRequest[]>([])
+    const [loadingVolunteers, setLoadingVolunteers] = useState(false)
+
     const [eventsOpen, setEventsOpen] = useState(false)
     const [events, setEvents] = useState<OrgUpdate[]>([])
     const [loadingEvents, setLoadingEvents] = useState(false)
@@ -126,11 +130,21 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
     const toggle = async () => {
         if (!open) {
             setLoadingRequests(true)
-            const res = await orgApi.getOrgRequests(org.id, 'limit=50')
+            const res = await orgApi.getOrgRequests(org.id, 'limit=50&status=PENDING')
             if (res.success) setRequests(res.data)
             setLoadingRequests(false)
         }
         setOpen((v) => !v)
+    }
+
+    const toggleVolunteers = async () => {
+        if (!volunteersOpen) {
+            setLoadingVolunteers(true)
+            const res = await orgApi.getOrgRequests(org.id, 'limit=50&status=ACCEPTED')
+            if (res.success) setVolunteers(res.data)
+            setLoadingVolunteers(false)
+        }
+        setVolunteersOpen((v) => !v)
     }
 
     const toggleEvents = async () => {
@@ -148,7 +162,7 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
         if (!res.success) {
             alert(res.message ?? 'Could not update this request.')
         }
-        const refreshed = await orgApi.getOrgRequests(org.id, 'limit=50')
+        const refreshed = await orgApi.getOrgRequests(org.id, 'limit=50&status=PENDING')
         if (refreshed.success) setRequests(refreshed.data)
         onChange()
     }
@@ -162,25 +176,28 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
     return (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="flex items-center gap-3 p-4">
-                <div className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                <Link href={`/bdcare/${org.slug}`} className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden shrink-0">
                     {org.logo ? (
                         <img src={getImageUrl(org.logo)} alt="" className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-sky-300 to-blue-500 flex items-center justify-center text-xl">🤝</div>
                     )}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{org.name}</p>
+                </Link>
+                <Link href={`/bdcare/${org.slug}`} className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate hover:underline">{org.name}</p>
                     <p className="text-xs text-gray-500 flex items-center gap-1">
                         <MapPin size={11} /> {[org.district, org.division].filter(Boolean).join(', ') || org.fullAddress}
                     </p>
-                </div>
+                </Link>
                 <Badge variant={orgStatusVariant[org.status]}>{orgStatusLabel[org.status] ?? org.status}</Badge>
                 <button onClick={toggleEvents} className="text-xs font-semibold text-emerald-600 hover:underline">
                     {eventsOpen ? 'Hide events' : `Events (${org._count?.updates ?? 0})`}
                 </button>
+                <button onClick={toggleVolunteers} className="text-xs font-semibold text-teal-600 hover:underline">
+                    {volunteersOpen ? 'Hide volunteers' : `Volunteers (${org._count?.requests ?? 0})`}
+                </button>
                 <button onClick={toggle} className="text-xs font-semibold text-sky-600 hover:underline">
-                    {open ? 'Hide requests' : `Requests (${org._count?.requests ?? 0})`}
+                    {open ? 'Hide requests' : `Requests (${org.pendingRequestsCount ?? 0})`}
                 </button>
             </div>
 
@@ -192,6 +209,28 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
                         events.map((ev) => <EventRegistrationsPanel key={ev.id} event={ev} />)
                     ) : (
                         <p className="text-xs text-gray-400 text-center py-2">No events posted yet.</p>
+                    )}
+                </div>
+            )}
+
+            {volunteersOpen && (
+                <div className="border-t border-gray-100 bg-gray-50/60 p-4 space-y-2">
+                    {loadingVolunteers ? (
+                        <Skeleton className="h-12 w-full" />
+                    ) : volunteers.length > 0 ? (
+                        volunteers.map((v) => (
+                            <div key={v.id} className="flex items-center gap-3 bg-white rounded-lg border border-gray-200 p-3">
+                                <div className="w-9 h-9 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                                    <Users size={15} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-gray-800">{v.volunteer?.name}</p>
+                                    <p className="text-xs text-gray-500">{v.volunteer?.phone || v.volunteer?.email}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-xs text-gray-400 text-center py-2">No accepted volunteers yet.</p>
                     )}
                 </div>
             )}
@@ -209,22 +248,17 @@ function OrgRow({ org, onChange }: { org: Organization; onChange: () => void }) 
                                     <p className="text-[11px] text-gray-400 mt-1">{timeAgo(req.createdAt)}</p>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <Badge variant={statusVariant[req.status]} className="capitalize">{req.status.toLowerCase()}</Badge>
-                                    {req.status === 'PENDING' && (
-                                        <>
-                                            <button onClick={() => respond(req.id, 'ACCEPTED')} className="p-1.5 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100">
-                                                <Check size={13} />
-                                            </button>
-                                            <button onClick={() => respond(req.id, 'REJECTED')} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
-                                                <X size={13} />
-                                            </button>
-                                        </>
-                                    )}
+                                    <button onClick={() => respond(req.id, 'ACCEPTED')} className="p-1.5 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100">
+                                        <Check size={13} />
+                                    </button>
+                                    <button onClick={() => respond(req.id, 'REJECTED')} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                                        <X size={13} />
+                                    </button>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <p className="text-xs text-gray-400 text-center py-2">No volunteer requests yet.</p>
+                        <p className="text-xs text-gray-400 text-center py-2">No pending requests.</p>
                     )}
 
                     <div className="flex items-center gap-2 pt-1">

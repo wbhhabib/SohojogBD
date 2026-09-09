@@ -14,6 +14,7 @@ import { verificationApi } from '@/lib/verificationApi'
 import { useAuth } from '@/lib/AuthContext'
 import { getImageUrl, timeAgo } from '@/lib/utils'
 import BasicProfileFields from '@/components/shared/BasicProfileFields'
+import LocationSelect from '@/components/common/LocationSelect'
 import { AREAS_OF_WORK, AVAILABILITY_OPTIONS } from '@/lib/bdcareConstants'
 import {
     MapPin, Phone, Mail, Globe, Facebook, ArrowLeft, Handshake, Send,
@@ -92,9 +93,6 @@ export default function OrgDetailPage() {
             return
         }
         setOrg(res.data)
-        setPostDivision(res.data.division ?? '')
-        setPostDistrict(res.data.district ?? '')
-        setPostUpazila(res.data.upazila ?? '')
         if (res.data.status === 'APPROVED') {
             const updatesRes = await orgApi.getUpdates(res.data.id)
             if (updatesRes.success) setUpdates(updatesRes.data)
@@ -160,7 +158,8 @@ export default function OrgDetailPage() {
             setPostContent('')
             setPostImage(null)
             setPostEventDate('')
-            // division/district/upazila reset করবে না — org-এর নিজের এলাকা দিয়ে prefill থাকুক পরের event-এর জন্যও
+            // division/district/upazila reset করা হয় না — একই সংস্থা প্রায়ই কাছাকাছি
+            // এলাকায় পরপর event করে, তাই আগেরটাই রয়ে গেলে সুবিধা; চাইলে ইউজার বদলে নেবে
         }
         setPosting(false)
     }
@@ -200,7 +199,7 @@ export default function OrgDetailPage() {
         <>
             <Navbar />
             <main className="min-h-screen bg-gray-50">
-                <div className="max-w-5xl mx-auto px-4 py-8">
+                <div className="max-w-7xl mx-auto px-4 py-8">
                     <a href="/bdcare" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-sky-600 mb-5 transition-colors">
                         <ArrowLeft size={14} />
                         Back to organizations
@@ -218,8 +217,8 @@ export default function OrgDetailPage() {
                         )}
                     </div>
 
-                    <div className="grid md:grid-cols-5 gap-6">
-                        <div className="md:col-span-3 space-y-6">
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        <div className="w-full lg:w-[63%] space-y-6">
                             <div className="bg-white rounded-2xl border border-gray-200 p-6">
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="w-14 h-14 rounded-full border-4 border-white bg-sky-100 overflow-hidden shadow-sm shrink-0 -mt-12">
@@ -362,27 +361,17 @@ export default function OrgDetailPage() {
                                         value={postPlace}
                                         onChange={(e) => setPostPlace(e.target.value)}
                                     />
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder="Division"
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <LocationSelect
+                                            division={postDivision}
+                                            district={postDistrict}
+                                            upazila={postUpazila}
+                                            onDivisionChange={setPostDivision}
+                                            onDistrictChange={setPostDistrict}
+                                            onUpazilaChange={setPostUpazila}
                                             required
                                             disabled={!isApproved}
-                                            value={postDivision}
-                                            onChange={(e) => setPostDivision(e.target.value)}
-                                        />
-                                        <Input
-                                            placeholder="District"
-                                            required
-                                            disabled={!isApproved}
-                                            value={postDistrict}
-                                            onChange={(e) => setPostDistrict(e.target.value)}
-                                        />
-                                        <Input
-                                            placeholder="Upazila"
-                                            required
-                                            disabled={!isApproved}
-                                            value={postUpazila}
-                                            onChange={(e) => setPostUpazila(e.target.value)}
+                                            layout="inline"
                                         />
                                     </div>
                                     <Button type="submit" variant="primary" isLoading={posting} disabled={!isApproved}>
@@ -411,7 +400,7 @@ export default function OrgDetailPage() {
                             )}
                         </div>
 
-                        <div className="md:col-span-2 space-y-4">
+                        <div className="w-full lg:w-[37%] space-y-4">
                             <div className="bg-white rounded-2xl border border-gray-200 p-6">
                                 {isOwner ? (
                                     <div className="rounded-xl bg-sky-50 border border-sky-100 p-4 text-sm text-sky-700 space-y-2">

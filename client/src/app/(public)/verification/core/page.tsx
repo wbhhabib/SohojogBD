@@ -20,6 +20,7 @@ function CoreVerificationForm() {
 
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
     const [error, setError] = useState('')
     const [identityFile, setIdentityFile] = useState<File | null>(null)
     const [studentIdFile, setStudentIdFile] = useState<File | null>(null)
@@ -97,7 +98,7 @@ function CoreVerificationForm() {
             })
 
             if (res.success) {
-                router.push(redirectTo)
+                setSubmitted(true)
             } else {
                 setError(res.message ?? 'Could not submit, please try again.')
             }
@@ -127,7 +128,20 @@ function CoreVerificationForm() {
                     </p>
                 </div>
 
-                {loading ? (
+                {submitted ? (
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 text-center space-y-3">
+                        <CheckCircle2 className="text-emerald-600 mx-auto" size={32} />
+                        <h2 className="text-base font-semibold text-emerald-800">Verification submitted</h2>
+                        <p className="text-sm text-emerald-700">
+                            Thanks — your information has been sent for review. Once an admin approves it
+                            (usually within a short time), come back and try again.
+                        </p>
+                        <div className="flex items-center justify-center gap-3 pt-2">
+                            <Button variant="outline" onClick={() => router.push('/')}>Go to Home</Button>
+                            <Button onClick={() => router.push(redirectTo)}>Try again now</Button>
+                        </div>
+                    </div>
+                ) : loading ? (
                     <p className="text-center text-sm text-slate-400">Loading…</p>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">

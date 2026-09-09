@@ -194,6 +194,8 @@ export interface Organization {
   createdAt: string
   updatedAt: string
   _count?: { requests: number; updates: number }
+  // শুধু getMyOrgs()-এ থাকে — owner dashboard-এ PENDING request-এর সংখ্যা
+  pendingRequestsCount?: number
 }
 
 export interface OrgVerificationLog {

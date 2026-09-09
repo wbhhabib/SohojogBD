@@ -12,6 +12,7 @@ interface LocationSelectProps {
     onDistrictChange: (val: string) => void
     onUpazilaChange: (val: string) => void
     required?: boolean
+    disabled?: boolean
     layout?: 'stacked' | 'inline'
     // filter-এর জন্য — "All Division"/"All District"/"All Upazila" কে dropdown-এর
     // নিজের একটা অপশন হিসেবে দেখায়, যাতে আলাদা "Clear filters" বাটন ছাড়াই সরাসরি
@@ -32,6 +33,7 @@ export default function LocationSelect({
     onDistrictChange,
     onUpazilaChange,
     required = false,
+    disabled = false,
     layout = 'stacked',
     allowAll = false,
 }: LocationSelectProps) {
@@ -61,7 +63,7 @@ export default function LocationSelect({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [district])
 
-    const wrapperClass = layout === 'inline' ? 'flex flex-wrap gap-3' : 'flex flex-col gap-3'
+    const wrapperClass = layout === 'inline' ? 'grid grid-cols-1 sm:grid-cols-3 gap-3' : 'flex flex-col gap-3'
 
     const divisionOptions = allowAll
         ? [{ label: 'All Divisions', value: '' }, ...DIVISIONS.map((d) => ({ label: d, value: d }))]
@@ -84,6 +86,7 @@ export default function LocationSelect({
                 options={divisionOptions}
                 value={division}
                 onChange={(e) => onDivisionChange(e.target.value)}
+                disabled={disabled}
             />
             <Select
                 label="District"
@@ -92,7 +95,7 @@ export default function LocationSelect({
                 options={districtOptions}
                 value={district}
                 onChange={(e) => onDistrictChange(e.target.value)}
-                disabled={!division}
+                disabled={disabled || !division}
             />
             <Select
                 label="Upazila"
@@ -101,7 +104,7 @@ export default function LocationSelect({
                 options={upazilaOptions}
                 value={upazila}
                 onChange={(e) => onUpazilaChange(e.target.value)}
-                disabled={!district}
+                disabled={disabled || !district}
             />
         </div>
     )

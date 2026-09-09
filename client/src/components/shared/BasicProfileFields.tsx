@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Input from '@/components/ui/input'
 import Button from '@/components/ui/button'
+import LocationSelect from '@/components/common/LocationSelect'
 import { verificationApi, VerificationProfile } from '@/lib/verificationApi'
 import { Pencil } from 'lucide-react'
 
@@ -103,20 +104,34 @@ export default function BasicProfileFields() {
 
     return (
         <div className="rounded-xl bg-gray-50 border border-gray-200 p-4 space-y-3">
+            <div>
+                <p className="text-sm font-semibold text-gray-800">Your basic info</p>
+            </div>
             <div className="grid sm:grid-cols-2 gap-3">
                 <Input label="Full Name" required value={name} onChange={(e) => setName(e.target.value)} />
                 <Input label="Phone Number" required placeholder="01XXXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 <Input label="Age / Date of Birth (optional)" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
                 <Input label="Guardian/Emergency Contact Name (optional)" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} />
-                <Input label="Guardian/Emergency Contact Phone (optional)" placeholder="01XXXXXXXXX" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} />
-                <Input label="Division (optional)" value={division} onChange={(e) => setDivision(e.target.value)} />
-                <Input label="District (optional)" value={district} onChange={(e) => setDistrict(e.target.value)} />
-                <Input label="Upazila (optional)" value={upazila} onChange={(e) => setUpazila(e.target.value)} />
+                <div className="sm:col-span-2">
+                    <Input label="Guardian/Emergency Contact Phone (optional)" placeholder="01XXXXXXXXX" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} />
+                </div>
             </div>
+            <LocationSelect
+                division={division}
+                district={district}
+                upazila={upazila}
+                onDivisionChange={setDivision}
+                onDistrictChange={setDistrict}
+                onUpazilaChange={setUpazila}
+                layout="inline"
+            />
             {error && <p className="text-xs text-red-600">{error}</p>}
-            <Button type="button" variant="primary" size="sm" isLoading={saving} onClick={handleSave}>
-                Save
-            </Button>
+            <div className="flex items-center gap-2">
+                <Button type="button" variant="primary" size="sm" isLoading={saving} onClick={handleSave}>
+                    Save
+                </Button>
+                <p className="text-xs text-gray-400">Saves your info. Scroll down and click &quot;Send Volunteer Request&quot; to actually apply.</p>
+            </div>
         </div>
     )
 }
