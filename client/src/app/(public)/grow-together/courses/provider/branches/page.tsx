@@ -16,6 +16,13 @@ import {
 import type { CourseProvider } from '@/lib/providerApi'
 import { Building2, Plus, Lock, Unlock, Trash2, Loader2, ShieldAlert } from 'lucide-react'
 
+const STATUS_MESSAGE: Record<string, string> = {
+    PENDING: 'Your registration is submitted and waiting for an admin to review it.',
+    UNDER_REVIEW: 'Your registration is currently being reviewed by our team.',
+    REJECTED: 'This registration was not approved.',
+    SUSPENDED: 'This organization has been suspended.',
+}
+
 export default function BranchesPage() {
     const router = useRouter()
     const { user, ready } = useAuth()
@@ -185,9 +192,16 @@ export default function BranchesPage() {
                                 </div>
 
                                 {provider.status !== 'APPROVED' ? (
-                                    <p className="text-sm text-gray-500">
-                                        Branches can be added once this provider is approved. Current status: {provider.status}.
-                                    </p>
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-gray-500">
+                                            {STATUS_MESSAGE[provider.status] ?? `Current status: ${provider.status}.`}
+                                        </p>
+                                        {provider.adminNote && (
+                                            <p className="text-xs bg-gray-50 border border-gray-100 rounded-lg p-3 text-gray-600">
+                                                <span className="font-semibold">Admin note: </span>{provider.adminNote}
+                                            </p>
+                                        )}
+                                    </div>
                                 ) : provider.branches.length === 0 ? (
                                     <p className="text-sm text-gray-500">No branches yet.</p>
                                 ) : (

@@ -13,7 +13,36 @@ import {
     createCourse, getMyPostableBranches, COURSE_CATEGORIES, COURSE_MODES, MODE_LABEL,
 } from '@/lib/courseApi'
 import type { CourseCategory, CourseMode, PostableBranch } from '@/lib/courseApi'
+import { getMyProviders } from '@/lib/providerApi'
+import type { CourseProvider } from '@/lib/providerApi'
 import { Megaphone, Loader2, ShieldAlert } from 'lucide-react'
+
+const PROVIDER_STATUS_COPY: Record<string, { title: string; body: (p: CourseProvider) => string }> = {
+    PENDING: {
+        title: 'Registration pending review',
+        body: (p) => `Your registration for "${p.institutionName}" has been submitted and is waiting for an admin to review it. You'll be able to post courses once it's approved.`,
+    },
+    UNDER_REVIEW: {
+        title: 'Registration under review',
+        body: (p) => `"${p.institutionName}" is currently being reviewed by our team. This usually doesn't take long.`,
+    },
+    REJECTED: {
+        title: 'Registration was not approved',
+        body: (p) => p.adminNote
+            ? `"${p.institutionName}" was not approved. Admin note: ${p.adminNote}`
+            : `"${p.institutionName}" was not approved. Please check your organization page for details.`,
+    },
+    SUSPENDED: {
+        title: 'Organization suspended',
+        body: (p) => p.adminNote
+            ? `"${p.institutionName}" has been suspended. Admin note: ${p.adminNote}`
+            : `"${p.institutionName}" has been suspended.`,
+    },
+    APPROVED: {
+        title: 'No postable branch found',
+        body: (p) => `"${p.institutionName}" is approved, but there's no active branch to post under right now.`,
+    },
+}
 
 const CATEGORY_OPTIONS = COURSE_CATEGORIES.map((v) => ({ label: v, value: v }))
 const MODE_OPTIONS = COURSE_MODES.map((v) => ({ label: MODE_LABEL[v], value: v }))
@@ -24,6 +53,7 @@ export default function PostCoursePage() {
 
     const [branches, setBranches] = useState<PostableBranch[]>([])
     const [branchesLoading, setBranchesLoading] = useState(true)
+    const [providers, setProviders] = useState<CourseProvider[]>([])
 
     const [branchId, setBranchId] = useState('')
     const [title, setTitle] = useState('')
@@ -53,14 +83,18 @@ export default function PostCoursePage() {
 
     useEffect(() => {
         if (!user) return
-        getMyPostableBranches().then((res) => {
-            if (res.success) {
-                setBranches(res.data)
+        Promise.all([getMyPostableBranches(), getMyProviders()]).then(([branchRes, providerRes]) => {
+            if (branchRes.success) {
+                setBranches(branchRes.data)
                 // Only one branch to post under (the common case — a branch
                 // login, or a provider owner with just their Main Branch) →
                 // auto-select it so the picker doesn't add friction.
-                if (res.data.length === 1) setBranchId(res.data[0].id)
+                if (branchRes.data.length === 1) setBranchId(branchRes.data[0].id)
             }
+            // Only relevant when branches is empty — used to explain *why*
+            // (pending review / rejected / etc.) instead of always telling
+            // an already-registered organization to "register" again.
+            if (providerRes.success) setProviders(providerRes.data)
             setBranchesLoading(false)
         })
     }, [user])
@@ -110,6 +144,9 @@ export default function PostCoursePage() {
     if (!ready || !user || branchesLoading) return null
 
     if (branches.length === 0) {
+        const provider = providers[0]
+        const copy = provider ? PROVIDER_STATUS_COPY[provider.status] : null
+
         return (
             <>
                 <Navbar />
@@ -118,19 +155,34 @@ export default function PostCoursePage() {
                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-emerald-50">
                             <ShieldAlert size={22} className="text-emerald-600" />
                         </div>
-                        <h1 className="text-lg font-bold text-gray-900 mb-2">Approved course provider needed</h1>
-                        <p className="text-sm text-gray-500 mb-6">
-                            Only approved course providers (and their branches) can post free courses, to keep
-                            listings trustworthy. Register your institution first — once it&apos;s approved you can
-                            post courses here.
-                        </p>
 
-                        <a href="/grow-together/courses/provider/register"
-                            className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl transition-all"
-                            style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
-                        >
-                            Register as a Course Provider
-                        </a>
+                        {!provider || !copy ? (
+                            <>
+                                <h1 className="text-lg font-bold text-gray-900 mb-2">Approved course provider needed</h1>
+                                <p className="text-sm text-gray-500 mb-6">
+                                    Only approved course providers (and their branches) can post free courses, to keep
+                                    listings trustworthy. Register your institution first — once it&apos;s approved you can
+                                    post courses here.
+                                </p>
+                                <a href="/grow-together/courses/provider/register"
+                                    className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl transition-all"
+                                    style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
+                                >
+                                    Register as a Course Provider
+                                </a>
+                            </>
+                        ) : (
+                            <>
+                                <h1 className="text-lg font-bold text-gray-900 mb-2">{copy.title}</h1>
+                                <p className="text-sm text-gray-500 mb-6">{copy.body(provider)}</p>
+                                <a href="/grow-together/courses/provider/branches"
+                                    className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl transition-all"
+                                    style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
+                                >
+                                    View My Organization Status
+                                </a>
+                            </>
+                        )}
                     </div>
                 </main>
                 <Footer />

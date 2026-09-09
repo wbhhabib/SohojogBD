@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
     TrendingUp, Target, Users, FileText, BarChart2, Heart, Receipt,
     Pencil, ArrowUpRight, Megaphone, Sparkles, BookOpen,
-    Store, Sprout, Siren, GraduationCap,
+    Store, Sprout, Siren, GraduationCap, Building2,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import CampaignCard from '@/components/campaign/CampaignCard'
@@ -414,6 +414,10 @@ export default function DashboardOverviewPage() {
                         <Link href="/grow-together/courses" className="inline-flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
                             <GraduationCap className="w-4 h-4" />
                             Courses
+                        </Link>
+                        <Link href="/grow-together/courses/provider/branches" className="inline-flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                            <Building2 className="w-4 h-4" />
+                            My Organization
                         </Link>
                     </div>
                 </div>

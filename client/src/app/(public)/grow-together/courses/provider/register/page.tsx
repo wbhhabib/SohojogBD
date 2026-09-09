@@ -130,12 +130,17 @@ export default function RegisterCourseProviderPage() {
                             approves it, a Main Branch will be created automatically and you can start posting
                             courses.
                         </p>
-                        <a href="/grow-together/courses"
-                            className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl transition-all"
-                            style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
-                        >
-                            Back to Courses
-                        </a>
+                        <div className="flex flex-col items-center gap-3">
+                            <a href="/grow-together/courses/provider/branches"
+                                className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl transition-all"
+                                style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
+                            >
+                                Check My Organization Status
+                            </a>
+                            <a href="/grow-together/courses" className="text-sm font-semibold text-gray-500 hover:text-gray-700">
+                                Back to Courses
+                            </a>
+                        </div>
                     </div>
                 </main>
                 <Footer />
