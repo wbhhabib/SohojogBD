@@ -175,6 +175,7 @@ export interface PublicProvider {
     headquartersDistrict: string
     headquartersUpazila: string
     createdAt: string
+    ownerId: string
     _count: { branches: number }
 }
 

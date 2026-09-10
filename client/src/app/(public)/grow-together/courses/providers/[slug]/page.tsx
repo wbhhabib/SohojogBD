@@ -1,28 +1,34 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Skeleton from '@/components/ui/skeleton'
+import CreateBranchModal from '@/components/course-provider/CreateBranchModal'
+import { useAuth } from '@/lib/AuthContext'
 import { getPublicProviderBySlug, INSTITUTION_TYPE_LABEL } from '@/lib/providerApi'
 import type { PublicProviderDetail } from '@/lib/providerApi'
 import { getImageUrl } from '@/lib/utils'
-import { MapPin, Globe, Facebook, Building2, BadgeCheck, GraduationCap } from 'lucide-react'
+import { MapPin, Globe, Facebook, Building2, BadgeCheck, GraduationCap, Plus, Megaphone } from 'lucide-react'
 
 export default function ProviderProfilePage() {
     const params = useParams<{ slug: string }>()
+    const { user } = useAuth()
     const [provider, setProvider] = useState<PublicProviderDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [notFound, setNotFound] = useState(false)
+    const [showBranchModal, setShowBranchModal] = useState(false)
 
-    useEffect(() => {
+    const fetchProvider = useCallback(() => {
         getPublicProviderBySlug(params.slug).then((res) => {
             if (res.success && res.data) setProvider(res.data)
             else setNotFound(true)
             setLoading(false)
         })
     }, [params.slug])
+
+    useEffect(() => { fetchProvider() }, [fetchProvider])
 
     if (loading) {
         return (
@@ -50,6 +56,7 @@ export default function ProviderProfilePage() {
     const allCourses = provider.branches.flatMap((b) =>
         b.courses.map((c) => ({ ...c, branchName: b.name }))
     )
+    const isOwner = !!user && user.id === provider.ownerId
 
     return (
         <>
@@ -77,7 +84,7 @@ export default function ProviderProfilePage() {
                             <p className="text-sm text-emerald-600 font-medium mb-3">{INSTITUTION_TYPE_LABEL[provider.institutionType]}</p>
                             <p className="text-sm text-gray-600 mb-4">{provider.description}</p>
 
-                            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                                 <span className="flex items-center gap-1.5"><MapPin size={14} className="text-emerald-500" /> {provider.headquartersAddress}</span>
                                 {provider.website && (
                                     <a href={provider.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-emerald-600">
@@ -90,13 +97,36 @@ export default function ProviderProfilePage() {
                                     </a>
                                 )}
                             </div>
+
+                            {isOwner && (
+                                <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+                                    <a href="/grow-together/courses/provider/branches"
+                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 border border-emerald-200 bg-emerald-50 px-3.5 py-2 rounded-lg hover:bg-emerald-100 transition-colors"
+                                    >
+                                        <Building2 size={13} /> Manage Branches
+                                    </a>
+                                    <a href="/grow-together/courses/post"
+                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-2 rounded-lg shadow-sm hover:shadow transition-all"
+                                        style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
+                                    >
+                                        <Megaphone size={13} /> Post a Course
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6 mb-6">
-                        <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
-                            <Building2 size={15} className="text-emerald-600" /> Branches ({provider.branches.length})
-                        </h2>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                <Building2 size={15} className="text-emerald-600" /> Branches ({provider.branches.length})
+                            </h2>
+                            {isOwner && (
+                                <button onClick={() => setShowBranchModal(true)} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+                                    <Plus size={12} /> Add Branch
+                                </button>
+                            )}
+                        </div>
                         <div className="grid sm:grid-cols-2 gap-3">
                             {provider.branches.map((b) => (
                                 <div key={b.id} className="border border-gray-100 rounded-xl p-3 text-sm">
@@ -108,11 +138,23 @@ export default function ProviderProfilePage() {
                     </div>
 
                     <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6">
-                        <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
-                            <GraduationCap size={15} className="text-emerald-600" /> Open Courses ({allCourses.length})
-                        </h2>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                <GraduationCap size={15} className="text-emerald-600" /> Open Courses ({allCourses.length})
+                            </h2>
+                            {isOwner && (
+                                <a href="/grow-together/courses/post" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+                                    + Post a Course
+                                </a>
+                            )}
+                        </div>
                         {allCourses.length === 0 ? (
-                            <p className="text-sm text-gray-400">No open courses right now.</p>
+                            <p className="text-sm text-gray-400">
+                                No open courses right now.
+                                {isOwner && (
+                                    <> <a href="/grow-together/courses/post" className="text-emerald-600 font-semibold hover:underline">Post your first course →</a></>
+                                )}
+                            </p>
                         ) : (
                             <div className="space-y-2">
                                 {allCourses.map((c) => (
@@ -132,6 +174,14 @@ export default function ProviderProfilePage() {
                 </div>
             </main>
             <Footer />
+
+            {isOwner && (
+                <CreateBranchModal
+                    providerId={showBranchModal ? provider.id : null}
+                    onClose={() => setShowBranchModal(false)}
+                    onCreated={fetchProvider}
+                />
+            )}
         </>
     )
 }

@@ -4,14 +4,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import Input from '@/components/ui/input'
 import Button from '@/components/ui/button'
 import Badge from '@/components/ui/badge'
-import Modal from '@/components/ui/modal'
-import LocationSelect from '@/components/common/LocationSelect'
+import CreateBranchModal from '@/components/course-provider/CreateBranchModal'
 import { useAuth } from '@/lib/AuthContext'
 import {
-    getMyProviders, createBranch, blockBranch, unblockBranch, deleteBranch,
+    getMyProviders, blockBranch, unblockBranch, deleteBranch,
 } from '@/lib/providerApi'
 import type { CourseProvider } from '@/lib/providerApi'
 import { Building2, Plus, Lock, Unlock, Trash2, Loader2, ShieldAlert } from 'lucide-react'
@@ -33,15 +31,6 @@ export default function BranchesPage() {
 
     // ── Add-branch modal ──
     const [modalProviderId, setModalProviderId] = useState<string | null>(null)
-    const [name, setName] = useState('')
-    const [address, setAddress] = useState('')
-    const [division, setDivision] = useState('')
-    const [district, setDistrict] = useState('')
-    const [upazila, setUpazila] = useState('')
-    const [loginEmail, setLoginEmail] = useState('')
-    const [loginPassword, setLoginPassword] = useState('')
-    const [modalSubmitting, setModalSubmitting] = useState(false)
-    const [modalError, setModalError] = useState('')
 
     const fetchProviders = useCallback(async () => {
         setLoading(true)
@@ -57,54 +46,6 @@ export default function BranchesPage() {
     }, [ready, user, router])
 
     useEffect(() => { if (user) fetchProviders() }, [user, fetchProviders])
-
-    const resetModal = () => {
-        setModalProviderId(null)
-        setName('')
-        setAddress('')
-        setDivision('')
-        setDistrict('')
-        setUpazila('')
-        setLoginEmail('')
-        setLoginPassword('')
-        setModalError('')
-    }
-
-    const handleAddBranch = async () => {
-        if (!modalProviderId) return
-        setModalError('')
-
-        if (!name.trim() || !address.trim() || !division || !district.trim() || !upazila.trim() || !loginEmail.trim() || !loginPassword) {
-            setModalError('Please fill in every field')
-            return
-        }
-        if (loginPassword.length < 8 || !/[A-Z]/.test(loginPassword) || !/[0-9]/.test(loginPassword)) {
-            setModalError('Password must be at least 8 characters, with an uppercase letter and a number')
-            return
-        }
-
-        setModalSubmitting(true)
-        const res = await createBranch(modalProviderId, {
-            name: name.trim(),
-            address: address.trim(),
-            division,
-            district: district.trim(),
-            upazila: upazila.trim(),
-            loginEmail: loginEmail.trim(),
-            loginPassword,
-        })
-
-        if (!res.success) {
-            const detailed = res.errors?.map((e) => e.message).join(' ')
-            setModalError(detailed || res.message || 'Could not create this branch.')
-            setModalSubmitting(false)
-            return
-        }
-
-        setModalSubmitting(false)
-        resetModal()
-        await fetchProviders()
-    }
 
     const handleToggleBlock = async (branchId: string, currentlyBlocked: boolean) => {
         setBusyId(branchId)
@@ -279,56 +220,11 @@ export default function BranchesPage() {
             </main >
             <Footer />
 
-            <Modal isOpen={!!modalProviderId} onClose={resetModal} title="Add a New Branch" size="md">
-                <div className="space-y-4">
-                    <Input
-                        label="Branch Name"
-                        required
-                        placeholder="e.g. SPTC Mirpur Branch"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <Input
-                        label="Detailed Address"
-                        required
-                        placeholder="House/road/area"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                    />
-                    <LocationSelect
-                        division={division}
-                        district={district}
-                        upazila={upazila}
-                        onDivisionChange={setDivision}
-                        onDistrictChange={setDistrict}
-                        onUpazilaChange={setUpazila}
-                        required
-                    />
-                    <Input
-                        label="Branch Login Email"
-                        type="email"
-                        required
-                        placeholder="branch-mirpur@institute.org"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                    />
-                    <Input
-                        label="Initial Password"
-                        type="password"
-                        required
-                        placeholder="At least 8 chars, 1 uppercase, 1 number"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                    />
-                    {modalError && <p className="text-sm text-red-600">{modalError}</p>}
-                    <div className="flex items-center justify-end gap-2 pt-2">
-                        <Button variant="ghost" onClick={resetModal}>Cancel</Button>
-                        <Button variant="primary" isLoading={modalSubmitting} onClick={handleAddBranch}>
-                            Create Branch
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
+            <CreateBranchModal
+                providerId={modalProviderId}
+                onClose={() => setModalProviderId(null)}
+                onCreated={fetchProviders}
+            />
         </>
     )
 }

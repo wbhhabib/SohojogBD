@@ -5,20 +5,24 @@ import { useParams } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Badge from '@/components/ui/badge'
-import { getCourseBySlug, CATEGORY_EMOJI, MODE_LABEL, daysLeft } from '@/lib/courseApi'
+import { useAuth } from '@/lib/AuthContext'
+import { getCourseBySlug, getMyPostableBranches, closeCourse, reopenCourse, CATEGORY_EMOJI, MODE_LABEL, daysLeft } from '@/lib/courseApi'
 import type { Course } from '@/lib/courseApi'
 import {
     ArrowLeft, MapPin, Phone, Mail, Clock, CalendarClock,
-    Users, ExternalLink, GraduationCap, BadgeCheck,
+    Users, ExternalLink, GraduationCap, BadgeCheck, XCircle, RotateCcw,
 } from 'lucide-react'
 
 export default function CourseDetailPage() {
     const params = useParams()
     const slug = params.slug as string
+    const { user } = useAuth()
 
     const [course, setCourse] = useState<Course | null>(null)
     const [loading, setLoading] = useState(true)
     const [notFoundState, setNotFoundState] = useState(false)
+    const [canManage, setCanManage] = useState(false)
+    const [toggling, setToggling] = useState(false)
 
     const fetchCourse = useCallback(async () => {
         setLoading(true)
@@ -32,6 +36,23 @@ export default function CourseDetailPage() {
     }, [slug])
 
     useEffect(() => { fetchCourse() }, [fetchCourse])
+
+    // Owner/branch-login check — same list used on the "Post a Course" page to
+    // decide which branches this person can post under.
+    useEffect(() => {
+        if (!user || !course) { setCanManage(false); return }
+        getMyPostableBranches().then((res) => {
+            if (res.success) setCanManage(res.data.some((b) => b.id === course.branchId))
+        })
+    }, [user, course])
+
+    const handleToggleStatus = async () => {
+        if (!course) return
+        setToggling(true)
+        const res = course.status === 'OPEN' ? await closeCourse(course.id) : await reopenCourse(course.id)
+        if (res.success) await fetchCourse()
+        setToggling(false)
+    }
 
     if (loading) {
         return (
@@ -142,6 +163,20 @@ export default function CourseDetailPage() {
                                         </span>
                                     )}
                                 </div>
+
+                                {canManage && (
+                                    <button
+                                        onClick={handleToggleStatus}
+                                        disabled={toggling}
+                                        className={`w-full inline-flex items-center justify-center gap-2 text-sm font-bold px-5 py-3 rounded-xl border transition-colors disabled:opacity-60 mb-3 ${isClosed
+                                            ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                                            : 'border-red-200 text-red-600 hover:bg-red-50'
+                                            }`}
+                                    >
+                                        {isClosed ? <RotateCcw size={15} /> : <XCircle size={15} />}
+                                        {toggling ? 'Please wait…' : isClosed ? 'Reopen This Course' : 'Close This Course'}
+                                    </button>
+                                )}
 
                                 {isClosed ? (
                                     <div className="rounded-xl p-3 text-sm bg-gray-50 text-gray-500">

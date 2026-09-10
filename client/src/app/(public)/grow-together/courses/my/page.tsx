@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import CourseGrid from '@/components/growtogether/CourseGrid'
+import type { CourseCardAction } from '@/components/growtogether/CourseCard'
 import { useAuth } from '@/lib/AuthContext'
-import { getMyCourses, closeCourse } from '@/lib/courseApi'
+import { getMyCourses, closeCourse, reopenCourse } from '@/lib/courseApi'
 import type { Course } from '@/lib/courseApi'
-import { Megaphone, GraduationCap, XCircle } from 'lucide-react'
+import { Megaphone, GraduationCap, XCircle, RotateCcw } from 'lucide-react'
 
 export default function MyCoursesPage() {
     const router = useRouter()
@@ -40,6 +41,35 @@ export default function MyCoursesPage() {
         setBusyId(null)
     }
 
+    const handleReopen = async (courseId: string) => {
+        setBusyId(courseId)
+        await reopenCourse(courseId)
+        await fetchCourses()
+        setBusyId(null)
+    }
+
+    const getAction = (course: Course): CourseCardAction | undefined => {
+        if (course.status === 'OPEN') {
+            return {
+                label: 'Close this course',
+                icon: <XCircle size={13} />,
+                variant: 'danger',
+                busy: busyId === course.id,
+                onClick: () => handleClose(course.id),
+            }
+        }
+        if (course.status === 'CLOSED') {
+            return {
+                label: 'Reopen this course',
+                icon: <RotateCcw size={13} />,
+                variant: 'success',
+                busy: busyId === course.id,
+                onClick: () => handleReopen(course.id),
+            }
+        }
+        return undefined
+    }
+
     if (!ready || !user) return null
 
     const openCourses = courses.filter((c) => c.status === 'OPEN')
@@ -49,7 +79,7 @@ export default function MyCoursesPage() {
             <Navbar />
             <main className="min-h-screen py-10" style={{ background: 'linear-gradient(180deg, #ecfdf5 0%, #f9fafb 120px)' }}>
                 <div className="max-w-6xl mx-auto px-4">
-                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50">
                                 <GraduationCap size={18} className="text-emerald-600" />
@@ -74,23 +104,7 @@ export default function MyCoursesPage() {
                         </a>
                     </div>
 
-                    {!loading && courses.length > 0 && (
-                        <div className="mb-6 flex flex-wrap gap-2">
-                            {courses.map((c) => c.status === 'OPEN' && (
-                                <button
-                                    key={c.id}
-                                    onClick={() => handleClose(c.id)}
-                                    disabled={busyId === c.id}
-                                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60"
-                                >
-                                    <XCircle size={12} />
-                                    Close &quot;{c.title.length > 30 ? c.title.slice(0, 30) + '…' : c.title}&quot;
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    <CourseGrid courses={courses} loading={loading} />
+                    <CourseGrid courses={courses} loading={loading} getAction={getAction} />
                 </div>
             </main >
             <Footer />

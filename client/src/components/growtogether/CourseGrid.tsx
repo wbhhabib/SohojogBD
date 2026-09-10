@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Course } from '@/lib/courseApi'
 import CourseCard from './CourseCard'
+import type { CourseCardAction } from './CourseCard'
 import Skeleton from '@/components/ui/skeleton'
 import EmptyState from '@/components/common/EmptyState'
 import { GraduationCap } from 'lucide-react'
@@ -8,9 +9,10 @@ import { GraduationCap } from 'lucide-react'
 interface CourseGridProps {
     courses: Course[]
     loading?: boolean
+    getAction?: (course: Course) => CourseCardAction | undefined
 }
 
-export default function CourseGrid({ courses, loading = false }: CourseGridProps) {
+export default function CourseGrid({ courses, loading = false, getAction }: CourseGridProps) {
     if (loading) {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -41,7 +43,7 @@ export default function CourseGrid({ courses, loading = false }: CourseGridProps
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard key={course.id} course={course} action={getAction?.(course)} />
             ))}
         </div>
     )

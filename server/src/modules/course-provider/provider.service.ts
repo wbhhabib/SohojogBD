@@ -216,6 +216,7 @@ const PUBLIC_PROVIDER_SELECT = {
     headquartersDistrict: true,
     headquartersUpazila: true,
     createdAt: true,
+    ownerId: true, // client uses this to show "Add Branch"/"Post a Course" on the owner's own profile
     _count: { select: { branches: true } },
 } as const
 
