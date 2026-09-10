@@ -31,6 +31,7 @@ export default function RegisterCourseProviderPage() {
 
     // ── Step 0: General Info ──
     const [institutionName, setInstitutionName] = useState('')
+    const [description, setDescription] = useState('')
     const [institutionType, setInstitutionType] = useState<InstitutionType | ''>('')
     const [logo, setLogo] = useState('')
     const [website, setWebsite] = useState('')
@@ -59,6 +60,7 @@ export default function RegisterCourseProviderPage() {
         switch (step) {
             case 0: return (
                 institutionName.trim().length >= 3 &&
+                description.trim().length >= 30 &&
                 !!institutionType &&
                 headquartersAddress.trim().length >= 10 &&
                 !!division && !!district.trim() && !!upazila.trim()
@@ -85,6 +87,7 @@ export default function RegisterCourseProviderPage() {
 
         const res = await registerProvider({
             institutionName,
+            description,
             institutionType,
             logo: logo || undefined,
             website: website || undefined,
@@ -181,6 +184,15 @@ export default function RegisterCourseProviderPage() {
                                     value={institutionName}
                                     onChange={(e) => setInstitutionName(e.target.value)}
                                 />
+                                <Textarea
+                                    label="Organization Description"
+                                    required
+                                    rows={4}
+                                    placeholder="Briefly describe what your organization does, what kind of courses you offer, and who they're for."
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
+                                <p className="text-xs -mt-3 text-gray-400">Minimum 30 characters — this appears on your public organization profile.</p>
                                 <Select
                                     label="Institution Type"
                                     required
@@ -293,6 +305,7 @@ export default function RegisterCourseProviderPage() {
                                 <h2 className="text-sm font-bold text-gray-900">Review your registration</h2>
                                 <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 text-sm">
                                     <div className="p-3 flex justify-between"><span className="text-gray-500">Institution</span><span className="font-medium">{institutionName}</span></div>
+                                    <div className="p-3"><span className="text-gray-500 block mb-1">Description</span><span className="font-medium text-xs">{description}</span></div>
                                     <div className="p-3 flex justify-between"><span className="text-gray-500">Type</span><span className="font-medium">{institutionType ? INSTITUTION_TYPE_LABEL[institutionType] : ''}</span></div>
                                     <div className="p-3 flex justify-between"><span className="text-gray-500">Headquarters</span><span className="font-medium">{upazila}, {district}, {division}</span></div>
                                     <div className="p-3 flex justify-between"><span className="text-gray-500">Registration No.</span><span className="font-medium">{registrationNumber}</span></div>

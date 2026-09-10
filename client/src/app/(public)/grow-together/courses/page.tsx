@@ -161,10 +161,16 @@ export default function CoursesPage() {
                                 </>
                             )}
                         </p>
-                        <a href="/grow-together/courses/my" className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700">
-                            <GraduationCap size={13} />
-                            My organization&apos;s courses
-                        </a>
+                        <div className="flex items-center gap-4">
+                            <a href="/grow-together/courses/providers" className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+                                <GraduationCap size={13} />
+                                Browse providers
+                            </a>
+                            <a href="/grow-together/courses/my" className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+                                <GraduationCap size={13} />
+                                My organization&apos;s courses
+                            </a>
+                        </div>
                     </div>
 
                     <CourseGrid courses={courses} loading={isLoading} />

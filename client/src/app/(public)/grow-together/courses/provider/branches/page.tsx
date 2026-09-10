@@ -181,90 +181,102 @@ export default function BranchesPage() {
                                         </Badge>
                                     </div>
                                     {provider.status === 'APPROVED' && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => setModalProviderId(provider.id)}
-                                        >
-                                            <span className="inline-flex items-center gap-1.5"><Plus size={14} /> Add Branch</span>
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+
+                                            <a href={`/grow-together/courses/providers/${provider.slug}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                                            >
+                                                View Public Profile
+                                            </a>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => setModalProviderId(provider.id)}
+                                            >
+                                                <span className="inline-flex items-center gap-1.5"><Plus size={14} /> Add Branch</span>
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
 
-                                {provider.status !== 'APPROVED' ? (
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-gray-500">
-                                            {STATUS_MESSAGE[provider.status] ?? `Current status: ${provider.status}.`}
-                                        </p>
-                                        {provider.adminNote && (
-                                            <p className="text-xs bg-gray-50 border border-gray-100 rounded-lg p-3 text-gray-600">
-                                                <span className="font-semibold">Admin note: </span>{provider.adminNote}
+                                {
+                                    provider.status !== 'APPROVED' ? (
+                                        <div className="space-y-2">
+                                            <p className="text-sm text-gray-500">
+                                                {STATUS_MESSAGE[provider.status] ?? `Current status: ${provider.status}.`}
                                             </p>
-                                        )}
-                                    </div>
-                                ) : provider.branches.length === 0 ? (
-                                    <p className="text-sm text-gray-500">No branches yet.</p>
-                                ) : (
-                                    <div className="overflow-x-auto -mx-2">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
-                                                    <th className="px-2 py-2 font-medium">Branch</th>
-                                                    <th className="px-2 py-2 font-medium">Division</th>
-                                                    <th className="px-2 py-2 font-medium">District</th>
-                                                    <th className="px-2 py-2 font-medium">Upazila</th>
-                                                    <th className="px-2 py-2 font-medium">Login</th>
-                                                    <th className="px-2 py-2 font-medium text-right">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {provider.branches.map((b) => (
-                                                    <tr key={b.id} className="border-b border-gray-50 last:border-0">
-                                                        <td className="px-2 py-2.5">
-                                                            <span className="font-medium text-gray-900">{b.name}</span>
-                                                            {b.isMain && <Badge variant="info" className="ml-1.5">Main</Badge>}
-                                                            {b.isBlocked && <Badge variant="danger" className="ml-1.5">Blocked</Badge>}
-                                                        </td>
-                                                        <td className="px-2 py-2.5 text-gray-500">{b.division}</td>
-                                                        <td className="px-2 py-2.5 text-gray-500">{b.district}</td>
-                                                        <td className="px-2 py-2.5 text-gray-500">{b.upazila}</td>
-                                                        <td className="px-2 py-2.5 text-gray-500">{b.loginUser.email}</td>
-                                                        <td className="px-2 py-2.5">
-                                                            <div className="flex items-center justify-end gap-1.5">
-                                                                {!b.isMain && (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={() => handleToggleBlock(b.id, b.isBlocked)}
-                                                                            disabled={busyId === b.id}
-                                                                            title={b.isBlocked ? 'Unblock' : 'Block'}
-                                                                            className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-50"
-                                                                        >
-                                                                            {b.isBlocked ? <Unlock size={14} /> : <Lock size={14} />}
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleDelete(b.id, b.name)}
-                                                                            disabled={busyId === b.id}
-                                                                            title="Delete"
-                                                                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                                                                        >
-                                                                            <Trash2 size={14} />
-                                                                        </button>
-                                                                    </>
-                                                                )}
-                                                                {busyId === b.id && <Loader2 size={14} className="animate-spin text-gray-400" />}
-                                                            </div>
-                                                        </td>
+                                            {provider.adminNote && (
+                                                <p className="text-xs bg-gray-50 border border-gray-100 rounded-lg p-3 text-gray-600">
+                                                    <span className="font-semibold">Admin note: </span>{provider.adminNote}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : provider.branches.length === 0 ? (
+                                        <p className="text-sm text-gray-500">No branches yet.</p>
+                                    ) : (
+                                        <div className="overflow-x-auto -mx-2">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                                                        <th className="px-2 py-2 font-medium">Branch</th>
+                                                        <th className="px-2 py-2 font-medium">Division</th>
+                                                        <th className="px-2 py-2 font-medium">District</th>
+                                                        <th className="px-2 py-2 font-medium">Upazila</th>
+                                                        <th className="px-2 py-2 font-medium">Login</th>
+                                                        <th className="px-2 py-2 font-medium text-right">Actions</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
+                                                </thead>
+                                                <tbody>
+                                                    {provider.branches.map((b) => (
+                                                        <tr key={b.id} className="border-b border-gray-50 last:border-0">
+                                                            <td className="px-2 py-2.5">
+                                                                <span className="font-medium text-gray-900">{b.name}</span>
+                                                                {b.isMain && <Badge variant="info" className="ml-1.5">Main</Badge>}
+                                                                {b.isBlocked && <Badge variant="danger" className="ml-1.5">Blocked</Badge>}
+                                                            </td>
+                                                            <td className="px-2 py-2.5 text-gray-500">{b.division}</td>
+                                                            <td className="px-2 py-2.5 text-gray-500">{b.district}</td>
+                                                            <td className="px-2 py-2.5 text-gray-500">{b.upazila}</td>
+                                                            <td className="px-2 py-2.5 text-gray-500">{b.loginUser.email}</td>
+                                                            <td className="px-2 py-2.5">
+                                                                <div className="flex items-center justify-end gap-1.5">
+                                                                    {!b.isMain && (
+                                                                        <>
+                                                                            <button
+                                                                                onClick={() => handleToggleBlock(b.id, b.isBlocked)}
+                                                                                disabled={busyId === b.id}
+                                                                                title={b.isBlocked ? 'Unblock' : 'Block'}
+                                                                                className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-50"
+                                                                            >
+                                                                                {b.isBlocked ? <Unlock size={14} /> : <Lock size={14} />}
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleDelete(b.id, b.name)}
+                                                                                disabled={busyId === b.id}
+                                                                                title="Delete"
+                                                                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                                            >
+                                                                                <Trash2 size={14} />
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+                                                                    {busyId === b.id && <Loader2 size={14} className="animate-spin text-gray-400" />}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )
+                                }
                             </div>
                         ))}
                     </div>
                 </div>
-            </main>
+            </main >
             <Footer />
 
             <Modal isOpen={!!modalProviderId} onClose={resetModal} title="Add a New Branch" size="md">

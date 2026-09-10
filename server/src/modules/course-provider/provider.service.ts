@@ -1,6 +1,7 @@
-import { CourseProviderStatus, Role } from '../../types/prisma-enums'
+import { CourseProviderStatus, CourseStatus, Role } from '../../types/prisma-enums'
 import { prisma } from '../../config/database'
 import { hashPassword } from '../../utils/bcrypt'
+import { generateUniqueSlug } from '../../utils/slug'
 import { getPagination, getPaginationMeta } from '../../utils/pagination'
 import { CreateProviderInput, UpdateProviderStatusInput, CreateBranchInput } from './provider.schema'
 
@@ -13,6 +14,8 @@ const createHttpError = (message: string, statusCode: number) => {
 const PROVIDER_SELECT = {
     id: true,
     institutionName: true,
+    slug: true,
+    description: true,
     institutionType: true,
     logo: true,
     website: true,
@@ -60,9 +63,16 @@ const BRANCH_SELECT = {
 // ── Registration ─────────────────────────────────────────────────────────
 
 export const registerProvider = async (ownerId: string, data: CreateProviderInput) => {
+    const existingSlugs = await prisma.courseProvider
+        .findMany({ select: { slug: true } })
+        .then((rows: Array<{ slug: string }>) => rows.map((row) => row.slug))
+    const slug = generateUniqueSlug(data.institutionName, existingSlugs)
+
     const provider = await prisma.courseProvider.create({
         data: {
             institutionName: data.institutionName,
+            slug,
+            description: data.description,
             institutionType: data.institutionType,
             logo: data.logo || null,
             website: data.website || null,
@@ -187,6 +197,87 @@ const providerStatusMessage = (name: string, status: string) => {
         default:
             return `The verification status of "${name}" was updated.`
     }
+}
+
+// ── Public directory (approved providers only — this is the "card" +
+// profile view everyone sees once an admin approves a registration) ───────
+
+const PUBLIC_PROVIDER_SELECT = {
+    id: true,
+    institutionName: true,
+    slug: true,
+    description: true,
+    institutionType: true,
+    logo: true,
+    website: true,
+    facebookPage: true,
+    headquartersAddress: true,
+    headquartersDivision: true,
+    headquartersDistrict: true,
+    headquartersUpazila: true,
+    createdAt: true,
+    _count: { select: { branches: true } },
+} as const
+
+interface PublicProviderWhereInput {
+    status: CourseProviderStatus
+    institutionType?: string
+    headquartersDivision?: string
+    institutionName?: { contains: string; mode: 'insensitive' }
+}
+
+export const getPublicProviders = async (query: {
+    page?: unknown
+    limit?: unknown
+    search?: unknown
+    institutionType?: unknown
+    division?: unknown
+}) => {
+    const { skip, take, page, limit } = getPagination(query)
+
+    const where: PublicProviderWhereInput = { status: CourseProviderStatus.APPROVED }
+
+    if (query.institutionType && typeof query.institutionType === 'string' && query.institutionType !== 'All') {
+        where.institutionType = query.institutionType
+    }
+    if (query.division && typeof query.division === 'string' && query.division !== 'All') {
+        where.headquartersDivision = query.division
+    }
+    if (query.search && typeof query.search === 'string') {
+        where.institutionName = { contains: query.search, mode: 'insensitive' }
+    }
+
+    const [providers, total] = await Promise.all([
+        prisma.courseProvider.findMany({ where, select: PUBLIC_PROVIDER_SELECT, skip, take, orderBy: { createdAt: 'desc' } }),
+        prisma.courseProvider.count({ where }),
+    ])
+    return { providers, meta: getPaginationMeta(total, page, limit) }
+}
+
+export const getPublicProviderBySlug = async (slug: string) => {
+    const provider = await prisma.courseProvider.findFirst({
+        where: { slug, status: CourseProviderStatus.APPROVED },
+        select: {
+            ...PUBLIC_PROVIDER_SELECT,
+            branches: {
+                where: { isBlocked: false },
+                select: {
+                    id: true, name: true, division: true, district: true, upazila: true, isMain: true,
+                    courses: {
+                        where: { status: CourseStatus.OPEN },
+                        select: {
+                            id: true, title: true, slug: true, skillCategory: true, mode: true,
+                            duration: true, applicationDeadline: true,
+                        },
+                        orderBy: { createdAt: 'desc' },
+                    },
+                },
+                orderBy: [{ isMain: 'desc' }, { createdAt: 'asc' }],
+            },
+        },
+    })
+    if (!provider) throw createHttpError('Course provider not found', 404)
+    return provider
 }
 
 // ── Branch access resolution (shared with the courses module) ────────────

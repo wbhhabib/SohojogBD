@@ -11,6 +11,7 @@ export const INSTITUTION_TYPES = [
 export const createProviderSchema = z.object({
     // Step 1 — general info
     institutionName: z.string().min(3).max(150),
+    description: z.string().min(30, 'Please write at least a few sentences about your organization').max(1000),
     institutionType: z.enum(INSTITUTION_TYPES, {
         errorMap: () => ({ message: 'Please select a valid institution type' }),
     }),

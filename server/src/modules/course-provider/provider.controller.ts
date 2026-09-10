@@ -57,6 +57,18 @@ export const getMyProviders = asyncHandler(async (req, res) => {
     sendSuccess(res, providers, 'Your course providers fetched successfully')
 })
 
+// ── Public directory ──────────────────────────────────────────────────
+
+export const getPublicProviders = asyncHandler(async (req, res) => {
+    const { providers, meta } = await providerService.getPublicProviders(req.query)
+    sendPaginated(res, providers, meta, 'Course providers fetched successfully')
+})
+
+export const getPublicProviderBySlug = asyncHandler(async (req, res) => {
+    const provider = await providerService.getPublicProviderBySlug(req.params.slug)
+    sendSuccess(res, provider, 'Course provider fetched successfully')
+})
+
 // ── Admin ──────────────────────────────────────────────────────────────
 
 export const getAdminProviders = asyncHandler(async (req, res) => {

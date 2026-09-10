@@ -13,6 +13,9 @@ const router = Router()
 router.post('/documents', authenticate, uploadDocument, providerController.uploadProviderDocument)
 router.get('/documents/:filename', authenticate, providerController.getProviderDocument)
 
+// ── Public: browse verified providers (the public "card" directory) ──────
+router.get('/', providerController.getPublicProviders)
+
 // ── My provider(s) / my branches ─────────────────────────────────────────
 router.get('/my', authenticate, providerController.getMyProviders)
 router.get('/branches/my', authenticate, providerController.getMyBranches)
@@ -36,5 +39,8 @@ router.post('/:id/branches', authenticate, validate(createBranchSchema), provide
 router.patch('/branches/:branchId/block', authenticate, providerController.blockBranch)
 router.patch('/branches/:branchId/unblock', authenticate, providerController.unblockBranch)
 router.delete('/branches/:branchId', authenticate, providerController.deleteBranch)
+
+// ── Public: single provider profile (must stay last — catches any slug) ──
+router.get('/:slug', providerController.getPublicProviderBySlug)
 
 export default router

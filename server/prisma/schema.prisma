@@ -662,6 +662,8 @@ enum CourseProviderStatus {
 model CourseProvider {
   id                  String                        @id @default(cuid())
   institutionName     String
+  slug                String                        @unique
+  description         String
   institutionType     CourseProviderInstitutionType
   logo                String?
   website             String?
@@ -693,6 +695,7 @@ model CourseProvider {
 
   @@index([ownerId])
   @@index([status])
+  @@index([slug])
 }
 
 model CourseProviderBranch {

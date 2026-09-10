@@ -29,7 +29,7 @@ export const INSTITUTION_TYPES: InstitutionType[] = [
 ]
 
 export const INSTITUTION_TYPE_LABEL: Record<InstitutionType, string> = {
-    GOVERNMENT_PROJECT: 'Government Project (TTC, যুব উন্নয়ন, SEIP)',
+    GOVERNMENT_PROJECT: 'Government Project',
     NGO: 'NGO',
     PRIVATE_COMPANY: 'Private Company',
     UNIVERSITY_CLUB: 'University Club',
@@ -64,6 +64,8 @@ export interface CourseProviderBranchSummary {
 export interface CourseProvider {
     id: string
     institutionName: string
+    slug: string
+    description: string
     institutionType: InstitutionType
     logo?: string | null
     website?: string | null
@@ -88,6 +90,7 @@ export interface CourseProvider {
 
 export interface CreateProviderPayload {
     institutionName: string
+    description: string
     institutionType: InstitutionType
     logo?: string
     website?: string
@@ -145,6 +148,88 @@ export async function unblockBranch(branchId: string): Promise<ApiResponse<null>
 
 export async function deleteBranch(branchId: string): Promise<ApiResponse<null>> {
     return api.delete<null>(`/grow-together/providers/branches/${branchId}`)
+}
+
+// ── Public directory (the approved-provider "card" everyone can see) ────
+
+function qs(params: Record<string, string | number | undefined>): string {
+    const usp = new URLSearchParams()
+    for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== '' && v !== 'All') usp.set(k, String(v))
+    }
+    const s = usp.toString()
+    return s ? `?${s}` : ''
+}
+
+export interface PublicProvider {
+    id: string
+    institutionName: string
+    slug: string
+    description: string
+    institutionType: InstitutionType
+    logo?: string | null
+    website?: string | null
+    facebookPage?: string | null
+    headquartersAddress: string
+    headquartersDivision: string
+    headquartersDistrict: string
+    headquartersUpazila: string
+    createdAt: string
+    _count: { branches: number }
+}
+
+export interface PublicProviderCourse {
+    id: string
+    title: string
+    slug: string
+    skillCategory: string
+    mode: string
+    duration: string
+    applicationDeadline?: string | null
+}
+
+export interface PublicProviderBranch {
+    id: string
+    name: string
+    division: string
+    district: string
+    upazila: string
+    isMain: boolean
+    courses: PublicProviderCourse[]
+}
+
+export interface PublicProviderDetail extends PublicProvider {
+    branches: PublicProviderBranch[]
+}
+
+export interface PublicProviderFilters {
+    search?: string
+    institutionType?: InstitutionType | 'All'
+    division?: string
+    page?: number
+    limit?: number
+}
+
+export async function getPublicProviders(filters: PublicProviderFilters = {}): Promise<ApiResponse<{ providers: PublicProvider[]; total: number }>> {
+    const query = qs({
+        search: filters.search,
+        institutionType: filters.institutionType,
+        division: filters.division,
+        page: filters.page,
+        limit: filters.limit ?? 9,
+    })
+    const res = await api.get<PublicProvider[]>(`/grow-together/providers${query}`)
+    return {
+        success: res.success,
+        message: res.message,
+        data: { providers: res.data ?? [], total: res.meta?.total ?? (res.data?.length ?? 0) },
+    }
+}
+
+export async function getPublicProviderBySlug(slug: string): Promise<ApiResponse<PublicProviderDetail | null>> {
+    const res = await api.get<PublicProviderDetail>(`/grow-together/providers/${slug}`)
+    if (!res.success) return { success: false, message: res.message, data: null }
+    return { success: true, message: res.message, data: res.data ?? null }
 }
 
 // ── Admin verification dashboard ──────────────────────────────────────
