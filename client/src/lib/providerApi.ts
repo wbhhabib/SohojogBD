@@ -68,6 +68,7 @@ export interface CourseProvider {
     description: string
     institutionType: InstitutionType
     logo?: string | null
+    coverImage?: string | null
     website?: string | null
     facebookPage?: string | null
     headquartersAddress: string
@@ -93,6 +94,7 @@ export interface CreateProviderPayload {
     description: string
     institutionType: InstitutionType
     logo?: string
+    coverImage?: string
     website?: string
     facebookPage?: string
     headquartersAddress: string
@@ -160,7 +162,6 @@ function qs(params: Record<string, string | number | undefined>): string {
     const s = usp.toString()
     return s ? `?${s}` : ''
 }
-
 export interface PublicProvider {
     id: string
     institutionName: string
@@ -168,6 +169,7 @@ export interface PublicProvider {
     description: string
     institutionType: InstitutionType
     logo?: string | null
+    coverImage?: string | null
     website?: string | null
     facebookPage?: string | null
     headquartersAddress: string

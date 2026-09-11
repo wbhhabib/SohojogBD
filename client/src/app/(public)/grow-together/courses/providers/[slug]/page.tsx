@@ -64,7 +64,10 @@ export default function ProviderProfilePage() {
             <main className="min-h-screen" style={{ background: 'linear-gradient(180deg, #ecfdf5 0%, #f9fafb 160px)' }}>
                 <div className="max-w-3xl mx-auto px-4 py-10">
                     <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden mb-6">
-                        <div className="h-24 bg-gradient-to-br from-emerald-500 to-teal-600" />
+                        <div
+                            className="h-24 bg-gradient-to-br from-emerald-500 to-teal-600 bg-cover bg-center"
+                            style={provider.coverImage ? { backgroundImage: `url(${getImageUrl(provider.coverImage)})` } : undefined}
+                        />
                         <div className="px-6 pb-6">
                             <div className="flex items-end gap-4 -mt-10 mb-3">
                                 <div className="w-20 h-20 rounded-2xl border-4 border-white bg-white overflow-hidden shadow-md shrink-0">

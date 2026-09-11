@@ -16,7 +16,7 @@
 
 
 import { useEffect, useState, useCallback } from 'react'
-import { setAccessToken, clearAccessToken } from '@/lib/auth-store'
+import { setAccessToken, clearAccessToken, getAccessToken } from '@/lib/auth-store'
 import { AuthContext } from '@/lib/AuthContext'
 import type { UserProfile } from '@/lib/api'
 
@@ -71,23 +71,32 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(async () => {
     try {
+      const token = getAccessToken()
       await fetch(`${BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
     } catch {
 
     }
     clearAccessToken()
     setUser(null)
-    window.location.href = '/auth/login'
+    // Already on the homepage হলে href = '/' নতুন কোনো navigation হিসেবে গণ্য হয় না
+    // (URL একই থাকে), তাই পেজ reload হয় না আর পুরনো user state থেকে যায়।
+    // সেক্ষেত্রে জোর করে reload করাতে হবে।
+    if (window.location.pathname === '/') {
+      window.location.reload()
+    } else {
+      window.location.href = '/'
+    }
   }, [])
 
   useEffect(() => {
 
 
 
-    ;(async () => {
+    ; (async () => {
       const token = await silentRefresh()
       if (token) {
         const profile = await fetchMe(token)

@@ -2,13 +2,24 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import Input from '@/components/ui/input'
 import Button from '@/components/ui/button'
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton'
 import { authApi } from '@/lib/api'
 
+// Only trust a "next" that is a plain relative path — this blocks
+// "//evil.com" or "https://evil.com" from being used as an open redirect.
+function safeNextPath(value: string | null): string | null {
+  if (!value) return null
+  if (!value.startsWith('/') || value.startsWith('//')) return null
+  return value
+}
+
 export default function LoginForm() {
+  const searchParams = useSearchParams()
+  const next = safeNextPath(searchParams.get('next'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -29,8 +40,10 @@ export default function LoginForm() {
       if (data.success) {
         const { user } = data.data
         const role = user.role.toLowerCase()
-        // role আর creator/donor আলাদা করে না — শুধু admin আলাদা, বাকি সবাই একই dashboard
-        window.location.href = role === 'admin' ? '/dashboard/admin' : '/dashboard'
+        // "next" থাকলে সেখানেই ফিরিয়ে নাও (যেমন কেউ course-provider register
+        // করতে গিয়ে লগইনে পাঠানো হয়েছিল)। না থাকলে — admin হলে তার dashboard-এ,
+        // সাধারণ ইউজার হলে হোমপেজে (পুরো অ্যাপ পাবলিকভাবে ব্রাউজযোগ্য বলে)।
+        window.location.href = next || (role === 'admin' ? '/dashboard/admin' : '/')
       } else {
         setError(data.message || 'Login failed. Please try again.')
       }
@@ -42,9 +55,8 @@ export default function LoginForm() {
   }
 
   function handleGoogleLogin() {
-
-
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1'}/auth/google`
+    const base = `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1'}/auth/google`
+    window.location.href = next ? `${base}?next=${encodeURIComponent(next)}` : base
   }
 
   return (

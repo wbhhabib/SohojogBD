@@ -3,6 +3,7 @@ import { Router } from 'express'
 import * as courseController from './course.controller'
 import { authenticate } from '../../middlewares/auth.middleware'
 import { validate } from '../../middlewares/validate.middleware'
+import { uploadMultiple } from '../../middlewares/upload.middleware'
 import { createCourseSchema } from './course.schema'
 
 const router = Router()
@@ -20,6 +21,7 @@ router.post('/', authenticate, validate(createCourseSchema), courseController.cr
 // ── Manage (branch's own login, provider owner, or admin) ────────────────
 router.post('/:id/close', authenticate, courseController.closeCourse)
 router.post('/:id/reopen', authenticate, courseController.reopenCourse)
+router.post('/:id/images', authenticate, uploadMultiple, courseController.uploadCourseImages)
 
 // ── Public: single course by slug ───────────────────────────────────────
 router.get('/:slug', courseController.getCourseBySlug)

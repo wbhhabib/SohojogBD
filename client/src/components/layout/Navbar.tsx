@@ -175,8 +175,8 @@ export default function Navbar() {
                   <Link href="/auth/login">
                     <Button variant="outline" size="sm">Login</Button>
                   </Link>
-                  <Link href="/auth/register">
-                    <Button variant="primary" size="sm">Start Campaign</Button>
+                  <Link href="/bdcare/sos">
+                    <Button variant="primary" size="sm" className="bg-red-500 hover:bg-red-600 border-red-500">🆘 Emergency SOS</Button>
                   </Link>
                 </>
               )}

@@ -229,3 +229,8 @@ export async function reopenCourse(courseId: string): Promise<ApiResponse<null>>
     const res = await api.post<null>(`/grow-together/courses/${courseId}/reopen`)
     return { success: res.success, message: res.message, data: null }
 }
+
+export async function uploadCourseImages(courseId: string, formData: FormData): Promise<ApiResponse<Course>> {
+    const res = await api.post<Course>(`/grow-together/courses/${courseId}/images`, formData)
+    return toSimple(res) as ApiResponse<Course>
+}

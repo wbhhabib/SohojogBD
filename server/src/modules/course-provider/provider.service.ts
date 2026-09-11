@@ -1,4 +1,4 @@
-import { CourseProviderStatus, CourseStatus, Role } from '../../types/prisma-enums'
+import { CourseProviderStatus, CourseStatus, CourseProviderInstitutionType, Role } from '../../types/prisma-enums'
 import { prisma } from '../../config/database'
 import { hashPassword } from '../../utils/bcrypt'
 import { generateUniqueSlug } from '../../utils/slug'
@@ -18,6 +18,7 @@ const PROVIDER_SELECT = {
     description: true,
     institutionType: true,
     logo: true,
+    coverImage: true,
     website: true,
     facebookPage: true,
     headquartersAddress: true,
@@ -75,6 +76,7 @@ export const registerProvider = async (ownerId: string, data: CreateProviderInpu
             description: data.description,
             institutionType: data.institutionType,
             logo: data.logo || null,
+            coverImage: data.coverImage || null,
             website: data.website || null,
             facebookPage: data.facebookPage || null,
             headquartersAddress: data.headquartersAddress,
@@ -113,6 +115,7 @@ export const userOwnsProviderDocument = async (userId: string, filename: string)
             OR: [
                 { legalDocumentUrl: { contains: needle } },
                 { logo: { contains: needle } },
+                { coverImage: { contains: needle } },
             ],
         },
         select: { id: true },
@@ -209,6 +212,7 @@ const PUBLIC_PROVIDER_SELECT = {
     description: true,
     institutionType: true,
     logo: true,
+    coverImage: true,
     website: true,
     facebookPage: true,
     headquartersAddress: true,
@@ -222,11 +226,10 @@ const PUBLIC_PROVIDER_SELECT = {
 
 interface PublicProviderWhereInput {
     status: CourseProviderStatus
-    institutionType?: string
+    institutionType?: CourseProviderInstitutionType
     headquartersDivision?: string
     institutionName?: { contains: string; mode: 'insensitive' }
 }
-
 export const getPublicProviders = async (query: {
     page?: unknown
     limit?: unknown
@@ -239,7 +242,7 @@ export const getPublicProviders = async (query: {
     const where: PublicProviderWhereInput = { status: CourseProviderStatus.APPROVED }
 
     if (query.institutionType && typeof query.institutionType === 'string' && query.institutionType !== 'All') {
-        where.institutionType = query.institutionType
+        where.institutionType = query.institutionType as CourseProviderInstitutionType
     }
     if (query.division && typeof query.division === 'string' && query.division !== 'All') {
         where.headquartersDivision = query.division

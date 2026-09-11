@@ -8,6 +8,7 @@ import Badge from '@/components/ui/badge'
 import { useAuth } from '@/lib/AuthContext'
 import { getCourseBySlug, getMyPostableBranches, closeCourse, reopenCourse, CATEGORY_EMOJI, MODE_LABEL, daysLeft } from '@/lib/courseApi'
 import type { Course } from '@/lib/courseApi'
+import { getImageUrl } from '@/lib/utils'
 import {
     ArrowLeft, MapPin, Phone, Mail, Clock, CalendarClock,
     Users, ExternalLink, GraduationCap, BadgeCheck, XCircle, RotateCcw,
@@ -101,6 +102,18 @@ export default function CourseDetailPage() {
                     <div className="grid md:grid-cols-5 gap-6">
                         {/* ── left: details ── */}
                         <div className="md:col-span-3 space-y-4">
+                            {course.images.length > 0 && (
+                                <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden">
+                                    {course.images.slice(0, 3).map((src, i) => (
+                                        <img
+                                            key={src}
+                                            src={getImageUrl(src)}
+                                            alt={`${course.title} photo ${i + 1}`}
+                                            className={`w-full object-cover ${i === 0 && course.images.length < 3 ? 'col-span-3 h-56' : 'h-32 sm:h-40'}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                             <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6">
                                 <div className="flex items-center gap-2 mb-3 flex-wrap">
                                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">

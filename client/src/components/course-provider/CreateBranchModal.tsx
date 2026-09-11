@@ -110,6 +110,7 @@ export default function CreateBranchModal({ providerId, onClose, onCreated }: Cr
                     placeholder="branch-mirpur@institute.org"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
+                    autoComplete="off"
                 />
                 <Input
                     label="Initial Password"
@@ -118,6 +119,7 @@ export default function CreateBranchModal({ providerId, onClose, onCreated }: Cr
                     placeholder="At least 8 chars, 1 uppercase, 1 number"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
+                    autoComplete="new-password"
                 />
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <div className="flex items-center justify-end gap-2 pt-2">

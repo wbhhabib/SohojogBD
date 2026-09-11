@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as courseService from './course.service'
-import { sendSuccess, sendPaginated } from '../../utils/response'
+import { sendSuccess, sendError, sendPaginated } from '../../utils/response'
 
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
     (req: Request, res: Response, next: NextFunction) =>
@@ -39,4 +39,15 @@ export const closeCourse = asyncHandler(async (req, res) => {
 export const reopenCourse = asyncHandler(async (req, res) => {
     const result = await courseService.reopenCourse(req.params.id, req.user!.id, req.user!.role)
     sendSuccess(res, null, result.message)
+})
+
+export const uploadCourseImages = asyncHandler(async (req, res) => {
+    const files = req.files as Express.Multer.File[] | undefined
+    if (!files || files.length === 0) {
+        sendError(res, 'No images uploaded', 400)
+        return
+    }
+    const imageUrls = files.map((f) => `/uploads/images/${f.filename}`)
+    const course = await courseService.addCourseImages(req.params.id, req.user!.id, req.user!.role, imageUrls)
+    sendSuccess(res, course, 'Images uploaded successfully')
 })

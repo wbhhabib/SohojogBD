@@ -13,6 +13,7 @@ function buildCookieOptions(rememberMe: boolean) {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
+    path: '/', // explicit path — login/logout দুই জায়গাতেই একই path না হলে clearCookie কাজ করে না
     ...(rememberMe ? { maxAge: 30 * 24 * 60 * 60 * 1000 } : {}),
 
   }
@@ -77,11 +78,16 @@ export const changePassword = asyncHandler(async (req, res) => {
 })
 
 export const logout = asyncHandler(async (req, res) => {
-  res.clearCookie('refreshToken', {
+  const clearOpts = {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'lax',
-  })
+    sameSite: 'lax' as const,
+  }
+  // path: '/' দিয়ে normal clear — ভবিষ্যতের সব login/refresh এই path-এই cookie বসাবে (উপরের fix-এর পর)।
+  res.clearCookie('refreshToken', { ...clearOpts, path: '/' })
+  // এই মুহূর্তে ইউজারের ব্রাউজারে যদি আগের (fix-এর আগের) path=/api/v1/auth cookie থেকে থাকে,
+  // সেটাও একসাথে সাফ করে দিচ্ছি — যাতে কাউকে ম্যানুয়ালি cookie মুছতে না হয়।
+  res.clearCookie('refreshToken', { ...clearOpts, path: '/api/v1/auth' })
   sendSuccess(res, null, 'Logged out successfully')
 })
 
@@ -99,7 +105,9 @@ export const googleCallback = asyncHandler(async (req, res) => {
 
   res.cookie('refreshToken', refreshToken, buildCookieOptions(true))
 
+  // "state" এখানে সেই "next" path যেটা /auth/google শুরু করার সময় পাঠানো হয়েছিল
+  const nextPath = typeof req.query.state === 'string' ? req.query.state : ''
+  const nextParam = nextPath ? `&next=${encodeURIComponent(nextPath)}` : ''
 
-
-  res.redirect(`${env.CLIENT_URL}/auth/google-callback#token=${accessToken}`)
+  res.redirect(`${env.CLIENT_URL}/auth/google-callback#token=${accessToken}${nextParam}`)
 })

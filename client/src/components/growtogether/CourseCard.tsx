@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import type { Course } from '@/lib/courseApi'
 import { CATEGORY_EMOJI, MODE_LABEL, daysLeft } from '@/lib/courseApi'
+import { getImageUrl } from '@/lib/utils'
 import Badge from '@/components/ui/badge'
 import { MapPin, Clock, Users, Wifi } from 'lucide-react'
 
@@ -40,7 +41,11 @@ export default function CourseCard({ course, action }: CourseCardProps) {
         <div className="flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm border border-emerald-100/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <Link href={`/grow-together/courses/${course.slug}`} className="group flex flex-col flex-1">
                 <div className="relative h-28 overflow-hidden bg-gradient-to-br from-emerald-300 to-teal-500 flex items-center justify-center">
-                    <span className="text-5xl opacity-70">{emoji}</span>
+                    {course.images.length > 0 ? (
+                        <img src={getImageUrl(course.images[0])} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                        <span className="text-5xl opacity-70">{emoji}</span>
+                    )}
                     <div className="absolute top-3 left-3">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/90 text-emerald-700 shadow-md">
                             <span>{emoji}</span>

@@ -9,6 +9,8 @@ export default function GoogleCallbackPage() {
     const hash = window.location.hash
     const params = new URLSearchParams(hash.slice(1))
     const token = params.get('token')
+    const rawNext = params.get('next')
+    const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null
 
     if (!token) {
       window.location.href = '/auth/login?error=google_failed'
@@ -24,8 +26,8 @@ export default function GoogleCallbackPage() {
       .then((res) => {
         if (!res.success) throw new Error('getMe failed')
         const role = res.data.role.toLowerCase()
-      
-        window.location.href = role === 'admin' ? '/dashboard/admin' : '/dashboard'
+
+        window.location.href = next || (role === 'admin' ? '/dashboard/admin' : '/')
       })
       .catch(() => {
         window.location.href = '/auth/login?error=google_failed'

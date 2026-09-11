@@ -8,9 +8,10 @@ import Input from '@/components/ui/input'
 import Select from '@/components/ui/select'
 import Textarea from '@/components/ui/textarea'
 import LocationSelect from '@/components/common/LocationSelect'
+import ImageUploadPreview from '@/components/campaign/ImageUploadPreview'
 import { useAuth } from '@/lib/AuthContext'
 import {
-    createCourse, getMyPostableBranches, COURSE_CATEGORIES, COURSE_MODES, MODE_LABEL,
+    createCourse, uploadCourseImages, getMyPostableBranches, COURSE_CATEGORIES, COURSE_MODES, MODE_LABEL,
 } from '@/lib/courseApi'
 import type { CourseCategory, CourseMode, PostableBranch } from '@/lib/courseApi'
 import { getMyProviders } from '@/lib/providerApi'
@@ -72,6 +73,7 @@ export default function PostCoursePage() {
     const [contactPhone, setContactPhone] = useState('')
     const [contactEmail, setContactEmail] = useState('')
     const [applyLink, setApplyLink] = useState('')
+    const [images, setImages] = useState<File[]>([])
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
 
@@ -136,6 +138,12 @@ export default function PostCoursePage() {
             setError(res.message || 'Could not post this course. Please check your details.')
             setSubmitting(false)
             return
+        }
+
+        if (images.length > 0) {
+            const fd = new FormData()
+            images.forEach((file) => fd.append('images', file))
+            await uploadCourseImages(res.data.id, fd)
         }
 
         router.push(`/grow-together/courses/${res.data.slug}`)
@@ -243,6 +251,14 @@ export default function PostCoursePage() {
                             onChange={(e) => setDescription(e.target.value)}
                         />
                         <p className="text-xs -mt-3 text-gray-400">At least 20 characters ({description.length}/20)</p>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-medium text-slate-700">Course Photos (optional)</label>
+                            <p className="text-xs text-gray-400 -mt-1">
+                                Classroom, workshop, or past-batch photos help students trust the listing more.
+                            </p>
+                            <ImageUploadPreview maxFiles={4} onFilesChange={setImages} />
+                        </div>
 
                         <div className="grid sm:grid-cols-2 gap-4">
                             <Select

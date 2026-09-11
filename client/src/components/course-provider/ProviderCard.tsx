@@ -16,7 +16,10 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
             href={`/grow-together/courses/providers/${provider.slug}`}
             className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm border border-emerald-100/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         >
-            <div className="relative h-20 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-end px-3 pt-3">
+            <div
+                className="relative h-20 flex items-center justify-end px-3 pt-3 bg-gradient-to-br from-emerald-500 to-teal-600 bg-cover bg-center"
+                style={provider.coverImage ? { backgroundImage: `url(${getImageUrl(provider.coverImage)})` } : undefined}
+            >
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white bg-white/20 backdrop-blur-sm">
                     <BadgeCheck size={12} /> Verified
                 </span>

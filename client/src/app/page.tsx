@@ -203,10 +203,10 @@ export default function HomePage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
                 <Link
-                  href="/creator/campaigns/create"
-                  className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-colors shadow-sm"
+                  href="/bdcare/sos"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-7 py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors shadow-sm"
                 >
-                  Start a Campaign
+                  🆘 Emergency SOS
                 </Link>
                 <Link
                   href="#initiatives"

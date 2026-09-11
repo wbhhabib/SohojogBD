@@ -666,6 +666,7 @@ model CourseProvider {
   description         String
   institutionType     CourseProviderInstitutionType
   logo                String?
+  coverImage          String?
   website             String?
   facebookPage        String?
   headquartersAddress String

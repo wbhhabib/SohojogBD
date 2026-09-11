@@ -218,3 +218,13 @@ export const reopenCourse = async (courseId: string, userId: string, userRole: s
     await prisma.course.update({ where: { id: courseId }, data: { status: CourseStatus.OPEN } })
     return { message: 'Course reopened' }
 }
+
+export const addCourseImages = async (courseId: string, userId: string, userRole: string, imageUrls: string[]) => {
+    await assertCanManage(courseId, userId, userRole)
+    const course = await prisma.course.update({
+        where: { id: courseId },
+        data: { images: { push: imageUrls } },
+        select: COURSE_SELECT,
+    })
+    return course
+}

@@ -34,6 +34,7 @@ export default function RegisterCourseProviderPage() {
     const [description, setDescription] = useState('')
     const [institutionType, setInstitutionType] = useState<InstitutionType | ''>('')
     const [logo, setLogo] = useState('')
+    const [coverImage, setCoverImage] = useState('')
     const [website, setWebsite] = useState('')
     const [facebookPage, setFacebookPage] = useState('')
     const [headquartersAddress, setHeadquartersAddress] = useState('')
@@ -90,6 +91,7 @@ export default function RegisterCourseProviderPage() {
             description,
             institutionType,
             logo: logo || undefined,
+            coverImage: coverImage || undefined,
             website: website || undefined,
             facebookPage: facebookPage || undefined,
             headquartersAddress,
@@ -193,6 +195,18 @@ export default function RegisterCourseProviderPage() {
                                     onChange={(e) => setDescription(e.target.value)}
                                 />
                                 <p className="text-xs -mt-3 text-gray-400">Minimum 30 characters — this appears on your public organization profile.</p>
+                                <ProviderDocUpload
+                                    label="Cover Photo (optional)"
+                                    value={coverImage}
+                                    onChange={setCoverImage}
+                                    hint="Wide banner image — shown at the top of your card and profile."
+                                />
+                                <ProviderDocUpload
+                                    label="Organization Logo (optional)"
+                                    value={logo}
+                                    onChange={setLogo}
+                                    hint="Square image works best — shown on your card and public profile."
+                                />
                                 <Select
                                     label="Institution Type"
                                     required

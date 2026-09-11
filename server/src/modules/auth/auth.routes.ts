@@ -15,25 +15,30 @@ import {
 const router = Router()
 
 
-router.post('/register',        validate(registerSchema),        authController.register)
-router.post('/verify-email',                                     authController.verifyEmail)
-router.post('/login',           validate(loginSchema),           authController.login)
-router.post('/refresh',                                          authController.refresh)
-router.post('/forgot-password', validate(forgotPasswordSchema),  authController.forgotPassword)
-router.post('/reset-password',  validate(resetPasswordSchema),   authController.resetPassword)
+router.post('/register', validate(registerSchema), authController.register)
+router.post('/verify-email', authController.verifyEmail)
+router.post('/login', validate(loginSchema), authController.login)
+router.post('/refresh', authController.refresh)
+router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword)
+router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword)
 router.post('/change-password', authenticate, validate(changePasswordSchema), authController.changePassword)
-router.post('/logout',          authenticate,                    authController.logout)
+router.post('/logout', authenticate, authController.logout)
 
 
 if (env.GOOGLE_CLIENT_ID) {
 
-  router.get(
-    '/google',
+  router.get('/google', (req, res, next) => {
+    // "next" যদি নিরাপদ (শুধু relative path) হয়, সেটাকে OAuth-এর "state"
+    // প্যারামিটার হিসেবে পাঠিয়ে দাও — Google callback-এ এটাই ফেরত আসবে।
+    const rawNext = typeof req.query.next === 'string' ? req.query.next : ''
+    const nextPath = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : ''
+
     passport.authenticate('google', {
       scope: ['profile', 'email'],
       session: false,
-    })
-  )
+      state: nextPath,
+    })(req, res, next)
+  })
 
 
   router.get(

@@ -16,6 +16,7 @@ export const createProviderSchema = z.object({
         errorMap: () => ({ message: 'Please select a valid institution type' }),
     }),
     logo: z.string().url().optional().or(z.literal('')),
+    coverImage: z.string().url().optional().or(z.literal('')),
     website: z.string().url().optional().or(z.literal('')),
     facebookPage: z.string().url().optional().or(z.literal('')),
     headquartersAddress: z.string().min(10).max(300),
